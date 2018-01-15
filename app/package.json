@@ -1,0 +1,33 @@
+{
+  "name": "magic-maze",
+  "version": "1.0.0",
+  "description": "Online version of board game Magic Maze",
+  "main": "webpack.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ashugeo/magic-maze.git"
+  },
+  "author": "Ashugeo",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ashugeo/magic-maze/issues"
+  },
+  "homepage": "https://github.com/Ashugeo/magic-maze",
+  "dependencies": {
+    "p5": "^0.5.16"
+  },
+  "devDependencies": {
+    "babel": "^6.23.0",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
+    "jshint": "^2.9.5",
+    "jshint-loader": "^0.8.4",
+    "node-libs-browser": "^2.1.0",
+    "webpack": "^3.10.0"
+  }
+}
