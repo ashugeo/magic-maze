@@ -185,116 +185,135 @@ export default class Tile {
         if (this.rotate === 0) {
             p5.translate(this.x * size, this.y * size);
         } else if (this.rotate === 1) {
-            p5.translate(this.y * size, -((this.x + 4) * size + 1));
+            p5.translate(this.y * size, -((this.x + 4) * size));
         } else if (this.rotate === 2) {
-            p5.translate(-((this.x + 4) * size + 1), -((this.y + 4) * size + 1));
+            p5.translate(-((this.x + 4) * size), -((this.y + 4) * size));
         } else if (this.rotate === 3) {
-            p5.translate(-((this.y + 4) * size + 1), this.x * size);
+            p5.translate(-((this.y + 4) * size), this.x * size);
         }
 
-        p5.blendMode(p5.MULTIPLY);
+        if (config.debug) {
 
-        // Background color
-        if (this.fixed) {
-            p5.fill('#f0f2ff');
-        } else if (this.canBeSet) {
-            p5.fill('#e0ffe4');
-        } else {
-            p5.fill('#ffe2e4');
-        }
+            p5.blendMode(p5.MULTIPLY);
 
-        p5.noStroke();
-        p5.rect(0, 0, size * 4, size * 4);
+            // Background color
+            if (this.fixed) {
+                p5.fill('#f0f2ff');
+            } else if (this.canBeSet) {
+                p5.fill('#e0ffe4');
+            } else {
+                p5.fill('#ffe2e4');
+            }
 
-        p5.noFill();
-        p5.stroke(0);
+            p5.noStroke();
+            p5.rect(0, 0, size * 4, size * 4);
 
-        for (let i = 0; i < 4; i += 1) {
-            for (let j = 0; j < 4; j += 1) {
-                // For each cell
-                p5.push();
-                p5.translate(j*size, i*size);
+            p5.noFill();
+            p5.stroke(0);
 
-                // Draw basic grid
-                p5.stroke(240);
-                p5.rect(0, 0, size, size);
-                p5.stroke(0);
+            for (let i = 0; i < 4; i += 1) {
+                for (let j = 0; j < 4; j += 1) {
+                    // For each cell
+                    p5.push();
+                    p5.translate(j*size, i*size);
 
-                if (!this.data) return;
+                    // Draw basic grid
+                    // p5.stroke(240);
+                    // p5.rect(0, 0, size, size);
+                    p5.stroke(0);
 
-                // Get cell data
-                let cell = this.data[i][j];
+                    if (!this.data) return;
 
-                // Add item to cell
-                let item = cell.item;
-                if (item) {
-                    if (item.type === 'vortex') {
-                        p5.fill(item.color);
-                        p5.noStroke();
-                        p5.ellipse(size/2, size/2, size/2, size/2);
-                        p5.stroke(0);
-                    } else if (item.type === 'bridge' || item.type === 'enter') {
-                        // Set color (for bridge)
-                        if (item.color) p5.stroke(item.color);
+                    // Get cell data
+                    let cell = this.data[i][j];
 
-                        // Rotate and draw item depending on cell coordinates
-                        if (i === 0) {
-                            // Pointing up
-                            symbols.arrow(item.type);
-                        } else if (i === 3) {
-                            // Pointing bottom
-                            p5.push();
-                            p5.rotate(p5.PI);
-                            p5.translate(-size, -size);
-                            symbols.arrow(item.type);
-                            p5.pop();
-                        } else if (j === 0) {
-                            // Pointing left
-                            p5.push();
-                            p5.translate(0, size);
-                            p5.rotate(-p5.PI/2);
-                            symbols.arrow(item.type);
-                            p5.pop();
-                        } else if (j === 3) {
-                            // Pointing right
-                            p5.push();
-                            p5.translate(size, 0);
-                            p5.rotate(p5.PI/2);
-                            symbols.arrow(item.type);
-                            p5.pop();
+                    // Add item to cell
+                    let item = cell.item;
+                    if (item) {
+                        if (item.type === 'vortex') {
+                            p5.fill(item.color);
+                            p5.noStroke();
+                            p5.ellipse(size/2, size/2, size/2, size/2);
+                            p5.stroke(0);
+                        } else if (item.type === 'bridge' || item.type === 'enter') {
+                            // Set color (for bridge)
+                            if (item.color) p5.stroke(item.color);
+
+                            // Rotate and draw item depending on cell coordinates
+                            if (i === 0) {
+                                // Pointing up
+                                symbols.arrow(item.type);
+                            } else if (i === 3) {
+                                // Pointing bottom
+                                p5.push();
+                                p5.rotate(p5.PI);
+                                p5.translate(-size, -size);
+                                symbols.arrow(item.type);
+                                p5.pop();
+                            } else if (j === 0) {
+                                // Pointing left
+                                p5.push();
+                                p5.translate(0, size);
+                                p5.rotate(-p5.PI/2);
+                                symbols.arrow(item.type);
+                                p5.pop();
+                            } else if (j === 3) {
+                                // Pointing right
+                                p5.push();
+                                p5.translate(size, 0);
+                                p5.rotate(p5.PI/2);
+                                symbols.arrow(item.type);
+                                p5.pop();
+                            }
                         }
                     }
-                }
 
-                let esc = cell.escalator;
-                if (esc) {
-                    p5.stroke(0,0,255);
-                    const x1 = size/2;
-                    const y1 = size/2;
-                    const x2 = size/2 + (esc.y - j)*size;
-                    const y2 = size/2 + (esc.x - i)*size;
-                    p5.line(x1, y1, x2, y2);
-                }
+                    let esc = cell.escalator;
+                    if (esc) {
+                        p5.stroke(0,0,255);
+                        const x1 = size/2;
+                        const y1 = size/2;
+                        const x2 = size/2 + (esc.y - j)*size;
+                        const y2 = size/2 + (esc.x - i)*size;
+                        p5.line(x1, y1, x2, y2);
+                    }
 
-                // Draw walls
-                p5.blendMode(p5.MULTIPLY);
-                p5.stroke(0);
-                if (cell.topWall) {
-                    p5.line(0, 0, size, 0);
-                }
-                if (cell.rightWall) {
-                    p5.line(size, 0, size, size);
-                }
-                if (cell.bottomWall) {
-                    p5.line(0, size, size, size);
-                }
-                if (cell.leftWall) {
-                    p5.line(0, 0, 0, size);
-                }
+                    // Draw walls
+                    p5.blendMode(p5.MULTIPLY);
+                    p5.stroke(0);
+                    if (cell.topWall) {
+                        p5.line(0, 0, size, 0);
+                    }
+                    if (cell.rightWall) {
+                        p5.line(size, 0, size, size);
+                    }
+                    if (cell.bottomWall) {
+                        p5.line(0, size, size, size);
+                    }
+                    if (cell.leftWall) {
+                        p5.line(0, 0, 0, size);
+                    }
 
-                p5.pop();
+                    p5.pop();
+                }
+            } // end of cell
+        } else {
+            let x = 0;
+            let y = 0;
+
+            // @TODO: adjust x and y depending so illustrations fit together
+
+            p5.image(tilesImages[this.id], x, y, 4*size, 4*size);
+
+            p5.noStroke();
+            if (this.canBeSet && !this.fixed) {
+                p5.fill(240, 255, 250, 100);
+                p5.rect(x, y, 4*size, 4*size);
+            } else if (!this.canBeSet && !this.fixed) {
+                p5.fill(255, 240, 245, 180);
+                p5.rect(x, y, 4*size, 4*size);
             }
-        } // end of cell
+        }
 
         p5.pop();
     }
