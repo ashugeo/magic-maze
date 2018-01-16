@@ -8,10 +8,13 @@ export default {
     targetZoom: 1,
     zoom() {
         if (p5.keyIsDown(65)) { // A: zoom out
-            if (this.targetZoom > 1) this.targetZoom /= 1.1;
+            this.targetZoom -= .1;
         } else if (p5.keyIsDown(69)) { // E: zoom in
-            this.targetZoom *= 1.1;
+            this.targetZoom += .1;
         }
+
+        this.targetZoom = Math.min(Math.max(this.targetZoom, 1), 4);
+        this.targetZoom = Math.round(this.targetZoom * 10) / 10;
 
         if (p5.abs(this.targetZoom - this.zoomValue) > .005) {
             this.zoomValue += (this.targetZoom - this.zoomValue) / 15;

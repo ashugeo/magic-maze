@@ -8,8 +8,13 @@ import events from './events'
 
 const sketch = (p5) => {
     window.p5 = p5;
+    window.tilesImages = [];
 
     p5.setup = () => {
+        for (let i = 0; i < 3; i +=1) {
+            tilesImages.push(p5.loadImage('img/tile' + i + '.jpg'));
+        }
+
         p5.createCanvas(p5.windowWidth, p5.windowHeight);
 
         for (let i = 0; i < config.boardCols; i += 1) {
@@ -34,7 +39,7 @@ const sketch = (p5) => {
         p5.push();
         camera.pan();
 
-        if (config.debug) {
+        if (config.grid) {
             symbols.grid();
         }
 
