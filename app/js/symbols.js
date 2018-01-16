@@ -36,22 +36,18 @@ export default {
     * Draw background grid
     */
     grid() {
+        p5.textSize(8);
+        p5.fill(160);
         for (let i = 0; i < config.boardCols; i += 1) {
+            // Draw rulers
+            p5.stroke(240);
+            p5.line(0, i*size, config.boardRows*size, i*size);
+            p5.line(i*size, 0, i*size, config.boardCols*size);
+
             for (let j = 0; j < config.boardRows; j += 1) {
-                p5.push();
-                p5.translate(i*size, j*size);
-
-                // Draw cell
-                p5.stroke(240);
-                p5.rect(0, 0, size, size);
-
                 // Add coordinates as text
-                p5.fill(150);
                 p5.noStroke();
-                p5.textSize(8);
-                p5.text(i + ':' + j, 6, 20);
-
-                p5.pop();
+                p5.text(i + ':' + j, i*size + 6, j*size + 20);
             }
         }
     }
