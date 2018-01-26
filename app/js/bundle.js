@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -71488,70 +71488,10 @@ module.exports = p5;
 
 },{"../core/core":55,"./p5.Geometry":102}]},{},[46])(46)
 });
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ }),
 /* 2 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
-
-
-/* harmony default export */ __webpack_exports__["a"] = ({
-    /**
-    * Animate camera zoom
-    */
-    zoomValue: 1,
-    targetZoom: 1,
-    zoom() {
-        if (p5.keyIsDown(65)) { // A: zoom out
-            this.targetZoom -= .1;
-        } else if (p5.keyIsDown(69)) { // E: zoom in
-            this.targetZoom += .1;
-        }
-
-        this.targetZoom = Math.min(Math.max(this.targetZoom, 1), 4);
-        this.targetZoom = Math.round(this.targetZoom * 10) / 10;
-
-        if (p5.abs(this.targetZoom - this.zoomValue) > .005) {
-            this.zoomValue += (this.targetZoom - this.zoomValue) / 15;
-        } else {
-            this.zoomValue = this.targetZoom;
-        }
-        p5.scale(this.zoomValue);
-    },
-
-    /**
-    * Move camera around
-    */
-    x: 0,
-    y: 0,
-    pan(x, y) {
-        if (x && y) {
-            this.x = x;
-            this.y = y;
-        }
-        if (p5.keyIsDown(90)) { // Z: move up
-            this.y += __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed;
-        }
-        if (p5.keyIsDown(81)) { // Q: move left
-            this.x += __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed;
-        }
-        if (p5.keyIsDown(83)) { // S: move down
-            this.y -= __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed;
-        }
-        if (p5.keyIsDown(68)) { // D: move right
-            this.x -= __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed;
-        }
-
-        p5.translate(this.x, this.y);
-    }
-});
-
-
-/***/ }),
-/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -71561,7 +71501,7 @@ module.exports = p5;
 
 
 /***/ }),
-/* 4 */
+/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -71623,13 +71563,339 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
 
 
 /***/ }),
-/* 5 */
+/* 4 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(3);
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__sketch__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile_js__ = __webpack_require__(9);
+
+
+
+
+window.tiles = [];
+
+fetch('data/tiles.json').then(response => response.json()).then(data => {
+    window.json = data;
+    new __WEBPACK_IMPORTED_MODULE_0_p5___default.a(__WEBPACK_IMPORTED_MODULE_1__sketch__["a" /* default */]);
+    tiles.push(new __WEBPACK_IMPORTED_MODULE_2__tile_js__["a" /* default */](0));
+    tiles[0].set(10, 10);
+});
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1,eval)("this");
+} catch(e) {
+	// This works if the window reference is available
+	if(typeof window === "object")
+		g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__symbols__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__board__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__symbols__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__events__ = __webpack_require__(8);
+
+
+
+
+
+
+// import Tile from './tile'
+
+const sketch = (p5) => {
+    window.p5 = p5;
+    window.tilesImages = [];
+
+    p5.setup = () => {
+        for (let i = 0; i < 3; i +=1) {
+            tilesImages.push(p5.loadImage('img/tile' + i + '.jpg'));
+        }
+
+        p5.createCanvas(p5.windowWidth, p5.windowHeight);
+
+        for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardCols; i += 1) {
+            __WEBPACK_IMPORTED_MODULE_3__board__["a" /* default */][i] = {};
+            for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardRows; j += 1) {
+                __WEBPACK_IMPORTED_MODULE_3__board__["a" /* default */][i][j] = {};
+            }
+        }
+
+        __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].pan(- __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardCols / 2 * __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size, - __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardRows / 2 * __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size);
+
+        __WEBPACK_IMPORTED_MODULE_5__events__["a" /* default */].init();
+    }
+
+    p5.draw = () => {
+        p5.clear();
+
+        // Zoom with focus point at the center of screen
+        p5.translate(p5.width/2, p5.height/2);
+        __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoom();
+
+        p5.push();
+        __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].pan();
+
+        if (__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].grid) {
+            __WEBPACK_IMPORTED_MODULE_4__symbols__["a" /* default */].grid();
+        }
+
+        // Display tiles
+        displayTiles();
+
+        p5.pop();
+    }
+}
+
+/**
+* Display all tiles
+*/
+function displayTiles() {
+    for (let tile of tiles) {
+        // Tiles is being placed, move it along cursor position
+        if (!tile.fixed) {
+            // Mouse cell
+            const mC = __WEBPACK_IMPORTED_MODULE_5__events__["a" /* default */].mouseCell();
+            const o = tile.getOrientation();
+
+            // Place cursor on enter cell depending on orientation
+            let x = mC.x + [-2, -3, -1, 0][o];
+            let y = mC.y + [0, -2, -3, -1][o];
+            tile.move(x, y);
+        }
+
+        // Display tile
+        tile.display();
+    }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (sketch);
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+    /**
+    * Animate camera zoom
+    */
+    zoomValue: 1,
+    targetZoom: 1,
+    zoom() {
+        if (p5.keyIsDown(65)) { // A: zoom out
+            this.targetZoom -= .1;
+        } else if (p5.keyIsDown(69)) { // E: zoom in
+            this.targetZoom += .1;
+        }
+
+        this.targetZoom = Math.min(Math.max(this.targetZoom, 1), 4);
+        this.targetZoom = Math.round(this.targetZoom * 10) / 10;
+
+        if (p5.abs(this.targetZoom - this.zoomValue) > .005) {
+            this.zoomValue += (this.targetZoom - this.zoomValue) / 15;
+        } else {
+            this.zoomValue = this.targetZoom;
+        }
+        p5.scale(this.zoomValue);
+    },
+
+    /**
+    * Move camera around
+    */
+    x: 0,
+    y: 0,
+    pan(x, y) {
+        if (x && y) {
+            this.x = x;
+            this.y = y;
+        }
+        if (p5.keyIsDown(90)) { // Z: move up
+            this.y += __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed;
+        }
+        if (p5.keyIsDown(81)) { // Q: move left
+            this.x += __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed;
+        }
+        if (p5.keyIsDown(83)) { // S: move down
+            this.y -= __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed;
+        }
+        if (p5.keyIsDown(68)) { // D: move right
+            this.x -= __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed;
+        }
+
+        p5.translate(this.x, this.y);
+    }
+});
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__camera__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile__ = __webpack_require__(9);
+
+
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+
+    action: '',
+
+    init() {
+        /**
+        * General key press actions
+        * @param {Object} e event
+        */
+        document.addEventListener('keydown', (e) => {
+            if (e.which === 67) { // C: engage tile setting
+                this.pushNewTile();
+            } else if (e.which === 82) { // R: rotate tile counterclockwise
+                this.rotateNewTile(-1);
+            } else if (e.which === 84) { // T: rotate tile clockwise
+                this.rotateNewTile(1);
+            } else if (e.which === 27) { // Esc: cancel current action
+                this.cancel();
+            }
+        });
+
+        document.addEventListener('mousedown', () => {
+            this.setTile();
+        });
+    },
+
+    oldCell: {},
+
+    /**
+    * Get hovered cell coordinates
+    * @return {Object} position {x: ,y: }
+    */
+    mouseCell() {
+        const i = p5.floor((p5.mouseX - p5.width/2 - (__WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].x * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue));
+        const j = p5.floor((p5.mouseY - p5.height/2 - (__WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].y * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue));
+
+        const cell = {
+            'x': i,
+            'y': j
+        }
+        if (cell === this.oldCell) {
+            return;
+        } else {
+            this.oldCell = cell;
+            return cell;
+        }
+    },
+
+    cancel() {
+        if (this.action === 'setting') {
+            tiles.pop();
+        }
+    },
+
+    /**
+    * Fix tile being set
+    */
+    setTile() {
+        // Select tile being set
+        const tile = tiles[tiles.length-1];
+        const mC = this.mouseCell();
+        const o = tile.getOrientation();
+
+        if (tile.canBeSet && !tile.fixed) {
+            if (o === 0) {
+                tile.set(mC.x - 2, mC.y);
+            } else if (o === 1) {
+                tile.set(mC.x - 3, mC.y - 2);
+            } else if (o === 2) {
+                tile.set(mC.x - 1, mC.y - 3);
+            } else if (o === 3) {
+                tile.set(mC.x, mC.y - 1);
+            }
+        }
+    },
+
+    /**
+    * Push new tile to tiles array
+    */
+    pushNewTile() {
+        this.action = 'setting';
+
+        // Select tile being set
+        const tile = tiles[tiles.length-1];
+
+        // Make sure last tile is fixed to prevent multiple tiles setting
+        if (tile.fixed) {
+            tiles.push(new __WEBPACK_IMPORTED_MODULE_2__tile__["a" /* default */](1));
+            // tiles.push(new Tile(tiles.length));
+        }
+    },
+
+    /**
+    * Rotate tile being set
+    * @param  {int} dir direction (1 for clockwise, -1 for counterclockwise)
+    */
+    rotateNewTile(dir) {
+        // Select tile being set
+        const tile = tiles[tiles.length-1];
+
+        // Make sure tile is not fixed
+        if (!tile.fixed) {
+            if (dir === 1) {
+                // Rotate clockwise
+                tile.rotate < 3 ? tile.rotate += dir : tile.rotate = 0;
+            } else if (dir === -1) {
+                // Rotate counterclockwise
+                tile.rotate > 0 ? tile.rotate += dir : tile.rotate = 3;
+            }
+        }
+    }
+});
+
+
+/***/ }),
+/* 9 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__symbols__ = __webpack_require__(3);
 
 
 
@@ -71778,13 +72044,13 @@ class Tile {
 
                 // Save cells depending on rotation
                 if (r === 0) {
-                    __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i][j + y] = this.data[j][i];
+                    __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i][y + j] = this.data[j][i];
                 } else if (r === 1) {
-                    __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i][j + y] = this.data[3 - i][j];
+                    __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i][y + j] = this.data[3 - i][j];
                 } else if (r === 2) {
-                    __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i][j + y] = this.data[3 - j][3 - i];
+                    __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i][y + j] = this.data[3 - j][3 - i];
                 } else if (r === 3) {
-                    __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i][j + y] = this.data[i][3 - j];
+                    __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i][y + j] = this.data[i][3 - j];
                 }
             }
         }
@@ -71811,7 +72077,6 @@ class Tile {
 
     display() {
         p5.push();
-
         // Rotate and translate tile
         p5.rotate(this.rotate * p5.PI/2);
         if (this.rotate === 0) {
@@ -71952,260 +72217,6 @@ class Tile {
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Tile;
 
-
-
-/***/ }),
-/* 6 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__sketch__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile_js__ = __webpack_require__(5);
-
-
-
-
-window.tiles = [];
-
-fetch('data/tiles.json').then(response => response.json()).then(data => {
-    window.json = data;
-    new __WEBPACK_IMPORTED_MODULE_0_p5___default.a(__WEBPACK_IMPORTED_MODULE_1__sketch__["a" /* default */]);
-    tiles.push(new __WEBPACK_IMPORTED_MODULE_2__tile_js__["a" /* default */](0));
-    tiles[0].set(10, 10);
-});
-
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1,eval)("this");
-} catch(e) {
-	// This works if the window reference is available
-	if(typeof window === "object")
-		g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-
-/***/ }),
-/* 8 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__board__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__symbols__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__events__ = __webpack_require__(9);
-
-
-
-
-
-
-// import Tile from './tile'
-
-const sketch = (p5) => {
-    window.p5 = p5;
-    window.tilesImages = [];
-
-    p5.setup = () => {
-        for (let i = 0; i < 3; i +=1) {
-            tilesImages.push(p5.loadImage('img/tile' + i + '.jpg'));
-        }
-
-        p5.createCanvas(p5.windowWidth, p5.windowHeight);
-
-        for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardCols; i += 1) {
-            __WEBPACK_IMPORTED_MODULE_3__board__["a" /* default */][i] = {};
-            for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardRows; j += 1) {
-                __WEBPACK_IMPORTED_MODULE_3__board__["a" /* default */][i][j] = {};
-            }
-        }
-
-        __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].pan(- __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardCols / 2 * __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size, - __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardRows / 2 * __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size);
-
-        __WEBPACK_IMPORTED_MODULE_5__events__["a" /* default */].init();
-    }
-
-    p5.draw = () => {
-        p5.clear();
-
-        // Zoom with focus point at the center of screen
-        p5.translate(p5.width/2, p5.height/2);
-        __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoom();
-
-        p5.push();
-        __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].pan();
-
-        if (__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].grid) {
-            __WEBPACK_IMPORTED_MODULE_4__symbols__["a" /* default */].grid();
-        }
-
-        // Display tiles
-        displayTiles();
-
-        p5.pop();
-    }
-}
-
-/**
-* Display all tiles
-*/
-function displayTiles() {
-    for (let tile of tiles) {
-        // Tiles is being placed, move it along cursor position
-        if (!tile.fixed) {
-            // Mouse cell
-            const mC = __WEBPACK_IMPORTED_MODULE_5__events__["a" /* default */].mouseCell();
-            const o = tile.getOrientation();
-
-            // Place cursor on enter cell depending on orientation
-            let x = mC.x + [-2, -3, -1, 0][o];
-            let y = mC.y + [0, -2, -3, -1][o];
-            tile.move(x, y);
-        }
-
-        // Display tile
-        tile.display();
-    }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (sketch);
-
-
-/***/ }),
-/* 9 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__camera__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile__ = __webpack_require__(5);
-
-
-
-
-/* harmony default export */ __webpack_exports__["a"] = ({
-
-    init() {
-        /**
-        * General key press actions
-        * @param {Object} e event
-        */
-        document.addEventListener('keydown', (e) => {
-            if (e.which === 67) { // C: engage tile setting
-                this.pushNewTile();
-            } else if (e.which === 82) { // R: rotate tile counterclockwise
-                this.rotateNewTile(-1);
-            } else if (e.which === 84) { // T: rotate tile clockwise
-                this.rotateNewTile(1);
-            }
-        });
-
-        document.addEventListener('mousedown', () => {
-            this.setTile();
-        });
-    },
-
-    oldCell: {},
-
-    /**
-    * Get hovered cell coordinates
-    * @return {Object} position {x: ,y: }
-    */
-    mouseCell() {
-        const i = p5.floor((p5.mouseX - p5.width/2 - (__WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].x * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue));
-        const j = p5.floor((p5.mouseY - p5.height/2 - (__WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].y * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue));
-
-        const cell = {
-            'x': i,
-            'y': j
-        }
-        if (cell === this.oldCell) {
-            return;
-        } else {
-            this.oldCell = cell;
-            return cell;
-        }
-    },
-
-    /**
-    * Fix tile being set
-    */
-    setTile() {
-        // Select tile being set
-        const tile = tiles[tiles.length-1];
-        const mC = this.mouseCell();
-        const o = tile.getOrientation();
-
-        if (tile.canBeSet && !tile.fixed) {
-            if (o === 0) {
-                tile.set(mC.x - 2, mC.y);
-            } else if (o === 1) {
-                tile.set(mC.x - 3, mC.y - 2);
-            } else if (o === 2) {
-                tile.set(mC.x - 1, mC.y - 3);
-            } else if (o === 3) {
-                tile.set(mC.x, mC.y - 1);
-            }
-        }
-    },
-
-    /**
-    * Push new tile to tiles array
-    */
-    pushNewTile() {
-        // Select tile being set
-        const tile = tiles[tiles.length-1];
-
-        // Make sure last tile is fixed to prevent multiple tiles setting
-        if (tile.fixed) {
-            tiles.push(new __WEBPACK_IMPORTED_MODULE_2__tile__["a" /* default */](1));
-            // tiles.push(new Tile(tiles.length));
-        }
-    },
-
-    /**
-    * Rotate tile being set
-    * @param  {int} dir direction (1 for clockwise, -1 for counterclockwise)
-    */
-    rotateNewTile(dir) {
-        // Select tile being set
-        const tile = tiles[tiles.length-1];
-
-        // Make sure tile is not fixed
-        if (!tile.fixed) {
-            if (dir === 1) {
-                // Rotate clockwise
-                tile.rotate < 3 ? tile.rotate += dir : tile.rotate = 0;
-            } else if (dir === -1) {
-                // Rotate counterclockwise
-                tile.rotate > 0 ? tile.rotate += dir : tile.rotate = 3;
-            }
-        }
-    }
-});
 
 
 /***/ })

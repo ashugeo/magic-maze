@@ -4,6 +4,8 @@ import Tile from './tile'
 
 export default {
 
+    action: '',
+
     init() {
         /**
         * General key press actions
@@ -16,6 +18,8 @@ export default {
                 this.rotateNewTile(-1);
             } else if (e.which === 84) { // T: rotate tile clockwise
                 this.rotateNewTile(1);
+            } else if (e.which === 27) { // Esc: cancel current action
+                this.cancel();
             }
         });
 
@@ -46,6 +50,12 @@ export default {
         }
     },
 
+    cancel() {
+        if (this.action === 'setting') {
+            tiles.pop();
+        }
+    },
+
     /**
     * Fix tile being set
     */
@@ -72,6 +82,8 @@ export default {
     * Push new tile to tiles array
     */
     pushNewTile() {
+        this.action = 'setting';
+
         // Select tile being set
         const tile = tiles[tiles.length-1];
 
