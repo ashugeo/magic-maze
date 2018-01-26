@@ -146,13 +146,13 @@ export default class Tile {
 
                 // Save cells depending on rotation
                 if (r === 0) {
-                    board[x + i][j + y] = this.data[j][i];
+                    board[x + i][y + j] = this.data[j][i];
                 } else if (r === 1) {
-                    board[x + i][j + y] = this.data[3 - i][j];
+                    board[x + i][y + j] = this.data[3 - i][j];
                 } else if (r === 2) {
-                    board[x + i][j + y] = this.data[3 - j][3 - i];
+                    board[x + i][y + j] = this.data[3 - j][3 - i];
                 } else if (r === 3) {
-                    board[x + i][j + y] = this.data[i][3 - j];
+                    board[x + i][y + j] = this.data[i][3 - j];
                 }
             }
         }
@@ -179,7 +179,6 @@ export default class Tile {
 
     display() {
         p5.push();
-
         // Rotate and translate tile
         p5.rotate(this.rotate * p5.PI/2);
         if (this.rotate === 0) {
