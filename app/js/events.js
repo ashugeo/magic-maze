@@ -1,6 +1,7 @@
 import config from './config';
 import camera from './camera';
-import Tile from './tile'
+import Tile from './tile';
+import heroes from './heroes';
 
 export default {
 
@@ -24,8 +25,17 @@ export default {
         });
 
         document.addEventListener('mousedown', () => {
-            this.setTile();
+            this.click();
         });
+    },
+
+    click() {
+        const cell = this.mouseCell();
+        if (this.action === 'setting') {
+            this.setTile(cell);
+        } else {
+            this.checkHero(cell);
+        }
     },
 
     oldCell: {},
@@ -54,26 +64,29 @@ export default {
         if (this.action === 'setting') {
             tiles.pop();
         }
+        this.action = '';
     },
 
     /**
-    * Fix tile being set
+    * Set tile being placed
+    * @param {Object} cell cell to set tile onto
     */
-    setTile() {
+    setTile(cell) {
         // Select tile being set
         const tile = tiles[tiles.length-1];
-        const mC = this.mouseCell();
         const o = tile.getOrientation();
 
         if (tile.canBeSet && !tile.fixed) {
+            this.action = '';
+
             if (o === 0) {
-                tile.set(mC.x - 2, mC.y);
+                tile.set(cell.x - 2, cell.y);
             } else if (o === 1) {
-                tile.set(mC.x - 3, mC.y - 2);
+                tile.set(cell.x - 3, cell.y - 2);
             } else if (o === 2) {
-                tile.set(mC.x - 1, mC.y - 3);
+                tile.set(cell.x - 1, cell.y - 3);
             } else if (o === 3) {
-                tile.set(mC.x, mC.y - 1);
+                tile.set(cell.x, cell.y - 1);
             }
         }
     },
@@ -110,6 +123,20 @@ export default {
             } else if (dir === -1) {
                 // Rotate counterclockwise
                 tile.rotate > 0 ? tile.rotate += dir : tile.rotate = 3;
+            }
+        }
+    },
+
+    checkHero(cell) {
+        for (let i = 0; i < 4; i += 1) {
+            const piece = heroes.pieces[i];
+            if (piece.pos.x === cell.x && piece.pos.y === cell.y) {
+                if (piece.status !== 'selected') {
+                    piece.status = 'selected';
+                } else {
+                    piece.status = 'set';
+                }
+                console.log(heroes.pieces);
             }
         }
     }
