@@ -4,6 +4,7 @@ import camera from './camera';
 import board from './board';
 import symbols from './symbols'
 import events from './events'
+import heroes from './heroes'
 // import Tile from './tile'
 
 const sketch = (p5) => {
@@ -27,6 +28,7 @@ const sketch = (p5) => {
         camera.pan(- config.boardCols / 2 * config.size, - config.boardRows / 2 * config.size);
 
         events.init();
+        heroes.init();
     }
 
     p5.draw = () => {
@@ -39,12 +41,14 @@ const sketch = (p5) => {
         p5.push();
         camera.pan();
 
+        // Display tiles
+        displayTiles();
+
+        heroes.display();
+
         if (config.grid) {
             symbols.grid();
         }
-
-        // Display tiles
-        displayTiles();
 
         p5.pop();
     }

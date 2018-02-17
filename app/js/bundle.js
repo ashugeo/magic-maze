@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 6);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -74,7 +74,14 @@
     'cameraSpeed': 5,
     'boardRows': 24,
     'boardCols': 24,
-    'size': 32
+    'size': 32,
+    'heroes': ['green', 'orange', 'purple', 'yellow'],
+    'colors': {
+        'green': '#57bd6a',
+        'orange': '#e87b1a',
+        'purple': '#961c91',
+        'yellow': '#f7dc0a'
+    }
 });
 
 
@@ -71488,222 +71495,10 @@ module.exports = p5;
 
 },{"../core/core":55,"./p5.Geometry":102}]},{},[46])(46)
 });
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7)))
 
 /***/ }),
 /* 2 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony default export */ __webpack_exports__["a"] = ({
-    
-});
-
-
-/***/ }),
-/* 3 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
-
-const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
-
-/* harmony default export */ __webpack_exports__["a"] = ({
-    /**
-    * Draw an arrow
-    */
-    arrow(type) {
-        if (type === 'bridge') {
-            // Linear arrow
-            p5.blendMode('normal');
-            p5.line(size/2, size/4, size/2, size/1.5);
-            p5.line(size/2, size/4, size/3, size/2.5);
-            p5.line(size/2, size/4, size/1.5, size/2.5);
-            p5.blendMode('multiply');
-        } else if (type === 'enter') {
-            // Filled arrow
-            p5.strokeJoin('round');
-            p5.strokeCap('round');
-            p5.stroke(150);
-            p5.fill(255);
-            p5.beginShape();
-            p5.vertex(size/2.25, size/3);
-            p5.vertex(size/2.25, size/4);
-            p5.vertex(size/1.7, size/4);
-            p5.vertex(size/1.7, size/3);
-            p5.vertex(size/1.5, size/3);
-            p5.vertex(size/1.93, size/2);
-            p5.vertex(size/2.75, size/3);
-            p5.vertex(size/2.75, size/3);
-            p5.endShape('close');
-        }
-    },
-
-    /**
-    * Draw background grid
-    */
-    grid() {
-        p5.textSize(8);
-        p5.fill(160);
-        for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardCols; i += 1) {
-            // Draw rulers
-            p5.stroke(240);
-            p5.line(0, i*size, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardRows*size, i*size);
-            p5.line(i*size, 0, i*size, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardCols*size);
-
-            for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardRows; j += 1) {
-                // Add coordinates as text
-                p5.noStroke();
-                p5.text(i + ':' + j, i*size + 6, j*size + 20);
-            }
-        }
-    }
-});
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__sketch__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile_js__ = __webpack_require__(9);
-
-
-
-
-window.tiles = [];
-
-fetch('data/tiles.json').then(response => response.json()).then(data => {
-    window.json = data;
-    new __WEBPACK_IMPORTED_MODULE_0_p5___default.a(__WEBPACK_IMPORTED_MODULE_1__sketch__["a" /* default */]);
-    tiles.push(new __WEBPACK_IMPORTED_MODULE_2__tile_js__["a" /* default */](0));
-    tiles[0].set(10, 10);
-});
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1,eval)("this");
-} catch(e) {
-	// This works if the window reference is available
-	if(typeof window === "object")
-		g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-
-/***/ }),
-/* 6 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__board__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__symbols__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__events__ = __webpack_require__(8);
-
-
-
-
-
-
-// import Tile from './tile'
-
-const sketch = (p5) => {
-    window.p5 = p5;
-    window.tilesImages = [];
-
-    p5.setup = () => {
-        for (let i = 0; i < 3; i +=1) {
-            tilesImages.push(p5.loadImage('img/tile' + i + '.jpg'));
-        }
-
-        p5.createCanvas(p5.windowWidth, p5.windowHeight);
-
-        for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardCols; i += 1) {
-            __WEBPACK_IMPORTED_MODULE_3__board__["a" /* default */][i] = {};
-            for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardRows; j += 1) {
-                __WEBPACK_IMPORTED_MODULE_3__board__["a" /* default */][i][j] = {};
-            }
-        }
-
-        __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].pan(- __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardCols / 2 * __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size, - __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardRows / 2 * __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size);
-
-        __WEBPACK_IMPORTED_MODULE_5__events__["a" /* default */].init();
-    }
-
-    p5.draw = () => {
-        p5.clear();
-
-        // Zoom with focus point at the center of screen
-        p5.translate(p5.width/2, p5.height/2);
-        __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoom();
-
-        p5.push();
-        __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].pan();
-
-        if (__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].grid) {
-            __WEBPACK_IMPORTED_MODULE_4__symbols__["a" /* default */].grid();
-        }
-
-        // Display tiles
-        displayTiles();
-
-        p5.pop();
-    }
-}
-
-/**
-* Display all tiles
-*/
-function displayTiles() {
-    for (let tile of tiles) {
-        // Tiles is being placed, move it along cursor position
-        if (!tile.fixed) {
-            // Mouse cell
-            const mC = __WEBPACK_IMPORTED_MODULE_5__events__["a" /* default */].mouseCell();
-            const o = tile.getOrientation();
-
-            // Place cursor on enter cell depending on orientation
-            let x = mC.x + [-2, -3, -1, 0][o];
-            let y = mC.y + [0, -2, -3, -1][o];
-            tile.move(x, y);
-        }
-
-        // Display tile
-        tile.display();
-    }
-}
-
-/* harmony default export */ __webpack_exports__["a"] = (sketch);
-
-
-/***/ }),
-/* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -71763,125 +71558,71 @@ function displayTiles() {
 
 
 /***/ }),
-/* 8 */
+/* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony default export */ __webpack_exports__["a"] = ({
+    
+});
+
+
+/***/ }),
+/* 4 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__camera__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile__ = __webpack_require__(9);
 
-
-
+const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
 
 /* harmony default export */ __webpack_exports__["a"] = ({
-
-    action: '',
-
-    init() {
-        /**
-        * General key press actions
-        * @param {Object} e event
-        */
-        document.addEventListener('keydown', (e) => {
-            if (e.which === 67) { // C: engage tile setting
-                this.pushNewTile();
-            } else if (e.which === 82) { // R: rotate tile counterclockwise
-                this.rotateNewTile(-1);
-            } else if (e.which === 84) { // T: rotate tile clockwise
-                this.rotateNewTile(1);
-            } else if (e.which === 27) { // Esc: cancel current action
-                this.cancel();
-            }
-        });
-
-        document.addEventListener('mousedown', () => {
-            this.setTile();
-        });
-    },
-
-    oldCell: {},
-
     /**
-    * Get hovered cell coordinates
-    * @return {Object} position {x: ,y: }
+    * Draw an arrow
     */
-    mouseCell() {
-        const i = p5.floor((p5.mouseX - p5.width/2 - (__WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].x * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue));
-        const j = p5.floor((p5.mouseY - p5.height/2 - (__WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].y * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue));
-
-        const cell = {
-            'x': i,
-            'y': j
-        }
-        if (cell === this.oldCell) {
-            return;
-        } else {
-            this.oldCell = cell;
-            return cell;
-        }
-    },
-
-    cancel() {
-        if (this.action === 'setting') {
-            tiles.pop();
+    arrow(type) {
+        if (type === 'bridge') {
+            // Linear arrow
+            p5.blendMode('normal');
+            p5.line(size/2, size/4, size/2, size/1.5);
+            p5.line(size/2, size/4, size/3, size/2.5);
+            p5.line(size/2, size/4, size/1.5, size/2.5);
+            p5.blendMode('multiply');
+        } else if (type === 'enter') {
+            // Filled arrow
+            p5.strokeJoin('round');
+            p5.strokeCap('round');
+            p5.stroke(150);
+            p5.fill(255);
+            p5.beginShape();
+            p5.vertex(size/2.25, size/3);
+            p5.vertex(size/2.25, size/4);
+            p5.vertex(size/1.7, size/4);
+            p5.vertex(size/1.7, size/3);
+            p5.vertex(size/1.5, size/3);
+            p5.vertex(size/1.93, size/2);
+            p5.vertex(size/2.75, size/3);
+            p5.vertex(size/2.75, size/3);
+            p5.endShape('close');
         }
     },
 
     /**
-    * Fix tile being set
+    * Draw background grid
     */
-    setTile() {
-        // Select tile being set
-        const tile = tiles[tiles.length-1];
-        const mC = this.mouseCell();
-        const o = tile.getOrientation();
+    grid() {
+        p5.textSize(8);
+        p5.fill(0, 0, 0, 128);
+        for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardCols; i += 1) {
+            // Draw rulers
+            p5.stroke(0, 0, 0, 20);
+            p5.line(0, i*size, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardRows*size, i*size);
+            p5.line(i*size, 0, i*size, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardCols*size);
 
-        if (tile.canBeSet && !tile.fixed) {
-            if (o === 0) {
-                tile.set(mC.x - 2, mC.y);
-            } else if (o === 1) {
-                tile.set(mC.x - 3, mC.y - 2);
-            } else if (o === 2) {
-                tile.set(mC.x - 1, mC.y - 3);
-            } else if (o === 3) {
-                tile.set(mC.x, mC.y - 1);
-            }
-        }
-    },
-
-    /**
-    * Push new tile to tiles array
-    */
-    pushNewTile() {
-        this.action = 'setting';
-
-        // Select tile being set
-        const tile = tiles[tiles.length-1];
-
-        // Make sure last tile is fixed to prevent multiple tiles setting
-        if (tile.fixed) {
-            tiles.push(new __WEBPACK_IMPORTED_MODULE_2__tile__["a" /* default */](1));
-            // tiles.push(new Tile(tiles.length));
-        }
-    },
-
-    /**
-    * Rotate tile being set
-    * @param  {int} dir direction (1 for clockwise, -1 for counterclockwise)
-    */
-    rotateNewTile(dir) {
-        // Select tile being set
-        const tile = tiles[tiles.length-1];
-
-        // Make sure tile is not fixed
-        if (!tile.fixed) {
-            if (dir === 1) {
-                // Rotate clockwise
-                tile.rotate < 3 ? tile.rotate += dir : tile.rotate = 0;
-            } else if (dir === -1) {
-                // Rotate counterclockwise
-                tile.rotate > 0 ? tile.rotate += dir : tile.rotate = 3;
+            for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardRows; j += 1) {
+                // Add coordinates as text
+                p5.noStroke();
+                p5.text(i + ':' + j, i*size + 6, j*size + 20);
             }
         }
     }
@@ -71889,13 +71630,13 @@ function displayTiles() {
 
 
 /***/ }),
-/* 9 */
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__symbols__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__symbols__ = __webpack_require__(4);
 
 
 
@@ -72128,7 +71869,7 @@ class Tile {
                     let item = cell.item;
                     if (item) {
                         if (item.type === 'vortex') {
-                            p5.fill(item.color);
+                            p5.fill(__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].colors[item.color]);
                             p5.noStroke();
                             p5.ellipse(size/2, size/2, size/2, size/2);
                             p5.stroke(0);
@@ -72217,6 +71958,384 @@ class Tile {
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Tile;
 
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__sketch__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile_js__ = __webpack_require__(5);
+
+
+
+
+window.tiles = [];
+
+fetch('data/tiles.json').then(response => response.json()).then(data => {
+    window.json = data;
+    new __WEBPACK_IMPORTED_MODULE_0_p5___default.a(__WEBPACK_IMPORTED_MODULE_1__sketch__["a" /* default */]);
+    tiles.push(new __WEBPACK_IMPORTED_MODULE_2__tile_js__["a" /* default */](0));
+    tiles[0].set(10, 10);
+});
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1,eval)("this");
+} catch(e) {
+	// This works if the window reference is available
+	if(typeof window === "object")
+		g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__board__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__symbols__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__events__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__heroes__ = __webpack_require__(10);
+
+
+
+
+
+
+
+// import Tile from './tile'
+
+const sketch = (p5) => {
+    window.p5 = p5;
+    window.tilesImages = [];
+
+    p5.setup = () => {
+        for (let i = 0; i < 3; i +=1) {
+            tilesImages.push(p5.loadImage('img/tile' + i + '.jpg'));
+        }
+
+        p5.createCanvas(p5.windowWidth, p5.windowHeight);
+
+        for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardCols; i += 1) {
+            __WEBPACK_IMPORTED_MODULE_3__board__["a" /* default */][i] = {};
+            for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardRows; j += 1) {
+                __WEBPACK_IMPORTED_MODULE_3__board__["a" /* default */][i][j] = {};
+            }
+        }
+
+        __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].pan(- __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardCols / 2 * __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size, - __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardRows / 2 * __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size);
+
+        __WEBPACK_IMPORTED_MODULE_5__events__["a" /* default */].init();
+        __WEBPACK_IMPORTED_MODULE_6__heroes__["a" /* default */].init();
+    }
+
+    p5.draw = () => {
+        p5.clear();
+
+        // Zoom with focus point at the center of screen
+        p5.translate(p5.width/2, p5.height/2);
+        __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoom();
+
+        p5.push();
+        __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].pan();
+
+        // Display tiles
+        displayTiles();
+
+        __WEBPACK_IMPORTED_MODULE_6__heroes__["a" /* default */].display();
+
+        if (__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].grid) {
+            __WEBPACK_IMPORTED_MODULE_4__symbols__["a" /* default */].grid();
+        }
+
+        p5.pop();
+    }
+}
+
+/**
+* Display all tiles
+*/
+function displayTiles() {
+    for (let tile of tiles) {
+        // Tiles is being placed, move it along cursor position
+        if (!tile.fixed) {
+            // Mouse cell
+            const mC = __WEBPACK_IMPORTED_MODULE_5__events__["a" /* default */].mouseCell();
+            const o = tile.getOrientation();
+
+            // Place cursor on enter cell depending on orientation
+            let x = mC.x + [-2, -3, -1, 0][o];
+            let y = mC.y + [0, -2, -3, -1][o];
+            tile.move(x, y);
+        }
+
+        // Display tile
+        tile.display();
+    }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (sketch);
+
+
+/***/ }),
+/* 9 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__camera__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__heroes__ = __webpack_require__(10);
+
+
+
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+
+    action: '',
+
+    init() {
+        /**
+        * General key press actions
+        * @param {Object} e event
+        */
+        document.addEventListener('keydown', (e) => {
+            if (e.which === 67) { // C: engage tile setting
+                this.pushNewTile();
+            } else if (e.which === 82) { // R: rotate tile counterclockwise
+                this.rotateNewTile(-1);
+            } else if (e.which === 84) { // T: rotate tile clockwise
+                this.rotateNewTile(1);
+            } else if (e.which === 27) { // Esc: cancel current action
+                this.cancel();
+            }
+        });
+
+        document.addEventListener('mousedown', () => {
+            this.click();
+        });
+    },
+
+    click() {
+        const cell = this.mouseCell();
+        if (this.action === 'setting') {
+            this.setTile(cell);
+        } else {
+            this.checkHero(cell);
+        }
+    },
+
+    oldCell: {},
+
+    /**
+    * Get hovered cell coordinates
+    * @return {Object} position {x: ,y: }
+    */
+    mouseCell() {
+        const i = p5.floor((p5.mouseX - p5.width/2 - (__WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].x * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue));
+        const j = p5.floor((p5.mouseY - p5.height/2 - (__WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].y * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue));
+
+        const cell = {
+            'x': i,
+            'y': j
+        }
+        if (cell === this.oldCell) {
+            return;
+        } else {
+            this.oldCell = cell;
+            return cell;
+        }
+    },
+
+    cancel() {
+        if (this.action === 'setting') {
+            tiles.pop();
+        }
+        this.action = '';
+    },
+
+    /**
+    * Set tile being placed
+    * @param {Object} cell cell to set tile onto
+    */
+    setTile(cell) {
+        // Select tile being set
+        const tile = tiles[tiles.length-1];
+        const o = tile.getOrientation();
+
+        if (tile.canBeSet && !tile.fixed) {
+            this.action = '';
+
+            if (o === 0) {
+                tile.set(cell.x - 2, cell.y);
+            } else if (o === 1) {
+                tile.set(cell.x - 3, cell.y - 2);
+            } else if (o === 2) {
+                tile.set(cell.x - 1, cell.y - 3);
+            } else if (o === 3) {
+                tile.set(cell.x, cell.y - 1);
+            }
+        }
+    },
+
+    /**
+    * Push new tile to tiles array
+    */
+    pushNewTile() {
+        this.action = 'setting';
+
+        // Select tile being set
+        const tile = tiles[tiles.length-1];
+
+        // Make sure last tile is fixed to prevent multiple tiles setting
+        if (tile.fixed) {
+            tiles.push(new __WEBPACK_IMPORTED_MODULE_2__tile__["a" /* default */](1));
+            // tiles.push(new Tile(tiles.length));
+        }
+    },
+
+    /**
+    * Rotate tile being set
+    * @param  {int} dir direction (1 for clockwise, -1 for counterclockwise)
+    */
+    rotateNewTile(dir) {
+        // Select tile being set
+        const tile = tiles[tiles.length-1];
+
+        // Make sure tile is not fixed
+        if (!tile.fixed) {
+            if (dir === 1) {
+                // Rotate clockwise
+                tile.rotate < 3 ? tile.rotate += dir : tile.rotate = 0;
+            } else if (dir === -1) {
+                // Rotate counterclockwise
+                tile.rotate > 0 ? tile.rotate += dir : tile.rotate = 3;
+            }
+        }
+    },
+
+    checkHero(cell) {
+        for (let i = 0; i < 4; i += 1) {
+            const piece = __WEBPACK_IMPORTED_MODULE_3__heroes__["a" /* default */].pieces[i];
+            if (piece.pos.x === cell.x && piece.pos.y === cell.y) {
+                if (piece.status !== 'selected') {
+                    piece.status = 'selected';
+                } else {
+                    piece.status = 'set';
+                }
+                console.log(__WEBPACK_IMPORTED_MODULE_3__heroes__["a" /* default */].pieces);
+            }
+        }
+    }
+});
+
+
+/***/ }),
+/* 10 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(3);
+
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+
+    pieces: [],
+
+    Hero: class Hero {
+        constructor() {
+            this.id = Hero.incID(),
+            this.color = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroes[this.id],
+            this.pos = {
+                x: 0,
+                y: 0
+            },
+            this.status = ''
+        }
+
+        static incID() {
+            if (this.latestId === undefined) {
+                this.latestId = 0;
+            } else {
+                this.latestId++;
+            }
+            return this.latestId;
+        }
+    },
+
+    initPos: [
+        {
+            x: 11,
+            y: 11
+        },
+        {
+            x: 12,
+            y: 11
+        },
+        {
+            x: 12,
+            y: 12
+        },
+        {
+            x: 11,
+            y: 12
+        }
+    ],
+
+    init() {
+        for (let i = 0; i < 4; i += 1) {
+            this.pieces.push(new this.Hero());
+            this.pieces[i].pos = this.initPos[i];
+            this.pieces[i].status = 'set';
+        }
+    },
+
+    display() {
+        p5.noStroke();
+        for (let piece of this.pieces) {
+            p5.push();
+            p5.translate(piece.pos.x * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, piece.pos.y * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size);
+            p5.fill(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].colors[piece.color]);
+            if (piece.status === 'selected') {
+                p5.stroke(255);
+                p5.strokeWeight(2);
+            }
+            p5.ellipse(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, 20, 20);
+            p5.pop();
+        }
+    }
+});
 
 
 /***/ })
