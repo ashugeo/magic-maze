@@ -37,10 +37,10 @@ export default {
     */
     grid() {
         p5.textSize(8);
-        p5.fill(160);
+        p5.fill(0, 0, 0, 128);
         for (let i = 0; i < config.boardCols; i += 1) {
             // Draw rulers
-            p5.stroke(240);
+            p5.stroke(0, 0, 0, 20);
             p5.line(0, i*size, config.boardRows*size, i*size);
             p5.line(i*size, 0, i*size, config.boardCols*size);
 
