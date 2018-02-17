@@ -230,7 +230,7 @@ export default class Tile {
                     let item = cell.item;
                     if (item) {
                         if (item.type === 'vortex') {
-                            p5.fill(item.color);
+                            p5.fill(config.colors[item.color]);
                             p5.noStroke();
                             p5.ellipse(size/2, size/2, size/2, size/2);
                             p5.stroke(0);

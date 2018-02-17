@@ -100,7 +100,7 @@ class Tile {
                 let item = cell.item;
                 if (item) {
                     if (item.type === 'vortex') {
-                        fill(item.color);
+                        fill(config.colors[item.color]);
                         noStroke();
                         ellipse(size/2, size/2, size/2, size/2);
                         stroke(0);
