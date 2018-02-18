@@ -145,6 +145,7 @@ export default class Tile {
             for (let j = 0; j < 4; j += 1) {
 
                 // Save cells depending on rotation
+                // TODO: rotate walls!!!
                 if (r === 0) {
                     board[x + i][y + j] = this.data[j][i];
                 } else if (r === 1) {

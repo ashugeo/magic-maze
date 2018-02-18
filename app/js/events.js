@@ -1,7 +1,8 @@
 import config from './config';
 import camera from './camera';
 import Tile from './tile';
-import heroes from './heroes';
+import pieces from './pieces'
+import Hero from './hero';
 
 export default {
 
@@ -34,37 +35,47 @@ export default {
     },
 
     click() {
-        const cell = this.mouseCell();
+        const cell = this.getHoveredCell();
 
         if (this.action === 'setting') {
             this.setTile(cell);
-        } else if (this.action instanceof heroes.Hero) {
-            const piece = this.action;
-            piece.set(cell);
-            this.action = '';
+        } else if (this.action instanceof Hero) {
+            const hero = this.action;
+            if (hero.canGo(cell)) {
+                hero.set(cell);
+                this.action = '';
+            }
         }
 
-        this.checkHero(cell);
-    },
-
-    mouseMove() {
-        const cell = this.mouseCell();
-
-        this.oldMouseCell = cell;
-
-        if (this.action instanceof heroes.Hero) {
-            const piece = this.action;
-            piece.showPath(cell);
+        const hero = this.checkHero(cell)
+        if (hero) {
+            this.toggleHero(hero);
         }
     },
 
     oldCell: {},
 
     /**
+    * Mouve movements events
+    * @return {[type]} [description]
+    */
+    mouseMove() {
+        const cell = this.getHoveredCell();
+
+        if (this.action instanceof Hero) {
+            const piece = this.action;
+            if (cell.x !== this.oldCell.x || cell.y !== this.oldCell.y) {
+                this.oldCell = cell;
+                piece.checkPath(cell);
+            }
+        }
+    },
+
+    /**
     * Get hovered cell coordinates
     * @return {Object} position {x: ,y: }
     */
-    mouseCell() {
+    getHoveredCell() {
         const i = p5.floor((p5.mouseX - p5.width/2 - (camera.x * camera.zoomValue)) / (config.size * camera.zoomValue));
         const j = p5.floor((p5.mouseY - p5.height/2 - (camera.y * camera.zoomValue)) / (config.size * camera.zoomValue));
 
@@ -73,15 +84,12 @@ export default {
             'y': j
         }
 
-        // TODO: this doesn't work
-        if (cell === this.oldCell) {
-            return;
-        } else {
-            this.oldCell = cell;
-            return cell;
-        }
+        return cell;
     },
 
+    /**
+    * Cancel current action
+    */
     cancel() {
         if (this.action === 'setting') {
             tiles.pop();
@@ -124,7 +132,7 @@ export default {
 
         // Make sure last tile is fixed to prevent multiple tiles setting
         if (tile.fixed) {
-            tiles.push(new Tile(1));
+            tiles.push(new Tile(1)); // TODO: remove this
             // tiles.push(new Tile(tiles.length));
         }
     },
@@ -149,17 +157,32 @@ export default {
         }
     },
 
+    /**
+    * Check if there's a hero in this cell
+    * @param  {Object} cell cell to check
+    * @return {bool}
+    */
     checkHero(cell) {
         for (let i = 0; i < 4; i += 1) {
-            const piece = heroes.pieces[i];
-            if (piece.cell.x === cell.x && piece.cell.y === cell.y) {
-                if (piece.status !== 'selected') {
-                    piece.status = 'selected';
-                    this.action = piece;
-                } else {
-                    piece.status = 'set';
-                }
+            const hero = pieces.pieces[i];
+            if (hero.cell.x === cell.x && hero.cell.y === cell.y) {
+                return hero;
             }
+        }
+        return false;
+    },
+
+    /**
+    * Select or deselect hero
+    * @param  {Object} hero hero to select
+    */
+    // TODO: auto-deselect hero if another one is selected?
+    toggleHero(hero) {
+        if (hero.status !== 'selected') {
+            hero.status = 'selected';
+            this.action = hero;
+        } else {
+            hero.status = 'set';
         }
     }
 }

@@ -23,7 +23,7 @@ function draw() {
 }
 
 function mousePressed() {
-    const mC = mouseCell();
+    const mC = getHoveredCell();
 
     if (mC) {
         const cell = tile.data[mC.y][mC.x];
@@ -234,7 +234,7 @@ function arrow(type) {
 * Get hovered cell coordinates
 * @return {Object} position {x: ,y: }
 */
-function mouseCell() {
+function getHoveredCell() {
     const i = floor((mouseX - width/2) / size) + 2;
     const j = floor((mouseY - width/2) / size) + 2;
 

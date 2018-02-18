@@ -4,7 +4,7 @@ import camera from './camera';
 import board from './board';
 import symbols from './symbols'
 import events from './events'
-import heroes from './heroes'
+import pieces from './pieces'
 // import Tile from './tile'
 
 const sketch = (p5) => {
@@ -29,7 +29,7 @@ const sketch = (p5) => {
 
         // board.init();
         events.init();
-        heroes.init();
+        pieces.init();
     }
 
     p5.draw = () => {
@@ -45,7 +45,7 @@ const sketch = (p5) => {
         // Display tiles
         displayTiles();
 
-        heroes.display();
+        pieces.display();
 
         if (config.grid) {
             symbols.grid();
@@ -62,13 +62,13 @@ function displayTiles() {
     for (let tile of tiles) {
         // Tiles is being placed, move it along cursor position
         if (!tile.fixed) {
-            // Mouse cell
-            const mC = events.mouseCell();
+            // Hovered cell
+            const cell = events.getHoveredCell();
             const o = tile.getOrientation();
 
             // Place cursor on enter cell depending on orientation
-            let x = mC.x + [-2, -3, -1, 0][o];
-            let y = mC.y + [0, -2, -3, -1][o];
+            let x = cell.x + [-2, -3, -1, 0][o];
+            let y = cell.y + [0, -2, -3, -1][o];
             tile.move(x, y);
         }
 

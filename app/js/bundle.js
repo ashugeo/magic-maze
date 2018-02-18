@@ -70,7 +70,7 @@
 "use strict";
 /* harmony default export */ __webpack_exports__["a"] = ({
     'debug': false,
-    'grid': true,
+    'grid': false,
     'cameraSpeed': 5,
     'boardRows': 24,
     'boardCols': 24,
@@ -71792,6 +71792,7 @@ class Tile {
             for (let j = 0; j < 4; j += 1) {
 
                 // Save cells depending on rotation
+                // TODO: rotate walls!!!
                 if (r === 0) {
                     __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i][y + j] = this.data[j][i];
                 } else if (r === 1) {
@@ -72031,7 +72032,7 @@ module.exports = g;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__board__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__symbols__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__events__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__heroes__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pieces__ = __webpack_require__(12);
 
 
 
@@ -72063,7 +72064,7 @@ const sketch = (p5) => {
 
         // board.init();
         __WEBPACK_IMPORTED_MODULE_5__events__["a" /* default */].init();
-        __WEBPACK_IMPORTED_MODULE_6__heroes__["a" /* default */].init();
+        __WEBPACK_IMPORTED_MODULE_6__pieces__["a" /* default */].init();
     }
 
     p5.draw = () => {
@@ -72079,7 +72080,7 @@ const sketch = (p5) => {
         // Display tiles
         displayTiles();
 
-        __WEBPACK_IMPORTED_MODULE_6__heroes__["a" /* default */].display();
+        __WEBPACK_IMPORTED_MODULE_6__pieces__["a" /* default */].display();
 
         if (__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].grid) {
             __WEBPACK_IMPORTED_MODULE_4__symbols__["a" /* default */].grid();
@@ -72096,13 +72097,13 @@ function displayTiles() {
     for (let tile of tiles) {
         // Tiles is being placed, move it along cursor position
         if (!tile.fixed) {
-            // Mouse cell
-            const mC = __WEBPACK_IMPORTED_MODULE_5__events__["a" /* default */].mouseCell();
+            // Hovered cell
+            const cell = __WEBPACK_IMPORTED_MODULE_5__events__["a" /* default */].getHoveredCell();
             const o = tile.getOrientation();
 
             // Place cursor on enter cell depending on orientation
-            let x = mC.x + [-2, -3, -1, 0][o];
-            let y = mC.y + [0, -2, -3, -1][o];
+            let x = cell.x + [-2, -3, -1, 0][o];
+            let y = cell.y + [0, -2, -3, -1][o];
             tile.move(x, y);
         }
 
@@ -72122,7 +72123,9 @@ function displayTiles() {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__camera__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__heroes__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__pieces__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__hero__ = __webpack_require__(11);
+
 
 
 
@@ -72159,37 +72162,47 @@ function displayTiles() {
     },
 
     click() {
-        const cell = this.mouseCell();
+        const cell = this.getHoveredCell();
 
         if (this.action === 'setting') {
             this.setTile(cell);
-        } else if (this.action instanceof __WEBPACK_IMPORTED_MODULE_3__heroes__["a" /* default */].Hero) {
-            const piece = this.action;
-            piece.set(cell);
-            this.action = '';
+        } else if (this.action instanceof __WEBPACK_IMPORTED_MODULE_4__hero__["a" /* default */]) {
+            const hero = this.action;
+            if (hero.canGo(cell)) {
+                hero.set(cell);
+                this.action = '';
+            }
         }
 
-        this.checkHero(cell);
-    },
-
-    mouseMove() {
-        const cell = this.mouseCell();
-
-        this.oldMouseCell = cell;
-
-        if (this.action instanceof __WEBPACK_IMPORTED_MODULE_3__heroes__["a" /* default */].Hero) {
-            const piece = this.action;
-            piece.showPath(cell);
+        const hero = this.checkHero(cell)
+        if (hero) {
+            this.toggleHero(hero);
         }
     },
 
     oldCell: {},
 
     /**
+    * Mouve movements events
+    * @return {[type]} [description]
+    */
+    mouseMove() {
+        const cell = this.getHoveredCell();
+
+        if (this.action instanceof __WEBPACK_IMPORTED_MODULE_4__hero__["a" /* default */]) {
+            const piece = this.action;
+            if (cell.x !== this.oldCell.x || cell.y !== this.oldCell.y) {
+                this.oldCell = cell;
+                piece.checkPath(cell);
+            }
+        }
+    },
+
+    /**
     * Get hovered cell coordinates
     * @return {Object} position {x: ,y: }
     */
-    mouseCell() {
+    getHoveredCell() {
         const i = p5.floor((p5.mouseX - p5.width/2 - (__WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].x * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue));
         const j = p5.floor((p5.mouseY - p5.height/2 - (__WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].y * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue));
 
@@ -72198,15 +72211,12 @@ function displayTiles() {
             'y': j
         }
 
-        // TODO: this doesn't work
-        if (cell === this.oldCell) {
-            return;
-        } else {
-            this.oldCell = cell;
-            return cell;
-        }
+        return cell;
     },
 
+    /**
+    * Cancel current action
+    */
     cancel() {
         if (this.action === 'setting') {
             tiles.pop();
@@ -72249,7 +72259,7 @@ function displayTiles() {
 
         // Make sure last tile is fixed to prevent multiple tiles setting
         if (tile.fixed) {
-            tiles.push(new __WEBPACK_IMPORTED_MODULE_2__tile__["a" /* default */](1));
+            tiles.push(new __WEBPACK_IMPORTED_MODULE_2__tile__["a" /* default */](1)); // TODO: remove this
             // tiles.push(new Tile(tiles.length));
         }
     },
@@ -72274,108 +72284,228 @@ function displayTiles() {
         }
     },
 
+    /**
+    * Check if there's a hero in this cell
+    * @param  {Object} cell cell to check
+    * @return {bool}
+    */
     checkHero(cell) {
         for (let i = 0; i < 4; i += 1) {
-            const piece = __WEBPACK_IMPORTED_MODULE_3__heroes__["a" /* default */].pieces[i];
-            if (piece.cell.x === cell.x && piece.cell.y === cell.y) {
-                if (piece.status !== 'selected') {
-                    piece.status = 'selected';
-                    this.action = piece;
-                } else {
-                    piece.status = 'set';
-                }
+            const hero = __WEBPACK_IMPORTED_MODULE_3__pieces__["a" /* default */].pieces[i];
+            if (hero.cell.x === cell.x && hero.cell.y === cell.y) {
+                return hero;
             }
+        }
+        return false;
+    },
+
+    /**
+    * Select or deselect hero
+    * @param  {Object} hero hero to select
+    */
+    // TODO: auto-deselect hero if another one is selected?
+    toggleHero(hero) {
+        if (hero.status !== 'selected') {
+            hero.status = 'selected';
+            this.action = hero;
+        } else {
+            hero.status = 'set';
         }
     }
 });
 
 
 /***/ }),
-/* 10 */
+/* 10 */,
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__pieces__ = __webpack_require__(12);
+
+
+
+
+class Hero {
+    constructor() {
+        this.id = Hero.incID(),
+        this.color = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroes[this.id],
+        this.cell = {
+            x: 0,
+            y: 0
+        },
+        this.status = '',
+        this.path = []
+    }
+
+    static incID() {
+        if (this.latestId === undefined) {
+            this.latestId = 0;
+        } else {
+            this.latestId++;
+        }
+        return this.latestId;
+    }
+
+    move(cell) {
+        this.pos = {
+            x: this.pos.x + (this.cell.x - this.pos.x) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroSpeed,
+            y: this.pos.y + (this.cell.y - this.pos.y) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroSpeed
+        }
+    }
+
+    set(cell) {
+        this.cell = {
+            x: cell.x,
+            y: cell.y
+        };
+        this.path = [];
+        this.move(cell)
+    }
+
+    /**
+    * Get path from this hero to a cell
+    * @param  {Object} target Target cell
+    * @return {Object}        Path
+    */
+    getPath(target) {
+        const piece = this.cell;
+        const path = this.path = [];
+
+        if (piece.x !== target.x && piece.y !== target.y) {
+            // Not the same column or row
+            // TODO: check if escalator
+            return;
+        } else if (piece.x === target.x && piece.y === target.y) {
+            // Same column and row = same cell
+            path.push({x: piece.x, y: piece.y})
+            return path;
+        }
+
+        if (piece.x < target.x) {
+            for (let i = piece.x; i <= target.x; i += 1) {
+                path.push({x: i, y: piece.y})
+            }
+        } else if (piece.x > target.x) {
+            for (let i = piece.x; i >= target.x; i -= 1) {
+                path.push({x: i, y: piece.y})
+            }
+        }
+
+        if (piece.y < target.y) {
+            for (let i = piece.y; i <= target.y; i += 1) {
+                path.push({x: piece.x, y: i})
+            }
+        } else if (piece.y > target.y) {
+            for (let i = piece.y; i >= target.y; i -= 1) {
+                path.push({x: piece.x, y: i})
+            }
+        }
+
+        return path;
+    }
+
+    /**
+    * Check path legality
+    * @param  {Object} target Target cell
+    */
+    checkPath(target) {
+        const path = this.getPath(target);
+        if (!path) return;
+
+        for (let i in path) {
+            path[i].reachable = true;
+
+            if (Object.keys(__WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][path[i].x][path[i].y]).length === 0) {
+                // Out of board
+                path[i].reachable = false;
+                return;
+            }
+
+            if (i > 0) {
+                for (let piece of __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].pieces) {
+                    if (path[i].x === piece.cell.x && path[i].y === piece.cell.y) {
+                        // Another piece blocking the way
+                        path[i].reachable = false;
+                        return;
+                    }
+                }
+
+                if (!path[i-1].reachable) {
+                    // Previous cell in path is unreachable, this one should be as well
+                    path[i].reachable = false;
+                    return;
+                }
+
+                const x = path[i - 1].x;
+                const y = path[i - 1].y;
+                const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][x][y];
+
+                // Compare cell to previous cell
+                if (path[i].x === x) {
+                    if (path[i].y > y) {
+                        // Going down
+                        path[i].reachable = !cell.bottomWall;
+                    } else {
+                        // Going up
+                        path[i].reachable = !cell.topWall;
+                    }
+                } else if (path[i].y === y) {
+                    if (path[i].x > x) {
+                        // Going right
+                        path[i].reachable = !cell.rightWall;
+                    } else {
+                        // Going left
+                        path[i].reachable = !cell.leftWall;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+    * Check if hero can go to target cell
+    * @param  {Object} target Target cell
+    * @return {bool}
+    */
+    canGo(target) {
+        const path = this.path;
+        // No path
+        if (path.length === 0) {
+            return false;
+        }
+
+        // Get first unreachable cell in this path
+        for (let i in path) {
+            if (!path[i].reachable) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Hero;
+
+
+
+/***/ }),
+/* 12 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__hero__ = __webpack_require__(11);
+
 
 
 
 /* harmony default export */ __webpack_exports__["a"] = ({
 
     pieces: [],
-
-    Hero: class Hero {
-        constructor() {
-            this.id = Hero.incID(),
-            this.color = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroes[this.id],
-            this.cell = {
-                x: 0,
-                y: 0
-            },
-            this.status = '',
-            this.path = []
-        }
-
-        static incID() {
-            if (this.latestId === undefined) {
-                this.latestId = 0;
-            } else {
-                this.latestId++;
-            }
-            return this.latestId;
-        }
-
-        move(cell) {
-            this.pos = {
-                x: this.pos.x + (this.cell.x - this.pos.x) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroSpeed,
-                y: this.pos.y + (this.cell.y - this.pos.y) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroSpeed
-            }
-        }
-
-        set(cell) {
-            this.cell = {
-                x: cell.x,
-                y: cell.y
-            };
-            this.path = [];
-            this.move(cell)
-        }
-
-        showPath(cell) {
-            this.path = [];
-
-            const x1 = Math.min(this.pos.x, cell.x);
-            const x2 = Math.max(this.pos.x, cell.x);
-
-            const y1 = Math.min(this.pos.y, cell.y);
-            const y2 = Math.max(this.pos.y, cell.y);
-
-            // TODO: rework this
-
-            // for (let i = x1; i <= x2; i += 1) {
-            //     this.path[i] = [];
-            //     for (let j = y1; j <= y2; j += 1) {
-            //
-            //         // Make sure cell is not outside a tile
-            //         if (Object.keys(board[i][j]).length > 0) {
-            //             if (x1 === x2) { // Same col
-            //                 console.log(board[i][j]);
-            //                 if (board[i][j].topWall) {
-            //                     this.path[i][j] = 'red';
-            //                 } else {
-            //                     this.path[i][j] = 'green';
-            //                 }
-            //
-            //             } else if (y1 === y2) { // Same row
-            //                 this.path[i][j] = 'green';
-            //             }
-            //         } else {
-            //             if (x1 === x2 || y1 === y2) this.path[i][j] = 'red';
-            //         }
-            //     }
-            // }
-        }
-    },
 
     initPos: [
         {
@@ -72398,7 +72528,7 @@ function displayTiles() {
 
     init() {
         for (let i = 0; i < 4; i += 1) {
-            this.pieces.push(new this.Hero());
+            this.pieces.push(new __WEBPACK_IMPORTED_MODULE_2__hero__["a" /* default */]());
             this.pieces[i].cell = this.initPos[i];
             this.pieces[i].pos = this.initPos[i];
             this.pieces[i].status = 'set';
@@ -72408,43 +72538,40 @@ function displayTiles() {
     display() {
         p5.noStroke();
         for (let piece of this.pieces) {
+            // Piece movement animation
             piece.move(piece.cell);
-            console.log(piece);
 
+            // Display path
+            p5.push();
+            const path = piece.path;
+            for (let cell of path) {
+                p5.push();
+                p5.translate(cell.x * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, cell.y * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size);
+                if (cell.reachable) {
+                    p5.fill(0, 255, 0, 40);
+                } else {
+                    p5.fill(255, 0, 0, 40);
+                }
+                p5.rect(0, 0, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size);
+                p5.pop();
+            }
+
+            // Display piece
             p5.push();
             p5.translate(piece.pos.x * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, piece.pos.y * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size);
             p5.fill(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].colors[piece.color]);
             if (piece.status === 'selected') {
-                p5.stroke(0);
+                // Hero is selected, show it with a stroke
+                p5.stroke(0, 20);
+                p5.strokeWeight(4);
+                // p5.noFill();
+                p5.ellipse(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, 20, 20);
             }
 
-            p5.ellipse(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, 20, 20);
+            p5.stroke(0, 20);
+            p5.strokeWeight(4);
+            p5.ellipse(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, 16, 16);
             p5.pop();
-
-            p5.push();
-
-            const path = piece.path;
-
-            if (path.length > 0) {
-                for (let i = 0; i < path.length; i += 1) {
-                    if (path[i]) {
-                        for (let j = 0; j < path[i].length; j += 1) {
-                            if (path[i][j]) {
-                                p5.push();
-                                p5.translate(i * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, j * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size);
-                                if (path[i][j] === 'green') {
-                                    p5.fill(0, 255, 0, 40);
-                                } else if (path[i][j] === 'red') {
-                                    p5.fill(255, 0, 0, 40);
-                                }
-
-                                p5.rect(0, 0, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size);
-                                p5.pop();
-                            }
-                        }
-                    }
-                }
-            }
         }
     }
 });
