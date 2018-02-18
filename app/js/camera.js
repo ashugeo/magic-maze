@@ -4,14 +4,16 @@ export default {
     /**
     * Animate camera zoom
     */
-    zoomValue: 1,
-    targetZoom: 1,
+    zoomValue: 3,
+    targetZoom: 3,
     zoom() {
         if (p5.keyIsDown(65)) { // A: zoom out
             this.targetZoom -= .1;
         } else if (p5.keyIsDown(69)) { // E: zoom in
             this.targetZoom += .1;
         }
+
+        // TODO: too many magic numbers in here
 
         this.targetZoom = Math.min(Math.max(this.targetZoom, 1), 4);
         this.targetZoom = Math.round(this.targetZoom * 10) / 10;

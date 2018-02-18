@@ -300,7 +300,7 @@ export default class Tile {
             let x = 0;
             let y = 0;
 
-            // @TODO: adjust x and y depending so illustrations fit together
+            // TODO: adjust x and y depending so illustrations fit together
 
             p5.image(tilesImages[this.id], x, y, 4*size, 4*size);
 

@@ -27,6 +27,7 @@ const sketch = (p5) => {
 
         camera.pan(- config.boardCols / 2 * config.size, - config.boardRows / 2 * config.size);
 
+        // board.init();
         events.init();
         heroes.init();
     }

@@ -11,5 +11,6 @@ export default {
         'orange': '#e87b1a',
         'purple': '#961c91',
         'yellow': '#f7dc0a'
-    }
+    },
+    'heroSpeed': 8
 }

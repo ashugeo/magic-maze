@@ -81,7 +81,8 @@
         'orange': '#e87b1a',
         'purple': '#961c91',
         'yellow': '#f7dc0a'
-    }
+    },
+    'heroSpeed': 8
 });
 
 
@@ -71509,14 +71510,16 @@ module.exports = p5;
     /**
     * Animate camera zoom
     */
-    zoomValue: 1,
-    targetZoom: 1,
+    zoomValue: 3,
+    targetZoom: 3,
     zoom() {
         if (p5.keyIsDown(65)) { // A: zoom out
             this.targetZoom -= .1;
         } else if (p5.keyIsDown(69)) { // E: zoom in
             this.targetZoom += .1;
         }
+
+        // TODO: too many magic numbers in here
 
         this.targetZoom = Math.min(Math.max(this.targetZoom, 1), 4);
         this.targetZoom = Math.round(this.targetZoom * 10) / 10;
@@ -71562,8 +71565,13 @@ module.exports = p5;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
+
+
 /* harmony default export */ __webpack_exports__["a"] = ({
-    
+    checkFree(col, row) {
+        // console.log(col, row, this[col][row]);
+    }
 });
 
 
@@ -71939,7 +71947,7 @@ class Tile {
             let x = 0;
             let y = 0;
 
-            // @TODO: adjust x and y depending so illustrations fit together
+            // TODO: adjust x and y depending so illustrations fit together
 
             p5.image(tilesImages[this.id], x, y, 4*size, 4*size);
 
@@ -72053,6 +72061,7 @@ const sketch = (p5) => {
 
         __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].pan(- __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardCols / 2 * __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size, - __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardRows / 2 * __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size);
 
+        // board.init();
         __WEBPACK_IMPORTED_MODULE_5__events__["a" /* default */].init();
         __WEBPACK_IMPORTED_MODULE_6__heroes__["a" /* default */].init();
     }
@@ -72143,14 +72152,34 @@ function displayTiles() {
         document.addEventListener('mousedown', () => {
             this.click();
         });
+
+        document.addEventListener('mousemove', () => {
+            this.mouseMove();
+        });
     },
 
     click() {
         const cell = this.mouseCell();
+
         if (this.action === 'setting') {
             this.setTile(cell);
-        } else {
-            this.checkHero(cell);
+        } else if (this.action instanceof __WEBPACK_IMPORTED_MODULE_3__heroes__["a" /* default */].Hero) {
+            const piece = this.action;
+            piece.set(cell);
+            this.action = '';
+        }
+
+        this.checkHero(cell);
+    },
+
+    mouseMove() {
+        const cell = this.mouseCell();
+
+        this.oldMouseCell = cell;
+
+        if (this.action instanceof __WEBPACK_IMPORTED_MODULE_3__heroes__["a" /* default */].Hero) {
+            const piece = this.action;
+            piece.showPath(cell);
         }
     },
 
@@ -72168,6 +72197,8 @@ function displayTiles() {
             'x': i,
             'y': j
         }
+
+        // TODO: this doesn't work
         if (cell === this.oldCell) {
             return;
         } else {
@@ -72246,13 +72277,13 @@ function displayTiles() {
     checkHero(cell) {
         for (let i = 0; i < 4; i += 1) {
             const piece = __WEBPACK_IMPORTED_MODULE_3__heroes__["a" /* default */].pieces[i];
-            if (piece.pos.x === cell.x && piece.pos.y === cell.y) {
+            if (piece.cell.x === cell.x && piece.cell.y === cell.y) {
                 if (piece.status !== 'selected') {
                     piece.status = 'selected';
+                    this.action = piece;
                 } else {
                     piece.status = 'set';
                 }
-                console.log(__WEBPACK_IMPORTED_MODULE_3__heroes__["a" /* default */].pieces);
             }
         }
     }
@@ -72277,11 +72308,12 @@ function displayTiles() {
         constructor() {
             this.id = Hero.incID(),
             this.color = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroes[this.id],
-            this.pos = {
+            this.cell = {
                 x: 0,
                 y: 0
             },
-            this.status = ''
+            this.status = '',
+            this.path = []
         }
 
         static incID() {
@@ -72291,6 +72323,57 @@ function displayTiles() {
                 this.latestId++;
             }
             return this.latestId;
+        }
+
+        move(cell) {
+            this.pos = {
+                x: this.pos.x + (this.cell.x - this.pos.x) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroSpeed,
+                y: this.pos.y + (this.cell.y - this.pos.y) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroSpeed
+            }
+        }
+
+        set(cell) {
+            this.cell = {
+                x: cell.x,
+                y: cell.y
+            };
+            this.path = [];
+            this.move(cell)
+        }
+
+        showPath(cell) {
+            this.path = [];
+
+            const x1 = Math.min(this.pos.x, cell.x);
+            const x2 = Math.max(this.pos.x, cell.x);
+
+            const y1 = Math.min(this.pos.y, cell.y);
+            const y2 = Math.max(this.pos.y, cell.y);
+
+            // TODO: rework this
+
+            // for (let i = x1; i <= x2; i += 1) {
+            //     this.path[i] = [];
+            //     for (let j = y1; j <= y2; j += 1) {
+            //
+            //         // Make sure cell is not outside a tile
+            //         if (Object.keys(board[i][j]).length > 0) {
+            //             if (x1 === x2) { // Same col
+            //                 console.log(board[i][j]);
+            //                 if (board[i][j].topWall) {
+            //                     this.path[i][j] = 'red';
+            //                 } else {
+            //                     this.path[i][j] = 'green';
+            //                 }
+            //
+            //             } else if (y1 === y2) { // Same row
+            //                 this.path[i][j] = 'green';
+            //             }
+            //         } else {
+            //             if (x1 === x2 || y1 === y2) this.path[i][j] = 'red';
+            //         }
+            //     }
+            // }
         }
     },
 
@@ -72316,6 +72399,7 @@ function displayTiles() {
     init() {
         for (let i = 0; i < 4; i += 1) {
             this.pieces.push(new this.Hero());
+            this.pieces[i].cell = this.initPos[i];
             this.pieces[i].pos = this.initPos[i];
             this.pieces[i].status = 'set';
         }
@@ -72324,15 +72408,43 @@ function displayTiles() {
     display() {
         p5.noStroke();
         for (let piece of this.pieces) {
+            piece.move(piece.cell);
+            console.log(piece);
+
             p5.push();
             p5.translate(piece.pos.x * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, piece.pos.y * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size);
             p5.fill(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].colors[piece.color]);
             if (piece.status === 'selected') {
-                p5.stroke(255);
-                p5.strokeWeight(2);
+                p5.stroke(0);
             }
+
             p5.ellipse(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, 20, 20);
             p5.pop();
+
+            p5.push();
+
+            const path = piece.path;
+
+            if (path.length > 0) {
+                for (let i = 0; i < path.length; i += 1) {
+                    if (path[i]) {
+                        for (let j = 0; j < path[i].length; j += 1) {
+                            if (path[i][j]) {
+                                p5.push();
+                                p5.translate(i * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, j * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size);
+                                if (path[i][j] === 'green') {
+                                    p5.fill(0, 255, 0, 40);
+                                } else if (path[i][j] === 'red') {
+                                    p5.fill(255, 0, 0, 40);
+                                }
+
+                                p5.rect(0, 0, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size);
+                                p5.pop();
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 });
