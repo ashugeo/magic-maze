@@ -27,14 +27,34 @@ export default {
         document.addEventListener('mousedown', () => {
             this.click();
         });
+
+        document.addEventListener('mousemove', () => {
+            this.mouseMove();
+        });
     },
 
     click() {
         const cell = this.mouseCell();
+
         if (this.action === 'setting') {
             this.setTile(cell);
-        } else {
-            this.checkHero(cell);
+        } else if (this.action instanceof heroes.Hero) {
+            const piece = this.action;
+            piece.set(cell);
+            this.action = '';
+        }
+
+        this.checkHero(cell);
+    },
+
+    mouseMove() {
+        const cell = this.mouseCell();
+
+        this.oldMouseCell = cell;
+
+        if (this.action instanceof heroes.Hero) {
+            const piece = this.action;
+            piece.showPath(cell);
         }
     },
 
@@ -52,6 +72,8 @@ export default {
             'x': i,
             'y': j
         }
+
+        // TODO: this doesn't work
         if (cell === this.oldCell) {
             return;
         } else {
@@ -130,13 +152,13 @@ export default {
     checkHero(cell) {
         for (let i = 0; i < 4; i += 1) {
             const piece = heroes.pieces[i];
-            if (piece.pos.x === cell.x && piece.pos.y === cell.y) {
+            if (piece.cell.x === cell.x && piece.cell.y === cell.y) {
                 if (piece.status !== 'selected') {
                     piece.status = 'selected';
+                    this.action = piece;
                 } else {
                     piece.status = 'set';
                 }
-                console.log(heroes.pieces);
             }
         }
     }
