@@ -69,8 +69,8 @@
 
 "use strict";
 /* harmony default export */ __webpack_exports__["a"] = ({
-    'debug': false,
-    'grid': false,
+    'debug': true,
+    'grid': true,
     'cameraSpeed': 5,
     'boardRows': 24,
     'boardCols': 24,
@@ -71510,8 +71510,8 @@ module.exports = p5;
     /**
     * Animate camera zoom
     */
-    zoomValue: 3,
-    targetZoom: 3,
+    zoomValue: 2,
+    targetZoom: 2,
     zoom() {
         if (p5.keyIsDown(65)) { // A: zoom out
             this.targetZoom -= .1;
@@ -71736,47 +71736,18 @@ class Tile {
         return r;
     }
 
-    // /**
-    // * Get tile top left corner coordinates
-    // * @param  {int}   x mouse X coordinate
-    // * @param  {int}   y mouse Y coordinate
-    // * @param  {int}   o tile orientation
-    // * @return {Objet}   {x, y}
-    // */
-    // getTopLeftCorner(x, y, o) {
-    //     let _x;
-    //     let _y;
-    //     console.log(x, y, o);
-    //
-    //     if (o === 0) {
-    //         _x = x;
-    //         _y = y;
-    //     } else if (o === 1) {
-    //         _x = x - 3;
-    //         _y = y - 2;
-    //     } else if (o === 2) {
-    //         _x = x - 3;
-    //         _y = y;
-    //     } else if (o === 3) {
-    //         _x = x - 3;
-    //         _y = y - 3;
-    //     }
-    //
-    //     return {x: _x, y: _y}
-    // }
-
     /**
     * Get tile entrance coordinates
     * @param  {int}   x mouse X coordinate
     * @param  {int}   y mouse Y coordinate
     * @param  {int}   o tile orientation
-    * @return {Objet}   {x, y}
+    * @return {Objet}   {'x': , 'y':}
     */
     getEnter(x, y, o) {
         x += [2, 4, 1, -1][o];
         y += [-1, 2, 4, 1][o];
 
-        return {x: x, y: y}
+        return {'x': x, 'y': y}
     }
 
     set(x, y) {
@@ -71786,22 +71757,55 @@ class Tile {
     }
 
     saveToBoard(x, y) {
+        console.clear();
         const r = this.rotate;
 
         for (let i = 0; i < 4; i += 1) {
             for (let j = 0; j < 4; j += 1) {
+                let cell;
 
                 // Save cells depending on rotation
-                // TODO: rotate walls!!!
                 if (r === 0) {
-                    __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i][y + j] = this.data[j][i];
+                    cell = this.data[j][i];
                 } else if (r === 1) {
-                    __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i][y + j] = this.data[3 - i][j];
+                    cell = this.data[3 - i][j];
                 } else if (r === 2) {
-                    __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i][y + j] = this.data[3 - j][3 - i];
+                    cell = this.data[3 - j][3 - i];
                 } else if (r === 3) {
-                    __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i][y + j] = this.data[i][3 - j];
+                    cell = this.data[i][3 - j];
                 }
+
+                // Rotate walls according to tile rotation
+                // (ex.: top wall becomes left wall after rotation)
+                let walls = ['top', 'right', 'bottom', 'left'];
+                const boardWalls = {
+                    "top": cell.walls[walls[(4 - r) % 4]],
+                    "right": cell.walls[walls[(1 - r) % 4]],
+                    "bottom": cell.walls[walls[(2 - r) % 4]],
+                    "left": cell.walls[walls[(3 - r) % 4]]
+                }
+
+                // Copy data
+                let boardCell = Object.assign({}, cell);
+
+                // Save rotated walls
+                boardCell.walls = boardWalls;
+
+                // Save escalator positions relative to board
+                let escalator = Object.assign({}, cell.escalator);
+                if (Object.keys(escalator).length > 0) {
+                    // TODO: escalator coordinates must depend on rotation
+                    // TODO: escalator coordinates make no sense
+                    console.log(escalator);
+                    escalator.x += y;
+                    escalator.y += x;
+                    console.log(escalator);
+                    console.log('---');
+                }
+                boardCell.escalator = Object.assign({}, escalator);
+
+                // Save data
+                __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i][y + j] = boardCell;
             }
         }
     }
@@ -71862,7 +71866,7 @@ class Tile {
                 for (let j = 0; j < 4; j += 1) {
                     // For each cell
                     p5.push();
-                    p5.translate(j*size, i*size);
+                    p5.translate(j * size, i * size);
 
                     // Draw basic grid
                     // p5.stroke(240);
@@ -71880,7 +71884,7 @@ class Tile {
                         if (item.type === 'vortex') {
                             p5.fill(__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].colors[item.color]);
                             p5.noStroke();
-                            p5.ellipse(size/2, size/2, size/2, size/2);
+                            p5.ellipse(size / 2, size / 2, size / 2, size / 2);
                             p5.stroke(0);
                         } else if (item.type === 'bridge' || item.type === 'enter') {
                             // Set color (for bridge)
@@ -71901,14 +71905,14 @@ class Tile {
                                 // Pointing left
                                 p5.push();
                                 p5.translate(0, size);
-                                p5.rotate(-p5.PI/2);
+                                p5.rotate(-p5.PI / 2);
                                 __WEBPACK_IMPORTED_MODULE_2__symbols__["a" /* default */].arrow(item.type);
                                 p5.pop();
                             } else if (j === 3) {
                                 // Pointing right
                                 p5.push();
                                 p5.translate(size, 0);
-                                p5.rotate(p5.PI/2);
+                                p5.rotate(p5.PI / 2);
                                 __WEBPACK_IMPORTED_MODULE_2__symbols__["a" /* default */].arrow(item.type);
                                 p5.pop();
                             }
@@ -71918,26 +71922,26 @@ class Tile {
                     let esc = cell.escalator;
                     if (esc) {
                         p5.stroke(0,0,255);
-                        const x1 = size/2;
-                        const y1 = size/2;
-                        const x2 = size/2 + (esc.y - j)*size;
-                        const y2 = size/2 + (esc.x - i)*size;
+                        const x1 = size / 2;
+                        const y1 = size / 2;
+                        const x2 = size / 2 + (esc.y - j) * size;
+                        const y2 = size / 2 + (esc.x - i) * size;
                         p5.line(x1, y1, x2, y2);
                     }
 
                     // Draw walls
                     p5.blendMode(p5.MULTIPLY);
                     p5.stroke(0);
-                    if (cell.topWall) {
+                    if (cell.walls.top) {
                         p5.line(0, 0, size, 0);
                     }
-                    if (cell.rightWall) {
+                    if (cell.walls.right) {
                         p5.line(size, 0, size, size);
                     }
-                    if (cell.bottomWall) {
+                    if (cell.walls.bottom) {
                         p5.line(0, size, size, size);
                     }
-                    if (cell.leftWall) {
+                    if (cell.walls.left) {
                         p5.line(0, 0, 0, size);
                     }
 
@@ -71948,17 +71952,18 @@ class Tile {
             let x = 0;
             let y = 0;
 
-            // TODO: adjust x and y depending so illustrations fit together
+            // TODO: add x and y shifts as tile parameters (so illustrations fit together)
+            // TODO: apply to all kind of shapes and positions (heroes, overlays…)
 
-            p5.image(tilesImages[this.id], x, y, 4*size, 4*size);
+            p5.image(tilesImages[this.id], x, y, 4 * size, 4 * size);
 
             p5.noStroke();
             if (this.canBeSet && !this.fixed) {
                 p5.fill(240, 255, 250, 100);
-                p5.rect(x, y, 4*size, 4*size);
+                p5.rect(x, y, 4 * size, 4 * size);
             } else if (!this.canBeSet && !this.fixed) {
                 p5.fill(255, 240, 245, 180);
-                p5.rect(x, y, 4*size, 4*size);
+                p5.rect(x, y, 4 * size, 4 * size);
             }
         }
 
@@ -71984,13 +71989,24 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 window.tiles = [];
+window.json = [];
 
-fetch('data/tiles.json').then(response => response.json()).then(data => {
-    window.json = data;
-    new __WEBPACK_IMPORTED_MODULE_0_p5___default.a(__WEBPACK_IMPORTED_MODULE_1__sketch__["a" /* default */]);
-    tiles.push(new __WEBPACK_IMPORTED_MODULE_2__tile_js__["a" /* default */](0));
-    tiles[0].set(10, 10);
-});
+const tiles = 3;
+fetchJSON(0);
+
+function fetchJSON(i) {
+    fetch('data/tile' + i + '.json').then(response => response.json()).then(data => {
+        window.json.push(data);
+
+        if (i < tiles - 1) {
+            fetchJSON(i + 1);
+        } else {
+            new __WEBPACK_IMPORTED_MODULE_0_p5___default.a(__WEBPACK_IMPORTED_MODULE_1__sketch__["a" /* default */]);
+            window.tiles.push(new __WEBPACK_IMPORTED_MODULE_2__tile_js__["a" /* default */](0));
+            window.tiles[0].set(10, 10);
+        }
+    });
+}
 
 
 /***/ }),
@@ -72200,7 +72216,7 @@ function displayTiles() {
 
     /**
     * Get hovered cell coordinates
-    * @return {Object} position {x: ,y: }
+    * @return {Object} position {'x': ,'y': }
     */
     getHoveredCell() {
         const i = p5.floor((p5.mouseX - p5.width/2 - (__WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].x * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue));
@@ -72303,8 +72319,12 @@ function displayTiles() {
     * Select or deselect hero
     * @param  {Object} hero hero to select
     */
-    // TODO: auto-deselect hero if another one is selected?
     toggleHero(hero) {
+        for (let piece of __WEBPACK_IMPORTED_MODULE_3__pieces__["a" /* default */].pieces) {
+            // Prevent selection of multiple pieces
+            if (piece.status === 'selected' && piece.id !== hero.id) return;
+        }
+
         if (hero.status !== 'selected') {
             hero.status = 'selected';
             this.action = hero;
@@ -72376,31 +72396,37 @@ class Hero {
 
         if (piece.x !== target.x && piece.y !== target.y) {
             // Not the same column or row
-            // TODO: check if escalator
-            return;
+            const escalator = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][piece.x][piece.y].escalator;
+            if (escalator.x === target.y && escalator.y === target.x) {
+                path.push({'x': piece.x, 'y': piece.y})
+                path.push({'x': target.x, 'y': target.y})
+                return path;
+            } else {
+                return;
+            }
         } else if (piece.x === target.x && piece.y === target.y) {
             // Same column and row = same cell
-            path.push({x: piece.x, y: piece.y})
+            path.push({'x': piece.x, 'y': piece.y})
             return path;
         }
 
         if (piece.x < target.x) {
             for (let i = piece.x; i <= target.x; i += 1) {
-                path.push({x: i, y: piece.y})
+                path.push({'x': i, 'y': piece.y})
             }
         } else if (piece.x > target.x) {
             for (let i = piece.x; i >= target.x; i -= 1) {
-                path.push({x: i, y: piece.y})
+                path.push({'x': i, 'y': piece.y})
             }
         }
 
         if (piece.y < target.y) {
             for (let i = piece.y; i <= target.y; i += 1) {
-                path.push({x: piece.x, y: i})
+                path.push({'x': piece.x, 'y': i})
             }
         } else if (piece.y > target.y) {
             for (let i = piece.y; i >= target.y; i -= 1) {
-                path.push({x: piece.x, y: i})
+                path.push({'x': piece.x, 'y': i})
             }
         }
 
@@ -72414,6 +72440,7 @@ class Hero {
     checkPath(target) {
         const path = this.getPath(target);
         if (!path) return;
+        console.log(path);
 
         for (let i in path) {
             path[i].reachable = true;
@@ -72444,21 +72471,22 @@ class Hero {
                 const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][x][y];
 
                 // Compare cell to previous cell
+                // TODO: check target wall as well
                 if (path[i].x === x) {
                     if (path[i].y > y) {
                         // Going down
-                        path[i].reachable = !cell.bottomWall;
+                        path[i].reachable = !cell.walls.bottom;
                     } else {
                         // Going up
-                        path[i].reachable = !cell.topWall;
+                        path[i].reachable = !cell.walls.top;
                     }
                 } else if (path[i].y === y) {
                     if (path[i].x > x) {
                         // Going right
-                        path[i].reachable = !cell.rightWall;
+                        path[i].reachable = !cell.walls.right;
                     } else {
                         // Going left
-                        path[i].reachable = !cell.leftWall;
+                        path[i].reachable = !cell.walls.left;
                     }
                 }
             }
