@@ -50,31 +50,37 @@ export default class Hero {
 
         if (piece.x !== target.x && piece.y !== target.y) {
             // Not the same column or row
-            // TODO: check if escalator
-            return;
+            const escalator = board[piece.x][piece.y].escalator;
+            if (escalator.x === target.y && escalator.y === target.x) {
+                path.push({'x': piece.x, 'y': piece.y})
+                path.push({'x': target.x, 'y': target.y})
+                return path;
+            } else {
+                return;
+            }
         } else if (piece.x === target.x && piece.y === target.y) {
             // Same column and row = same cell
-            path.push({x: piece.x, y: piece.y})
+            path.push({'x': piece.x, 'y': piece.y})
             return path;
         }
 
         if (piece.x < target.x) {
             for (let i = piece.x; i <= target.x; i += 1) {
-                path.push({x: i, y: piece.y})
+                path.push({'x': i, 'y': piece.y})
             }
         } else if (piece.x > target.x) {
             for (let i = piece.x; i >= target.x; i -= 1) {
-                path.push({x: i, y: piece.y})
+                path.push({'x': i, 'y': piece.y})
             }
         }
 
         if (piece.y < target.y) {
             for (let i = piece.y; i <= target.y; i += 1) {
-                path.push({x: piece.x, y: i})
+                path.push({'x': piece.x, 'y': i})
             }
         } else if (piece.y > target.y) {
             for (let i = piece.y; i >= target.y; i -= 1) {
-                path.push({x: piece.x, y: i})
+                path.push({'x': piece.x, 'y': i})
             }
         }
 
@@ -88,6 +94,7 @@ export default class Hero {
     checkPath(target) {
         const path = this.getPath(target);
         if (!path) return;
+        console.log(path);
 
         for (let i in path) {
             path[i].reachable = true;
@@ -118,21 +125,22 @@ export default class Hero {
                 const cell = board[x][y];
 
                 // Compare cell to previous cell
+                // TODO: check target wall as well
                 if (path[i].x === x) {
                     if (path[i].y > y) {
                         // Going down
-                        path[i].reachable = !cell.bottomWall;
+                        path[i].reachable = !cell.walls.bottom;
                     } else {
                         // Going up
-                        path[i].reachable = !cell.topWall;
+                        path[i].reachable = !cell.walls.top;
                     }
                 } else if (path[i].y === y) {
                     if (path[i].x > x) {
                         // Going right
-                        path[i].reachable = !cell.rightWall;
+                        path[i].reachable = !cell.walls.right;
                     } else {
                         // Going left
-                        path[i].reachable = !cell.leftWall;
+                        path[i].reachable = !cell.walls.left;
                     }
                 }
             }
