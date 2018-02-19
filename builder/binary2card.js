@@ -15,14 +15,15 @@ for (id in codes) {
 
         for (let j = 0; j < 4; j += 1) {
             json[id][i][j] = {};
+            json[id][i][j]['walls'] = {};
 
-            json[id][i][j]['topWall'] = codes[id][d];
+            json[id][i][j]['walls']['top'] = codes[id][d] === "1";
             d += 1;
-            json[id][i][j]['rightWall'] = codes[id][d];
+            json[id][i][j]['walls']['right'] = codes[id][d] === "1";
             d += 1;
-            json[id][i][j]['bottomWall'] = codes[id][d];
+            json[id][i][j]['walls']['bottom'] = codes[id][d] === "1";
             d += 1;
-            json[id][i][j]['leftWall'] = codes[id][d];
+            json[id][i][j]['walls']['left'] = codes[id][d] === "1";
             d += 1;
 
             json[id][i][j]['item'] = false;
