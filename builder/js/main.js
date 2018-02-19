@@ -232,7 +232,7 @@ function arrow(type) {
 
 /**
 * Get hovered cell coordinates
-* @return {Object} position {x: ,y: }
+* @return {Object} position {'x': , 'y': }
 */
 function getHoveredCell() {
     const i = floor((mouseX - width/2) / size) + 2;

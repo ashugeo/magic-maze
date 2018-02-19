@@ -1,6 +1,6 @@
 export default {
-    'debug': false,
-    'grid': false,
+    'debug': true,
+    'grid': true,
     'cameraSpeed': 5,
     'boardRows': 24,
     'boardCols': 24,

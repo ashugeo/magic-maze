@@ -4,8 +4,8 @@ export default {
     /**
     * Animate camera zoom
     */
-    zoomValue: 3,
-    targetZoom: 3,
+    zoomValue: 2,
+    targetZoom: 2,
     zoom() {
         if (p5.keyIsDown(65)) { // A: zoom out
             this.targetZoom -= .1;
