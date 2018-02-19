@@ -73,7 +73,7 @@ export default {
 
     /**
     * Get hovered cell coordinates
-    * @return {Object} position {x: ,y: }
+    * @return {Object} position {'x': ,'y': }
     */
     getHoveredCell() {
         const i = p5.floor((p5.mouseX - p5.width/2 - (camera.x * camera.zoomValue)) / (config.size * camera.zoomValue));
@@ -176,8 +176,12 @@ export default {
     * Select or deselect hero
     * @param  {Object} hero hero to select
     */
-    // TODO: auto-deselect hero if another one is selected?
     toggleHero(hero) {
+        for (let piece of pieces.pieces) {
+            // Prevent selection of multiple pieces
+            if (piece.status === 'selected' && piece.id !== hero.id) return;
+        }
+
         if (hero.status !== 'selected') {
             hero.status = 'selected';
             this.action = hero;
