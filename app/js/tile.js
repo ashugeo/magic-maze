@@ -89,47 +89,18 @@ export default class Tile {
         return r;
     }
 
-    // /**
-    // * Get tile top left corner coordinates
-    // * @param  {int}   x mouse X coordinate
-    // * @param  {int}   y mouse Y coordinate
-    // * @param  {int}   o tile orientation
-    // * @return {Objet}   {x, y}
-    // */
-    // getTopLeftCorner(x, y, o) {
-    //     let _x;
-    //     let _y;
-    //     console.log(x, y, o);
-    //
-    //     if (o === 0) {
-    //         _x = x;
-    //         _y = y;
-    //     } else if (o === 1) {
-    //         _x = x - 3;
-    //         _y = y - 2;
-    //     } else if (o === 2) {
-    //         _x = x - 3;
-    //         _y = y;
-    //     } else if (o === 3) {
-    //         _x = x - 3;
-    //         _y = y - 3;
-    //     }
-    //
-    //     return {x: _x, y: _y}
-    // }
-
     /**
     * Get tile entrance coordinates
     * @param  {int}   x mouse X coordinate
     * @param  {int}   y mouse Y coordinate
     * @param  {int}   o tile orientation
-    * @return {Objet}   {x, y}
+    * @return {Objet}   {'x': , 'y':}
     */
     getEnter(x, y, o) {
         x += [2, 4, 1, -1][o];
         y += [-1, 2, 4, 1][o];
 
-        return {x: x, y: y}
+        return {'x': x, 'y': y}
     }
 
     set(x, y) {
@@ -139,22 +110,55 @@ export default class Tile {
     }
 
     saveToBoard(x, y) {
+        console.clear();
         const r = this.rotate;
 
         for (let i = 0; i < 4; i += 1) {
             for (let j = 0; j < 4; j += 1) {
+                let cell;
 
                 // Save cells depending on rotation
-                // TODO: rotate walls!!!
                 if (r === 0) {
-                    board[x + i][y + j] = this.data[j][i];
+                    cell = this.data[j][i];
                 } else if (r === 1) {
-                    board[x + i][y + j] = this.data[3 - i][j];
+                    cell = this.data[3 - i][j];
                 } else if (r === 2) {
-                    board[x + i][y + j] = this.data[3 - j][3 - i];
+                    cell = this.data[3 - j][3 - i];
                 } else if (r === 3) {
-                    board[x + i][y + j] = this.data[i][3 - j];
+                    cell = this.data[i][3 - j];
                 }
+
+                // Rotate walls according to tile rotation
+                // (ex.: top wall becomes left wall after rotation)
+                let walls = ['top', 'right', 'bottom', 'left'];
+                const boardWalls = {
+                    "top": cell.walls[walls[(4 - r) % 4]],
+                    "right": cell.walls[walls[(1 - r) % 4]],
+                    "bottom": cell.walls[walls[(2 - r) % 4]],
+                    "left": cell.walls[walls[(3 - r) % 4]]
+                }
+
+                // Copy data
+                let boardCell = Object.assign({}, cell);
+
+                // Save rotated walls
+                boardCell.walls = boardWalls;
+
+                // Save escalator positions relative to board
+                let escalator = Object.assign({}, cell.escalator);
+                if (Object.keys(escalator).length > 0) {
+                    // TODO: escalator coordinates must depend on rotation
+                    // TODO: escalator coordinates make no sense
+                    console.log(escalator);
+                    escalator.x += y;
+                    escalator.y += x;
+                    console.log(escalator);
+                    console.log('---');
+                }
+                boardCell.escalator = Object.assign({}, escalator);
+
+                // Save data
+                board[x + i][y + j] = boardCell;
             }
         }
     }
@@ -215,7 +219,7 @@ export default class Tile {
                 for (let j = 0; j < 4; j += 1) {
                     // For each cell
                     p5.push();
-                    p5.translate(j*size, i*size);
+                    p5.translate(j * size, i * size);
 
                     // Draw basic grid
                     // p5.stroke(240);
@@ -233,7 +237,7 @@ export default class Tile {
                         if (item.type === 'vortex') {
                             p5.fill(config.colors[item.color]);
                             p5.noStroke();
-                            p5.ellipse(size/2, size/2, size/2, size/2);
+                            p5.ellipse(size / 2, size / 2, size / 2, size / 2);
                             p5.stroke(0);
                         } else if (item.type === 'bridge' || item.type === 'enter') {
                             // Set color (for bridge)
@@ -254,14 +258,14 @@ export default class Tile {
                                 // Pointing left
                                 p5.push();
                                 p5.translate(0, size);
-                                p5.rotate(-p5.PI/2);
+                                p5.rotate(-p5.PI / 2);
                                 symbols.arrow(item.type);
                                 p5.pop();
                             } else if (j === 3) {
                                 // Pointing right
                                 p5.push();
                                 p5.translate(size, 0);
-                                p5.rotate(p5.PI/2);
+                                p5.rotate(p5.PI / 2);
                                 symbols.arrow(item.type);
                                 p5.pop();
                             }
@@ -271,26 +275,26 @@ export default class Tile {
                     let esc = cell.escalator;
                     if (esc) {
                         p5.stroke(0,0,255);
-                        const x1 = size/2;
-                        const y1 = size/2;
-                        const x2 = size/2 + (esc.y - j)*size;
-                        const y2 = size/2 + (esc.x - i)*size;
+                        const x1 = size / 2;
+                        const y1 = size / 2;
+                        const x2 = size / 2 + (esc.y - j) * size;
+                        const y2 = size / 2 + (esc.x - i) * size;
                         p5.line(x1, y1, x2, y2);
                     }
 
                     // Draw walls
                     p5.blendMode(p5.MULTIPLY);
                     p5.stroke(0);
-                    if (cell.topWall) {
+                    if (cell.walls.top) {
                         p5.line(0, 0, size, 0);
                     }
-                    if (cell.rightWall) {
+                    if (cell.walls.right) {
                         p5.line(size, 0, size, size);
                     }
-                    if (cell.bottomWall) {
+                    if (cell.walls.bottom) {
                         p5.line(0, size, size, size);
                     }
-                    if (cell.leftWall) {
+                    if (cell.walls.left) {
                         p5.line(0, 0, 0, size);
                     }
 
@@ -301,17 +305,18 @@ export default class Tile {
             let x = 0;
             let y = 0;
 
-            // TODO: adjust x and y depending so illustrations fit together
+            // TODO: add x and y shifts as tile parameters (so illustrations fit together)
+            // TODO: apply to all kind of shapes and positions (heroes, overlays…)
 
-            p5.image(tilesImages[this.id], x, y, 4*size, 4*size);
+            p5.image(tilesImages[this.id], x, y, 4 * size, 4 * size);
 
             p5.noStroke();
             if (this.canBeSet && !this.fixed) {
                 p5.fill(240, 255, 250, 100);
-                p5.rect(x, y, 4*size, 4*size);
+                p5.rect(x, y, 4 * size, 4 * size);
             } else if (!this.canBeSet && !this.fixed) {
                 p5.fill(255, 240, 245, 180);
-                p5.rect(x, y, 4*size, 4*size);
+                p5.rect(x, y, 4 * size, 4 * size);
             }
         }
 
