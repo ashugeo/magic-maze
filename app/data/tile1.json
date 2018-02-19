@@ -1,0 +1,181 @@
+{
+    "0": {
+        "0": {
+            "walls": {
+                "top": false,
+                "right": true,
+                "bottom": false,
+                "left": true
+            },
+            "item": false,
+            "escalator": false
+        },
+        "1": {
+            "walls": {
+                "top": true,
+                "right": true,
+                "bottom": true,
+                "left": true
+            },
+            "item": false,
+            "escalator": false
+        },
+        "2": {
+            "walls": {
+                "top": true,
+                "right": true,
+                "bottom": true,
+                "left": true
+            },
+            "item": false,
+            "escalator": false
+        },
+        "3": {
+            "walls": {
+                "top": true,
+                "right": true,
+                "bottom": true,
+                "left": true
+            },
+            "item": false,
+            "escalator": false
+        }
+    },
+    "1": {
+        "0": {
+            "walls": {
+                "top": false,
+                "right": true,
+                "bottom": true,
+                "left": true
+            },
+            "item": false,
+            "escalator": {
+                "x": 3,
+                "y": 1
+            }
+        },
+        "1": {
+            "walls": {
+                "top": true,
+                "right": true,
+                "bottom": true,
+                "left": true
+            },
+            "item": false,
+            "escalator": false
+        },
+        "2": {
+            "walls": {
+                "top": true,
+                "right": true,
+                "bottom": true,
+                "left": true
+            },
+            "item": false,
+            "escalator": false
+        },
+        "3": {
+            "walls": {
+                "top": true,
+                "right": true,
+                "bottom": false,
+                "left": true
+            },
+            "item": false,
+            "escalator": false
+        }
+    },
+    "2": {
+        "0": {
+            "walls": {
+                "top": true,
+                "right": true,
+                "bottom": true,
+                "left": true
+            },
+            "item": false,
+            "escalator": false
+        },
+        "1": {
+            "walls": {
+                "top": true,
+                "right": true,
+                "bottom": true,
+                "left": true
+            },
+            "item": false,
+            "escalator": false
+        },
+        "2": {
+            "walls": {
+                "top": true,
+                "right": false,
+                "bottom": false,
+                "left": true
+            },
+            "item": false,
+            "escalator": false
+        },
+        "3": {
+            "walls": {
+                "top": false,
+                "right": false,
+                "bottom": true,
+                "left": false
+            },
+            "item": {
+                "type": "enter"
+            },
+            "escalator": false
+        }
+    },
+    "3": {
+        "0": {
+            "walls": {
+                "top": true,
+                "right": true,
+                "bottom": true,
+                "left": true
+            },
+            "item": false,
+            "escalator": false
+        },
+        "1": {
+            "walls": {
+                "top": true,
+                "right": false,
+                "bottom": false,
+                "left": true
+            },
+            "item": {
+                "type": "bridge",
+                "color": "orange"
+            },
+            "escalator": {
+                "x": 1,
+                "y": 0
+            }
+        },
+        "2": {
+            "walls": {
+                "top": false,
+                "right": false,
+                "bottom": true,
+                "left": false
+            },
+            "item": false,
+            "escalator": false
+        },
+        "3": {
+            "walls": {
+                "top": true,
+                "right": true,
+                "bottom": true,
+                "left": false
+            },
+            "item": false,
+            "escalator": false
+        }
+    }
+}
