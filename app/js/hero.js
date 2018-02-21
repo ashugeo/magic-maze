@@ -48,12 +48,24 @@ export default class Hero {
         const piece = this.cell;
         const path = this.path = [];
 
+        // Check for vortex
+        const item = board[piece.x][piece.y].item;
+        if (item.type === 'vortex' && item.color === this.color) {
+            const targetItem = board[target.x][target.y].item;
+            if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
+                path.push({'x': piece.x, 'y': piece.y});
+                path.push({'x': target.x, 'y': target.y});
+                return path;
+            }
+        }
+
         if (piece.x !== target.x && piece.y !== target.y) {
             // Not the same column or row
+            // Check for escalator
             const escalator = board[piece.x][piece.y].escalator;
-            if (escalator.x === target.y && escalator.y === target.x) {
-                path.push({'x': piece.x, 'y': piece.y})
-                path.push({'x': target.x, 'y': target.y})
+            if (escalator.x === target.x && escalator.y === target.y) {
+                path.push({'x': piece.x, 'y': piece.y});
+                path.push({'x': target.x, 'y': target.y});
                 return path;
             } else {
                 return;
@@ -89,12 +101,15 @@ export default class Hero {
 
     /**
     * Check path legality
+    * TODO: can't go on time item?
     * @param  {Object} target Target cell
     */
     checkPath(target) {
+        // No specified target, check for self position (current cell)
+        if (!target) target = this.cell;
+
         const path = this.getPath(target);
         if (!path) return;
-        console.log(path);
 
         for (let i in path) {
             path[i].reachable = true;
@@ -123,6 +138,8 @@ export default class Hero {
                 const x = path[i - 1].x;
                 const y = path[i - 1].y;
                 const cell = board[x][y];
+
+                // TODO: allow vortex when starting next to a wall
 
                 // Compare cell to previous cell
                 // TODO: check target wall as well
