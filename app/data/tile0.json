@@ -7,7 +7,9 @@
                 "bottom": true,
                 "left": true
             },
-            "item": "time",
+            "item": {
+                "type": "time"
+            },
             "escalator": false
         },
         "1": {
@@ -143,8 +145,8 @@
                 "color": "green"
             },
             "escalator": {
-                "x": 3,
-                "y": 2
+                "x": 2,
+                "y": 3
             }
         }
     },
@@ -184,8 +186,8 @@
             },
             "item": false,
             "escalator": {
-                "x": 2,
-                "y": 3
+                "x": 3,
+                "y": 2
             }
         },
         "3": {

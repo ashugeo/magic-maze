@@ -51,8 +51,8 @@
             },
             "item": false,
             "escalator": {
-                "x": 3,
-                "y": 1
+                "x": 1,
+                "y": 3
             }
         },
         "1": {
@@ -82,7 +82,10 @@
                 "bottom": false,
                 "left": true
             },
-            "item": false,
+            "item": {
+                "type": "vortex",
+                "color": "purple"
+            },
             "escalator": false
         }
     },
@@ -153,8 +156,8 @@
                 "color": "orange"
             },
             "escalator": {
-                "x": 1,
-                "y": 0
+                "x": 0,
+                "y": 1
             }
         },
         "2": {
@@ -174,7 +177,10 @@
                 "bottom": true,
                 "left": false
             },
-            "item": false,
+            "item": {
+                "type": "vortex",
+                "color": "green"
+            },
             "escalator": false
         }
     }
