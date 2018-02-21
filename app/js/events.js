@@ -64,6 +64,7 @@ export default {
 
         if (this.action instanceof Hero) {
             const piece = this.action;
+            // console.log(cell.x, cell.y);
             if (cell.x !== this.oldCell.x || cell.y !== this.oldCell.y) {
                 this.oldCell = cell;
                 piece.checkPath(cell);
@@ -185,6 +186,7 @@ export default {
         if (hero.status !== 'selected') {
             hero.status = 'selected';
             this.action = hero;
+            hero.checkPath();
         } else {
             hero.status = 'set';
         }

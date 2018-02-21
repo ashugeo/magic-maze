@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 8);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -69,8 +69,8 @@
 
 "use strict";
 /* harmony default export */ __webpack_exports__["a"] = ({
-    'debug': true,
-    'grid': true,
+    'debug': false,
+    'grid': false,
     'cameraSpeed': 5,
     'boardRows': 24,
     'boardCols': 24,
@@ -88,6 +88,107 @@
 
 /***/ }),
 /* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+    checkFree(col, row) {
+        // console.log(col, row, this[col][row]);
+    }
+});
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__hero__ = __webpack_require__(7);
+
+
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+
+    pieces: [],
+
+    initPos: [
+        {
+            x: 11,
+            y: 11
+        },
+        {
+            x: 12,
+            y: 11
+        },
+        {
+            x: 12,
+            y: 12
+        },
+        {
+            x: 11,
+            y: 12
+        }
+    ],
+
+    init() {
+        for (let i = 0; i < 4; i += 1) {
+            this.pieces.push(new __WEBPACK_IMPORTED_MODULE_2__hero__["a" /* default */]());
+            this.pieces[i].cell = this.initPos[i];
+            this.pieces[i].pos = this.initPos[i];
+            this.pieces[i].status = 'set';
+        }
+    },
+
+    display() {
+        p5.noStroke();
+        for (let piece of this.pieces) {
+            // Piece movement animation
+            piece.move(piece.cell);
+
+            // Display path
+            p5.push();
+            const path = piece.path;
+            for (let cell of path) {
+                p5.push();
+                p5.translate(cell.x * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, cell.y * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size);
+                if (cell.reachable) {
+                    p5.fill(0, 255, 0, 40);
+                } else {
+                    p5.fill(255, 0, 0, 40);
+                }
+                p5.rect(0, 0, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size);
+                p5.pop();
+            }
+
+            // Display piece
+            p5.push();
+            p5.translate(piece.pos.x * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, piece.pos.y * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size);
+            p5.fill(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].colors[piece.color]);
+            if (piece.status === 'selected') {
+                // Hero is selected, show it with a stroke
+                p5.stroke(0, 20);
+                p5.strokeWeight(4);
+                // p5.noFill();
+                p5.ellipse(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, 20, 20);
+            }
+
+            p5.stroke(0, 20);
+            p5.strokeWeight(4);
+            p5.ellipse(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, 16, 16);
+            p5.pop();
+        }
+    }
+});
+
+
+/***/ }),
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {var require;var require;/*! p5.js v0.5.16 October 11, 2017 */
@@ -71496,10 +71597,10 @@ module.exports = p5;
 
 },{"../core/core":55,"./p5.Geometry":102}]},{},[46])(46)
 });
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ }),
-/* 2 */
+/* 4 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -71561,22 +71662,7 @@ module.exports = p5;
 
 
 /***/ }),
-/* 3 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
-
-
-/* harmony default export */ __webpack_exports__["a"] = ({
-    checkFree(col, row) {
-        // console.log(col, row, this[col][row]);
-    }
-});
-
-
-/***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -71638,13 +71724,13 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__symbols__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__symbols__ = __webpack_require__(5);
 
 
 
@@ -71703,7 +71789,6 @@ class Tile {
         const nextToEnter = this.getEnter(x, y, this.getOrientation());
 
         const cellNextToEnter = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][nextToEnter.x][nextToEnter.y];
-        // console.log(nextToEnter.x, nextToEnter.y);
 
         if (Object.keys(cellNextToEnter).length > 0) {
             if (cellNextToEnter.item.type !== 'bridge') {
@@ -71757,7 +71842,6 @@ class Tile {
     }
 
     saveToBoard(x, y) {
-        console.clear();
         const r = this.rotate;
 
         for (let i = 0; i < 4; i += 1) {
@@ -71779,10 +71863,10 @@ class Tile {
                 // (ex.: top wall becomes left wall after rotation)
                 let walls = ['top', 'right', 'bottom', 'left'];
                 const boardWalls = {
-                    "top": cell.walls[walls[(4 - r) % 4]],
-                    "right": cell.walls[walls[(1 - r) % 4]],
-                    "bottom": cell.walls[walls[(2 - r) % 4]],
-                    "left": cell.walls[walls[(3 - r) % 4]]
+                    "top":    cell.walls[walls[(4 - r) % 4]],
+                    "right":  cell.walls[walls[(5 - r) % 4]],
+                    "bottom": cell.walls[walls[(6 - r) % 4]],
+                    "left":   cell.walls[walls[(3 - r) % 4]]
                 }
 
                 // Copy data
@@ -71792,17 +71876,16 @@ class Tile {
                 boardCell.walls = boardWalls;
 
                 // Save escalator positions relative to board
-                let escalator = Object.assign({}, cell.escalator);
-                if (Object.keys(escalator).length > 0) {
-                    // TODO: escalator coordinates must depend on rotation
-                    // TODO: escalator coordinates make no sense
-                    console.log(escalator);
-                    escalator.x += y;
-                    escalator.y += x;
-                    console.log(escalator);
-                    console.log('---');
+                let esc = Object.assign({}, cell.escalator);
+                if (Object.keys(esc).length > 0) {
+                    const _esc = {
+                        'x': x + [esc.x, - esc.y, - esc.x, esc.y][r] + [0, 3, 3, 0][r],
+                        'y': y + [esc.y, esc.x, - esc.y, - esc.x][r] + [0, 0, 3, 3][r]
+                    }
+                    esc.x = _esc.x;
+                    esc.y = _esc.y;
+                    boardCell.escalator = Object.assign({}, esc);
                 }
-                boardCell.escalator = Object.assign({}, escalator);
 
                 // Save data
                 __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i][y + j] = boardCell;
@@ -71833,17 +71916,20 @@ class Tile {
         p5.push();
         // Rotate and translate tile
         p5.rotate(this.rotate * p5.PI/2);
-        if (this.rotate === 0) {
-            p5.translate(this.x * size, this.y * size);
-        } else if (this.rotate === 1) {
-            p5.translate(this.y * size, -((this.x + 4) * size));
-        } else if (this.rotate === 2) {
-            p5.translate(-((this.x + 4) * size), -((this.y + 4) * size));
-        } else if (this.rotate === 3) {
-            p5.translate(-((this.y + 4) * size), this.x * size);
+        const x = this.x;
+        const y = this.y;
+        const r = this.rotate;
+        let _x = [x, y, - x - 4, - y - 4][r] * size;
+        let _y = [y, - x - 4, - y - 4, x][r] * size;
+        if (__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].debug) {
+            // Pixel adjustment for schemas
+            _x -= [0, 0, 1, 1][r];
+            _y -= [0, 1, 1, 0][r];
         }
+        p5.translate(_x, _y);
 
         if (__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].debug) {
+            // Display schema of cell
 
             p5.blendMode(p5.MULTIPLY);
 
@@ -71862,20 +71948,20 @@ class Tile {
             p5.noFill();
             p5.stroke(0);
 
+            // TODO: fix irrelevant tiles coordinates
             for (let i = 0; i < 4; i += 1) {
                 for (let j = 0; j < 4; j += 1) {
                     // For each cell
                     p5.push();
                     p5.translate(j * size, i * size);
 
-                    // Draw basic grid
-                    // p5.stroke(240);
-                    // p5.rect(0, 0, size, size);
+                    // Draw basic gid
+                    p5.stroke(240);
+                    p5.rect(0, 0, size, size);
                     p5.stroke(0);
 
-                    if (!this.data) return;
-
                     // Get cell data
+                    if (!this.data) return;
                     let cell = this.data[i][j];
 
                     // Add item to cell
@@ -71891,31 +71977,27 @@ class Tile {
                             if (item.color) p5.stroke(item.color);
 
                             // Rotate and draw item depending on cell coordinates
+                            p5.push();
                             if (i === 0) {
                                 // Pointing up
                                 __WEBPACK_IMPORTED_MODULE_2__symbols__["a" /* default */].arrow(item.type);
                             } else if (i === 3) {
                                 // Pointing bottom
-                                p5.push();
+                                p5.translate(size, size);
                                 p5.rotate(p5.PI);
-                                p5.translate(-size, -size);
                                 __WEBPACK_IMPORTED_MODULE_2__symbols__["a" /* default */].arrow(item.type);
-                                p5.pop();
                             } else if (j === 0) {
                                 // Pointing left
-                                p5.push();
                                 p5.translate(0, size);
                                 p5.rotate(-p5.PI / 2);
                                 __WEBPACK_IMPORTED_MODULE_2__symbols__["a" /* default */].arrow(item.type);
-                                p5.pop();
                             } else if (j === 3) {
                                 // Pointing right
-                                p5.push();
                                 p5.translate(size, 0);
                                 p5.rotate(p5.PI / 2);
                                 __WEBPACK_IMPORTED_MODULE_2__symbols__["a" /* default */].arrow(item.type);
-                                p5.pop();
                             }
+                            p5.pop();
                         }
                     }
 
@@ -71924,8 +72006,8 @@ class Tile {
                         p5.stroke(0,0,255);
                         const x1 = size / 2;
                         const y1 = size / 2;
-                        const x2 = size / 2 + (esc.y - j) * size;
-                        const y2 = size / 2 + (esc.x - i) * size;
+                        const x2 = size / 2 + (esc.x - j) * size;
+                        const y2 = size / 2 + (esc.y - i) * size;
                         p5.line(x1, y1, x2, y2);
                     }
 
@@ -71947,8 +72029,10 @@ class Tile {
 
                     p5.pop();
                 }
-            } // end of cell
+            }
         } else {
+            // Display image of cell
+
             let x = 0;
             let y = 0;
 
@@ -71975,15 +72059,215 @@ class Tile {
 
 
 /***/ }),
-/* 6 */
+/* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__pieces__ = __webpack_require__(2);
+
+
+
+
+class Hero {
+    constructor() {
+        this.id = Hero.incID(),
+        this.color = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroes[this.id],
+        this.cell = {
+            x: 0,
+            y: 0
+        },
+        this.status = '',
+        this.path = []
+    }
+
+    static incID() {
+        if (this.latestId === undefined) {
+            this.latestId = 0;
+        } else {
+            this.latestId++;
+        }
+        return this.latestId;
+    }
+
+    move(cell) {
+        this.pos = {
+            x: this.pos.x + (this.cell.x - this.pos.x) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroSpeed,
+            y: this.pos.y + (this.cell.y - this.pos.y) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroSpeed
+        }
+    }
+
+    set(cell) {
+        this.cell = {
+            x: cell.x,
+            y: cell.y
+        };
+        this.path = [];
+        this.move(cell)
+    }
+
+    /**
+    * Get path from this hero to a cell
+    * @param  {Object} target Target cell
+    * @return {Object}        Path
+    */
+    getPath(target) {
+        const piece = this.cell;
+        const path = this.path = [];
+
+        // Check for vortex
+        const item = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][piece.x][piece.y].item;
+        if (item.type === 'vortex' && item.color === this.color) {
+            const targetItem = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][target.x][target.y].item;
+            if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
+                path.push({'x': piece.x, 'y': piece.y});
+                path.push({'x': target.x, 'y': target.y});
+                return path;
+            }
+        }
+
+        if (piece.x !== target.x && piece.y !== target.y) {
+            // Not the same column or row
+            // Check for escalator
+            const escalator = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][piece.x][piece.y].escalator;
+            if (escalator.x === target.x && escalator.y === target.y) {
+                path.push({'x': piece.x, 'y': piece.y});
+                path.push({'x': target.x, 'y': target.y});
+                return path;
+            } else {
+                return;
+            }
+        } else if (piece.x === target.x && piece.y === target.y) {
+            // Same column and row = same cell
+            path.push({'x': piece.x, 'y': piece.y})
+            return path;
+        }
+
+        if (piece.x < target.x) {
+            for (let i = piece.x; i <= target.x; i += 1) {
+                path.push({'x': i, 'y': piece.y})
+            }
+        } else if (piece.x > target.x) {
+            for (let i = piece.x; i >= target.x; i -= 1) {
+                path.push({'x': i, 'y': piece.y})
+            }
+        }
+
+        if (piece.y < target.y) {
+            for (let i = piece.y; i <= target.y; i += 1) {
+                path.push({'x': piece.x, 'y': i})
+            }
+        } else if (piece.y > target.y) {
+            for (let i = piece.y; i >= target.y; i -= 1) {
+                path.push({'x': piece.x, 'y': i})
+            }
+        }
+
+        return path;
+    }
+
+    /**
+    * Check path legality
+    * TODO: can't go on time item?
+    * @param  {Object} target Target cell
+    */
+    checkPath(target) {
+        // No specified target, check for self position (current cell)
+        if (!target) target = this.cell;
+
+        const path = this.getPath(target);
+        if (!path) return;
+
+        for (let i in path) {
+            path[i].reachable = true;
+
+            if (Object.keys(__WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][path[i].x][path[i].y]).length === 0) {
+                // Out of board
+                path[i].reachable = false;
+                return;
+            }
+
+            if (i > 0) {
+                for (let piece of __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].pieces) {
+                    if (path[i].x === piece.cell.x && path[i].y === piece.cell.y) {
+                        // Another piece blocking the way
+                        path[i].reachable = false;
+                        return;
+                    }
+                }
+
+                if (!path[i-1].reachable) {
+                    // Previous cell in path is unreachable, this one should be as well
+                    path[i].reachable = false;
+                    return;
+                }
+
+                const x = path[i - 1].x;
+                const y = path[i - 1].y;
+                const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][x][y];
+
+                // TODO: allow vortex when starting next to a wall
+
+                // Compare cell to previous cell
+                // TODO: check target wall as well
+                if (path[i].x === x) {
+                    if (path[i].y > y) {
+                        // Going down
+                        path[i].reachable = !cell.walls.bottom;
+                    } else {
+                        // Going up
+                        path[i].reachable = !cell.walls.top;
+                    }
+                } else if (path[i].y === y) {
+                    if (path[i].x > x) {
+                        // Going right
+                        path[i].reachable = !cell.walls.right;
+                    } else {
+                        // Going left
+                        path[i].reachable = !cell.walls.left;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+    * Check if hero can go to target cell
+    * @param  {Object} target Target cell
+    * @return {bool}
+    */
+    canGo(target) {
+        const path = this.path;
+        // No path
+        if (path.length === 0) {
+            return false;
+        }
+
+        // Get first unreachable cell in this path
+        for (let i in path) {
+            if (!path[i].reachable) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Hero;
+
+
+
+/***/ }),
+/* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__sketch__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile_js__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__sketch__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile_js__ = __webpack_require__(6);
 
 
 
@@ -72010,7 +72294,7 @@ function fetchJSON(i) {
 
 
 /***/ }),
-/* 7 */
+/* 9 */
 /***/ (function(module, exports) {
 
 var g;
@@ -72037,18 +72321,18 @@ module.exports = g;
 
 
 /***/ }),
-/* 8 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__board__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__symbols__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__events__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pieces__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__board__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__symbols__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__events__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pieces__ = __webpack_require__(2);
 
 
 
@@ -72132,15 +72416,15 @@ function displayTiles() {
 
 
 /***/ }),
-/* 9 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__camera__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__pieces__ = __webpack_require__(12);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__hero__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__camera__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__pieces__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__hero__ = __webpack_require__(7);
 
 
 
@@ -72207,6 +72491,7 @@ function displayTiles() {
 
         if (this.action instanceof __WEBPACK_IMPORTED_MODULE_4__hero__["a" /* default */]) {
             const piece = this.action;
+            // console.log(cell.x, cell.y);
             if (cell.x !== this.oldCell.x || cell.y !== this.oldCell.y) {
                 this.oldCell = cell;
                 piece.checkPath(cell);
@@ -72328,278 +72613,9 @@ function displayTiles() {
         if (hero.status !== 'selected') {
             hero.status = 'selected';
             this.action = hero;
+            hero.checkPath();
         } else {
             hero.status = 'set';
-        }
-    }
-});
-
-
-/***/ }),
-/* 10 */,
-/* 11 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__pieces__ = __webpack_require__(12);
-
-
-
-
-class Hero {
-    constructor() {
-        this.id = Hero.incID(),
-        this.color = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroes[this.id],
-        this.cell = {
-            x: 0,
-            y: 0
-        },
-        this.status = '',
-        this.path = []
-    }
-
-    static incID() {
-        if (this.latestId === undefined) {
-            this.latestId = 0;
-        } else {
-            this.latestId++;
-        }
-        return this.latestId;
-    }
-
-    move(cell) {
-        this.pos = {
-            x: this.pos.x + (this.cell.x - this.pos.x) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroSpeed,
-            y: this.pos.y + (this.cell.y - this.pos.y) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroSpeed
-        }
-    }
-
-    set(cell) {
-        this.cell = {
-            x: cell.x,
-            y: cell.y
-        };
-        this.path = [];
-        this.move(cell)
-    }
-
-    /**
-    * Get path from this hero to a cell
-    * @param  {Object} target Target cell
-    * @return {Object}        Path
-    */
-    getPath(target) {
-        const piece = this.cell;
-        const path = this.path = [];
-
-        if (piece.x !== target.x && piece.y !== target.y) {
-            // Not the same column or row
-            const escalator = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][piece.x][piece.y].escalator;
-            if (escalator.x === target.y && escalator.y === target.x) {
-                path.push({'x': piece.x, 'y': piece.y})
-                path.push({'x': target.x, 'y': target.y})
-                return path;
-            } else {
-                return;
-            }
-        } else if (piece.x === target.x && piece.y === target.y) {
-            // Same column and row = same cell
-            path.push({'x': piece.x, 'y': piece.y})
-            return path;
-        }
-
-        if (piece.x < target.x) {
-            for (let i = piece.x; i <= target.x; i += 1) {
-                path.push({'x': i, 'y': piece.y})
-            }
-        } else if (piece.x > target.x) {
-            for (let i = piece.x; i >= target.x; i -= 1) {
-                path.push({'x': i, 'y': piece.y})
-            }
-        }
-
-        if (piece.y < target.y) {
-            for (let i = piece.y; i <= target.y; i += 1) {
-                path.push({'x': piece.x, 'y': i})
-            }
-        } else if (piece.y > target.y) {
-            for (let i = piece.y; i >= target.y; i -= 1) {
-                path.push({'x': piece.x, 'y': i})
-            }
-        }
-
-        return path;
-    }
-
-    /**
-    * Check path legality
-    * @param  {Object} target Target cell
-    */
-    checkPath(target) {
-        const path = this.getPath(target);
-        if (!path) return;
-        console.log(path);
-
-        for (let i in path) {
-            path[i].reachable = true;
-
-            if (Object.keys(__WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][path[i].x][path[i].y]).length === 0) {
-                // Out of board
-                path[i].reachable = false;
-                return;
-            }
-
-            if (i > 0) {
-                for (let piece of __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].pieces) {
-                    if (path[i].x === piece.cell.x && path[i].y === piece.cell.y) {
-                        // Another piece blocking the way
-                        path[i].reachable = false;
-                        return;
-                    }
-                }
-
-                if (!path[i-1].reachable) {
-                    // Previous cell in path is unreachable, this one should be as well
-                    path[i].reachable = false;
-                    return;
-                }
-
-                const x = path[i - 1].x;
-                const y = path[i - 1].y;
-                const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][x][y];
-
-                // Compare cell to previous cell
-                // TODO: check target wall as well
-                if (path[i].x === x) {
-                    if (path[i].y > y) {
-                        // Going down
-                        path[i].reachable = !cell.walls.bottom;
-                    } else {
-                        // Going up
-                        path[i].reachable = !cell.walls.top;
-                    }
-                } else if (path[i].y === y) {
-                    if (path[i].x > x) {
-                        // Going right
-                        path[i].reachable = !cell.walls.right;
-                    } else {
-                        // Going left
-                        path[i].reachable = !cell.walls.left;
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-    * Check if hero can go to target cell
-    * @param  {Object} target Target cell
-    * @return {bool}
-    */
-    canGo(target) {
-        const path = this.path;
-        // No path
-        if (path.length === 0) {
-            return false;
-        }
-
-        // Get first unreachable cell in this path
-        for (let i in path) {
-            if (!path[i].reachable) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = Hero;
-
-
-
-/***/ }),
-/* 12 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__hero__ = __webpack_require__(11);
-
-
-
-
-/* harmony default export */ __webpack_exports__["a"] = ({
-
-    pieces: [],
-
-    initPos: [
-        {
-            x: 11,
-            y: 11
-        },
-        {
-            x: 12,
-            y: 11
-        },
-        {
-            x: 12,
-            y: 12
-        },
-        {
-            x: 11,
-            y: 12
-        }
-    ],
-
-    init() {
-        for (let i = 0; i < 4; i += 1) {
-            this.pieces.push(new __WEBPACK_IMPORTED_MODULE_2__hero__["a" /* default */]());
-            this.pieces[i].cell = this.initPos[i];
-            this.pieces[i].pos = this.initPos[i];
-            this.pieces[i].status = 'set';
-        }
-    },
-
-    display() {
-        p5.noStroke();
-        for (let piece of this.pieces) {
-            // Piece movement animation
-            piece.move(piece.cell);
-
-            // Display path
-            p5.push();
-            const path = piece.path;
-            for (let cell of path) {
-                p5.push();
-                p5.translate(cell.x * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, cell.y * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size);
-                if (cell.reachable) {
-                    p5.fill(0, 255, 0, 40);
-                } else {
-                    p5.fill(255, 0, 0, 40);
-                }
-                p5.rect(0, 0, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size);
-                p5.pop();
-            }
-
-            // Display piece
-            p5.push();
-            p5.translate(piece.pos.x * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, piece.pos.y * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size);
-            p5.fill(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].colors[piece.color]);
-            if (piece.status === 'selected') {
-                // Hero is selected, show it with a stroke
-                p5.stroke(0, 20);
-                p5.strokeWeight(4);
-                // p5.noFill();
-                p5.ellipse(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, 20, 20);
-            }
-
-            p5.stroke(0, 20);
-            p5.strokeWeight(4);
-            p5.ellipse(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, 16, 16);
-            p5.pop();
         }
     }
 });
