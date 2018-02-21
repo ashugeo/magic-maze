@@ -56,7 +56,6 @@ export default class Tile {
         const nextToEnter = this.getEnter(x, y, this.getOrientation());
 
         const cellNextToEnter = board[nextToEnter.x][nextToEnter.y];
-        // console.log(nextToEnter.x, nextToEnter.y);
 
         if (Object.keys(cellNextToEnter).length > 0) {
             if (cellNextToEnter.item.type !== 'bridge') {
@@ -110,7 +109,6 @@ export default class Tile {
     }
 
     saveToBoard(x, y) {
-        console.clear();
         const r = this.rotate;
 
         for (let i = 0; i < 4; i += 1) {
@@ -132,10 +130,10 @@ export default class Tile {
                 // (ex.: top wall becomes left wall after rotation)
                 let walls = ['top', 'right', 'bottom', 'left'];
                 const boardWalls = {
-                    "top": cell.walls[walls[(4 - r) % 4]],
-                    "right": cell.walls[walls[(1 - r) % 4]],
-                    "bottom": cell.walls[walls[(2 - r) % 4]],
-                    "left": cell.walls[walls[(3 - r) % 4]]
+                    "top":    cell.walls[walls[(4 - r) % 4]],
+                    "right":  cell.walls[walls[(5 - r) % 4]],
+                    "bottom": cell.walls[walls[(6 - r) % 4]],
+                    "left":   cell.walls[walls[(3 - r) % 4]]
                 }
 
                 // Copy data
@@ -145,17 +143,16 @@ export default class Tile {
                 boardCell.walls = boardWalls;
 
                 // Save escalator positions relative to board
-                let escalator = Object.assign({}, cell.escalator);
-                if (Object.keys(escalator).length > 0) {
-                    // TODO: escalator coordinates must depend on rotation
-                    // TODO: escalator coordinates make no sense
-                    console.log(escalator);
-                    escalator.x += y;
-                    escalator.y += x;
-                    console.log(escalator);
-                    console.log('---');
+                let esc = Object.assign({}, cell.escalator);
+                if (Object.keys(esc).length > 0) {
+                    const _esc = {
+                        'x': x + [esc.x, - esc.y, - esc.x, esc.y][r] + [0, 3, 3, 0][r],
+                        'y': y + [esc.y, esc.x, - esc.y, - esc.x][r] + [0, 0, 3, 3][r]
+                    }
+                    esc.x = _esc.x;
+                    esc.y = _esc.y;
+                    boardCell.escalator = Object.assign({}, esc);
                 }
-                boardCell.escalator = Object.assign({}, escalator);
 
                 // Save data
                 board[x + i][y + j] = boardCell;
@@ -186,17 +183,20 @@ export default class Tile {
         p5.push();
         // Rotate and translate tile
         p5.rotate(this.rotate * p5.PI/2);
-        if (this.rotate === 0) {
-            p5.translate(this.x * size, this.y * size);
-        } else if (this.rotate === 1) {
-            p5.translate(this.y * size, -((this.x + 4) * size));
-        } else if (this.rotate === 2) {
-            p5.translate(-((this.x + 4) * size), -((this.y + 4) * size));
-        } else if (this.rotate === 3) {
-            p5.translate(-((this.y + 4) * size), this.x * size);
+        const x = this.x;
+        const y = this.y;
+        const r = this.rotate;
+        let _x = [x, y, - x - 4, - y - 4][r] * size;
+        let _y = [y, - x - 4, - y - 4, x][r] * size;
+        if (config.debug) {
+            // Pixel adjustment for schemas
+            _x -= [0, 0, 1, 1][r];
+            _y -= [0, 1, 1, 0][r];
         }
+        p5.translate(_x, _y);
 
         if (config.debug) {
+            // Display schema of cell
 
             p5.blendMode(p5.MULTIPLY);
 
@@ -215,20 +215,20 @@ export default class Tile {
             p5.noFill();
             p5.stroke(0);
 
+            // TODO: fix irrelevant tiles coordinates
             for (let i = 0; i < 4; i += 1) {
                 for (let j = 0; j < 4; j += 1) {
                     // For each cell
                     p5.push();
                     p5.translate(j * size, i * size);
 
-                    // Draw basic grid
-                    // p5.stroke(240);
-                    // p5.rect(0, 0, size, size);
+                    // Draw basic gid
+                    p5.stroke(240);
+                    p5.rect(0, 0, size, size);
                     p5.stroke(0);
 
-                    if (!this.data) return;
-
                     // Get cell data
+                    if (!this.data) return;
                     let cell = this.data[i][j];
 
                     // Add item to cell
@@ -244,31 +244,27 @@ export default class Tile {
                             if (item.color) p5.stroke(item.color);
 
                             // Rotate and draw item depending on cell coordinates
+                            p5.push();
                             if (i === 0) {
                                 // Pointing up
                                 symbols.arrow(item.type);
                             } else if (i === 3) {
                                 // Pointing bottom
-                                p5.push();
+                                p5.translate(size, size);
                                 p5.rotate(p5.PI);
-                                p5.translate(-size, -size);
                                 symbols.arrow(item.type);
-                                p5.pop();
                             } else if (j === 0) {
                                 // Pointing left
-                                p5.push();
                                 p5.translate(0, size);
                                 p5.rotate(-p5.PI / 2);
                                 symbols.arrow(item.type);
-                                p5.pop();
                             } else if (j === 3) {
                                 // Pointing right
-                                p5.push();
                                 p5.translate(size, 0);
                                 p5.rotate(p5.PI / 2);
                                 symbols.arrow(item.type);
-                                p5.pop();
                             }
+                            p5.pop();
                         }
                     }
 
@@ -277,8 +273,8 @@ export default class Tile {
                         p5.stroke(0,0,255);
                         const x1 = size / 2;
                         const y1 = size / 2;
-                        const x2 = size / 2 + (esc.y - j) * size;
-                        const y2 = size / 2 + (esc.x - i) * size;
+                        const x2 = size / 2 + (esc.x - j) * size;
+                        const y2 = size / 2 + (esc.y - i) * size;
                         p5.line(x1, y1, x2, y2);
                     }
 
@@ -300,8 +296,10 @@ export default class Tile {
 
                     p5.pop();
                 }
-            } // end of cell
+            }
         } else {
+            // Display image of cell
+
             let x = 0;
             let y = 0;
 
