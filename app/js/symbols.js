@@ -40,7 +40,8 @@ export default {
         p5.fill(0, 0, 0, 128);
         for (let i = 0; i < config.boardCols; i += 1) {
             // Draw rulers
-            p5.stroke(0, 0, 0, 20);
+            p5.strokeWeight(.5);
+            p5.stroke(255, 0, 0, 80);
             p5.line(0, i*size, config.boardRows*size, i*size);
             p5.line(i*size, 0, i*size, config.boardCols*size);
 
