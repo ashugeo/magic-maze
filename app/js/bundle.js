@@ -71709,7 +71709,8 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
         p5.fill(0, 0, 0, 128);
         for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardCols; i += 1) {
             // Draw rulers
-            p5.stroke(0, 0, 0, 20);
+            p5.strokeWeight(.5);
+            p5.stroke(255, 0, 0, 80);
             p5.line(0, i*size, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardRows*size, i*size);
             p5.line(i*size, 0, i*size, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardCols*size);
 
@@ -71731,11 +71732,14 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__symbols__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__pieces__ = __webpack_require__(2);
 
 
 
 
-const size = __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size
+
+const size = __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size;
+let tileCount = 0;
 
 class Tile {
     constructor(id) {
@@ -71744,17 +71748,62 @@ class Tile {
         this.rotate = 0;
         this.canBeSet = false;
         this.fixed = false;
+        this.shift = {
+            'x': 0,
+            'y': 0
+        }
     }
 
     move(x, y) {
         // Position hasn't changed
         if (x === this.x && y === this.y) return;
 
-        // Else, update coordinates
+        // Compute shift
+        if (!__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].debug) {
+            const o = this.getOrientation();
+            const enter = this.getEnter(x, y, o);
+            const target = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][enter.x][enter.y];
+            const parentTile = tiles[target.tileCount];
+
+            if (parentTile) {
+                let _x = 0;
+                let _y = 0;
+
+                const s = 4.6; // Shift in pixels
+
+                // Shift depends on position and orientation
+                if (target.tileCell.x === 0 && o === 1) {
+                    _y = [2*s, s, 0, -s][target.tileCell.y];
+                } else if (target.tileCell.x === 3 && o === 3) {
+                    _y = [-s, 0, s, 2*s][target.tileCell.y];
+                }
+
+                if (target.tileCell.y === 3 && o === 0) {
+                    _x = [2*s, s, 0, 0][target.tileCell.x];
+                } else if (target.tileCell.y === 0 && o === 2) {
+                    _x = [0, 0, s, 2*s][target.tileCell.x];
+                }
+
+                // Add parent tile shift depending on its rotation
+                const pX = parentTile.shift.x;
+                const pY = parentTile.shift.y;
+                _x += [pX, -pY, pX, -pY][parentTile.rotate];
+                _y += [-pY, pX, -pY, pX][parentTile.rotate];
+
+                // Save shift depending on rotation
+                this.shift = {
+                    'x': [_x, _y, _x, _y][this.rotate],
+                    'y': [_y, _x, _y, _x][this.rotate]
+                }
+            }
+        }
+
+        // Update coordinates
         this.x = x;
         this.y = y;
 
-        this.checkCanBeSet(this.x, this.y);
+        // Check if tile can be set here
+        this.canBeSet = this.checkCanBeSet(x, y);
     }
 
     /**
@@ -71765,13 +71814,9 @@ class Tile {
     checkCanBeSet(x, y) {
         if (this.id === 0) return;
 
-        // Set to true by default
-        this.canBeSet = true;
-
-        // Prevent bounds overflow
+        // Prevent board overflow
         if (x < 0 || y < 0 || x > 15 || y > 15) {
-            this.canBeSet = false;
-            return;
+            return false;
         }
 
         // Check if the tile is covering any fixed tile
@@ -71779,28 +71824,36 @@ class Tile {
             for (let j = 0; j < 4; j += 1) {
                 if (__WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i] && __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i][y + j]) {
                     if (Object.keys(__WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i][y + j]).length > 0) {
-                        this.canBeSet = false;
+                        return false;
                     }
                 }
             }
         }
 
-        // Get cell next to entrance coordinates
+        // Make sure cell next to enter is a bridge
         const nextToEnter = this.getEnter(x, y, this.getOrientation());
-
         const cellNextToEnter = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][nextToEnter.x][nextToEnter.y];
-
         if (Object.keys(cellNextToEnter).length > 0) {
             if (cellNextToEnter.item.type !== 'bridge') {
-                this.canBeSet = false;
+                return false;
+            } else {
+                // There is a bridge, make sure it has a hero on it with the same color
+                for (let piece of __WEBPACK_IMPORTED_MODULE_3__pieces__["a" /* default */].pieces) {
+                    if (piece.cell.x === nextToEnter.x && piece.cell.y === nextToEnter.y) {
+                        if (piece.color === cellNextToEnter.item.color) {
+                            return true;
+                        }
+                    }
+                }
             }
         } else {
-            this.canBeSet = false;
+            // No item in this cell
+            return false;
         }
     }
 
     /**
-    * Get orientation of tile depending on enter position
+    * Get orientation of tile depending on enter position (top, right, bottom, left)
     * @return {int} base rotation of tile
     */
     getOrientation() {
@@ -71822,7 +71875,7 @@ class Tile {
     }
 
     /**
-    * Get tile entrance coordinates
+    * Get tile entrance coordinates (cell out of tile)
     * @param  {int}   x mouse X coordinate
     * @param  {int}   y mouse Y coordinate
     * @param  {int}   o tile orientation
@@ -71871,6 +71924,12 @@ class Tile {
 
                 // Copy data
                 let boardCell = Object.assign({}, cell);
+                // boardCell.tileID = this.id;
+                boardCell.tileCount = tileCount;
+                boardCell.tileCell = {
+                    'x': i,
+                    'y': j
+                }
 
                 // Save rotated walls
                 boardCell.walls = boardWalls;
@@ -71891,6 +71950,8 @@ class Tile {
                 __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i][y + j] = boardCell;
             }
         }
+
+        tileCount++;
     }
 
     /**
@@ -71925,15 +71986,17 @@ class Tile {
             // Pixel adjustment for schemas
             _x -= [0, 0, 1, 1][r];
             _y -= [0, 1, 1, 0][r];
+        } else {
+            // Shift adjustment for images
+            _x += this.shift.x;
+            _y += this.shift.y;
         }
         p5.translate(_x, _y);
 
-        if (__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].debug) {
-            // Display schema of cell
-
+        if (__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].debug) { // Display schema of cell
             p5.blendMode(p5.MULTIPLY);
 
-            // Background color
+            // Background color depending on status
             if (this.fixed) {
                 p5.fill('#f0f2ff');
             } else if (this.canBeSet) {
@@ -72030,24 +72093,17 @@ class Tile {
                     p5.pop();
                 }
             }
-        } else {
-            // Display image of cell
+        } else { // Display image of cell
+            p5.image(tilesImages[this.id], 0, 0, 4 * size, 4 * size);
 
-            let x = 0;
-            let y = 0;
-
-            // TODO: add x and y shifts as tile parameters (so illustrations fit together)
-            // TODO: apply to all kind of shapes and positions (heroes, overlays…)
-
-            p5.image(tilesImages[this.id], x, y, 4 * size, 4 * size);
-
+            // Colored overlay depending on status
             p5.noStroke();
             if (this.canBeSet && !this.fixed) {
                 p5.fill(240, 255, 250, 100);
-                p5.rect(x, y, 4 * size, 4 * size);
+                p5.rect(0, 0, 4 * size, 4 * size);
             } else if (!this.canBeSet && !this.fixed) {
                 p5.fill(255, 240, 245, 180);
-                p5.rect(x, y, 4 * size, 4 * size);
+                p5.rect(0, 0, 4 * size, 4 * size);
             }
         }
 
@@ -72116,13 +72172,19 @@ class Hero {
         const piece = this.cell;
         const path = this.path = [];
 
+        if (piece.x === target.x && piece.y === target.y) {
+            // Same column and row = same cell
+            path.push({'x': piece.x, 'y': piece.y});
+            return path;
+        }
+
         // Check for vortex
         const item = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][piece.x][piece.y].item;
         if (item.type === 'vortex' && item.color === this.color) {
             const targetItem = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][target.x][target.y].item;
             if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
-                path.push({'x': piece.x, 'y': piece.y});
-                path.push({'x': target.x, 'y': target.y});
+                path.push({'x': piece.x, 'y': piece.y, 'reachable': true});
+                path.push({'x': target.x, 'y': target.y, 'reachable': true});
                 return path;
             }
         }
@@ -72132,16 +72194,12 @@ class Hero {
             // Check for escalator
             const escalator = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][piece.x][piece.y].escalator;
             if (escalator.x === target.x && escalator.y === target.y) {
-                path.push({'x': piece.x, 'y': piece.y});
-                path.push({'x': target.x, 'y': target.y});
+                path.push({'x': piece.x, 'y': piece.y, 'reachable': true});
+                path.push({'x': target.x, 'y': target.y, 'reachable': true});
                 return path;
             } else {
                 return;
             }
-        } else if (piece.x === target.x && piece.y === target.y) {
-            // Same column and row = same cell
-            path.push({'x': piece.x, 'y': piece.y})
-            return path;
         }
 
         if (piece.x < target.x) {
@@ -72163,13 +72221,11 @@ class Hero {
                 path.push({'x': piece.x, 'y': i})
             }
         }
-
         return path;
     }
 
     /**
     * Check path legality
-    * TODO: can't go on time item?
     * @param  {Object} target Target cell
     */
     checkPath(target) {
@@ -72178,8 +72234,13 @@ class Hero {
 
         const path = this.getPath(target);
         if (!path) return;
+        console.log(path);
 
         for (let i in path) {
+            if (path[i].reachable) {
+                // Already marked as reachable
+                return;
+            }
             path[i].reachable = true;
 
             if (Object.keys(__WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][path[i].x][path[i].y]).length === 0) {
@@ -72203,29 +72264,26 @@ class Hero {
                     return;
                 }
 
+                // Check current cell and next cell walls depending on direction
                 const x = path[i - 1].x;
                 const y = path[i - 1].y;
                 const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][x][y];
-
-                // TODO: allow vortex when starting next to a wall
-
-                // Compare cell to previous cell
-                // TODO: check target wall as well
+                const next = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][path[i].x][path[i].y];
                 if (path[i].x === x) {
                     if (path[i].y > y) {
                         // Going down
-                        path[i].reachable = !cell.walls.bottom;
+                        path[i].reachable = !cell.walls.bottom && !next.walls.top;
                     } else {
                         // Going up
-                        path[i].reachable = !cell.walls.top;
+                        path[i].reachable = !cell.walls.top && !next.walls.bottom;
                     }
                 } else if (path[i].y === y) {
                     if (path[i].x > x) {
                         // Going right
-                        path[i].reachable = !cell.walls.right;
+                        path[i].reachable = !cell.walls.right && !next.walls.left;
                     } else {
                         // Going left
-                        path[i].reachable = !cell.walls.left;
+                        path[i].reachable = !cell.walls.left && !next.walls.right;
                     }
                 }
             }
@@ -72421,10 +72479,12 @@ function displayTiles() {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__camera__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__pieces__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__hero__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pieces__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(7);
+
 
 
 
@@ -72466,7 +72526,7 @@ function displayTiles() {
 
         if (this.action === 'setting') {
             this.setTile(cell);
-        } else if (this.action instanceof __WEBPACK_IMPORTED_MODULE_4__hero__["a" /* default */]) {
+        } else if (this.action instanceof __WEBPACK_IMPORTED_MODULE_5__hero__["a" /* default */]) {
             const hero = this.action;
             if (hero.canGo(cell)) {
                 hero.set(cell);
@@ -72489,7 +72549,7 @@ function displayTiles() {
     mouseMove() {
         const cell = this.getHoveredCell();
 
-        if (this.action instanceof __WEBPACK_IMPORTED_MODULE_4__hero__["a" /* default */]) {
+        if (this.action instanceof __WEBPACK_IMPORTED_MODULE_5__hero__["a" /* default */]) {
             const piece = this.action;
             // console.log(cell.x, cell.y);
             if (cell.x !== this.oldCell.x || cell.y !== this.oldCell.y) {
@@ -72504,8 +72564,8 @@ function displayTiles() {
     * @return {Object} position {'x': ,'y': }
     */
     getHoveredCell() {
-        const i = p5.floor((p5.mouseX - p5.width/2 - (__WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].x * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue));
-        const j = p5.floor((p5.mouseY - p5.height/2 - (__WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].y * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_1__camera__["a" /* default */].zoomValue));
+        const i = p5.floor((p5.mouseX - p5.width/2 - (__WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].x * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue));
+        const j = p5.floor((p5.mouseY - p5.height/2 - (__WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].y * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue));
 
         const cell = {
             'x': i,
@@ -72553,15 +72613,30 @@ function displayTiles() {
     * Push new tile to tiles array
     */
     pushNewTile() {
-        this.action = 'setting';
+        let canPushNewTile = false;
 
-        // Select tile being set
-        const tile = tiles[tiles.length-1];
+        for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].pieces) {
+            const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][piece.cell.x][piece.cell.y];
+            if (cell.item && cell.item.type === 'bridge' && cell.item.color === piece.color) {
+                if (!cell.opened) {
+                    cell.opened = true;
+                    canPushNewTile = true;
+                    break;
+                }
+            }
+        }
 
-        // Make sure last tile is fixed to prevent multiple tiles setting
-        if (tile.fixed) {
-            tiles.push(new __WEBPACK_IMPORTED_MODULE_2__tile__["a" /* default */](1)); // TODO: remove this
-            // tiles.push(new Tile(tiles.length));
+        if (canPushNewTile) {
+            this.action = 'setting';
+
+            // Select tile being set
+            const tile = tiles[tiles.length-1];
+
+            // Make sure last tile is fixed to prevent multiple tiles setting
+            if (tile.fixed) {
+                tiles.push(new __WEBPACK_IMPORTED_MODULE_3__tile__["a" /* default */](1)); // TODO: remove this
+                // tiles.push(new Tile(tiles.length));
+            }
         }
     },
 
@@ -72591,10 +72666,9 @@ function displayTiles() {
     * @return {bool}
     */
     checkHero(cell) {
-        for (let i = 0; i < 4; i += 1) {
-            const hero = __WEBPACK_IMPORTED_MODULE_3__pieces__["a" /* default */].pieces[i];
-            if (hero.cell.x === cell.x && hero.cell.y === cell.y) {
-                return hero;
+        for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].pieces) {
+            if (piece.cell.x === cell.x && piece.cell.y === cell.y) {
+                return piece;
             }
         }
         return false;
@@ -72605,7 +72679,7 @@ function displayTiles() {
     * @param  {Object} hero hero to select
     */
     toggleHero(hero) {
-        for (let piece of __WEBPACK_IMPORTED_MODULE_3__pieces__["a" /* default */].pieces) {
+        for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].pieces) {
             // Prevent selection of multiple pieces
             if (piece.status === 'selected' && piece.id !== hero.id) return;
         }

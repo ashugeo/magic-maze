@@ -27,9 +27,7 @@
                 "bottom": true,
                 "left": false
             },
-            "item": {
-                "type": "enter"
-            },
+            "item": false,
             "escalator": false
         },
         "3": {
@@ -123,7 +121,9 @@
                 "bottom": false,
                 "left": true
             },
-            "item": false,
+            "item": {
+                "type": "enter"
+            },
             "escalator": false
         }
     },

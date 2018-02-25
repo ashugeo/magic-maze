@@ -17,7 +17,7 @@
                 "top": true,
                 "right": false,
                 "bottom": false,
-                "left": true
+                "left": false
             },
             "item": false,
             "escalator": false
