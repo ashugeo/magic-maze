@@ -2,7 +2,8 @@ import board from './board';
 import config from './config';
 import symbols from './symbols';
 
-const size = config.size
+const size = config.size;
+let tileCount = 0;
 
 export default class Tile {
     constructor(id) {
@@ -11,17 +12,62 @@ export default class Tile {
         this.rotate = 0;
         this.canBeSet = false;
         this.fixed = false;
+        this.shift = {
+            'x': 0,
+            'y': 0
+        }
     }
 
     move(x, y) {
         // Position hasn't changed
         if (x === this.x && y === this.y) return;
 
-        // Else, update coordinates
+        // Compute shift
+        if (!config.debug) {
+            const o = this.getOrientation();
+            const enter = this.getEnter(x, y, o);
+            const target = board[enter.x][enter.y];
+            const parentTile = tiles[target.tileCount];
+
+            if (parentTile) {
+                let _x = 0;
+                let _y = 0;
+
+                const s = 4.6; // Shift in pixels
+
+                // Shift depends on position and orientation
+                if (target.tileCell.x === 0 && o === 1) {
+                    _y = [2*s, s, 0, -s][target.tileCell.y];
+                } else if (target.tileCell.x === 3 && o === 3) {
+                    _y = [-s, 0, s, 2*s][target.tileCell.y];
+                }
+
+                if (target.tileCell.y === 3 && o === 0) {
+                    _x = [2*s, s, 0, 0][target.tileCell.x];
+                } else if (target.tileCell.y === 0 && o === 2) {
+                    _x = [0, 0, s, 2*s][target.tileCell.x];
+                }
+
+                // Add parent tile shift depending on its rotation
+                const pX = parentTile.shift.x;
+                const pY = parentTile.shift.y;
+                _x += [pX, -pY, pX, -pY][parentTile.rotate];
+                _y += [-pY, pX, -pY, pX][parentTile.rotate];
+
+                // Save shift depending on rotation
+                this.shift = {
+                    'x': [_x, _y, _x, _y][this.rotate],
+                    'y': [_y, _x, _y, _x][this.rotate]
+                }
+            }
+        }
+
+        // Update coordinates
         this.x = x;
         this.y = y;
 
-        this.checkCanBeSet(this.x, this.y);
+        // Check if tile can be set here
+        this.checkCanBeSet(x, y);
     }
 
     /**
@@ -54,9 +100,9 @@ export default class Tile {
 
         // Get cell next to entrance coordinates
         const nextToEnter = this.getEnter(x, y, this.getOrientation());
-
         const cellNextToEnter = board[nextToEnter.x][nextToEnter.y];
 
+        // Make sure cell next to enter is a bridge
         if (Object.keys(cellNextToEnter).length > 0) {
             if (cellNextToEnter.item.type !== 'bridge') {
                 this.canBeSet = false;
@@ -67,7 +113,7 @@ export default class Tile {
     }
 
     /**
-    * Get orientation of tile depending on enter position
+    * Get orientation of tile depending on enter position (top, right, bottom, left)
     * @return {int} base rotation of tile
     */
     getOrientation() {
@@ -89,7 +135,7 @@ export default class Tile {
     }
 
     /**
-    * Get tile entrance coordinates
+    * Get tile entrance coordinates (cell out of tile)
     * @param  {int}   x mouse X coordinate
     * @param  {int}   y mouse Y coordinate
     * @param  {int}   o tile orientation
@@ -138,6 +184,12 @@ export default class Tile {
 
                 // Copy data
                 let boardCell = Object.assign({}, cell);
+                // boardCell.tileID = this.id;
+                boardCell.tileCount = tileCount;
+                boardCell.tileCell = {
+                    'x': i,
+                    'y': j
+                }
 
                 // Save rotated walls
                 boardCell.walls = boardWalls;
@@ -158,6 +210,8 @@ export default class Tile {
                 board[x + i][y + j] = boardCell;
             }
         }
+
+        tileCount++;
     }
 
     /**
@@ -192,15 +246,17 @@ export default class Tile {
             // Pixel adjustment for schemas
             _x -= [0, 0, 1, 1][r];
             _y -= [0, 1, 1, 0][r];
+        } else {
+            // Shift adjustment for images
+            _x += this.shift.x;
+            _y += this.shift.y;
         }
         p5.translate(_x, _y);
 
-        if (config.debug) {
-            // Display schema of cell
-
+        if (config.debug) { // Display schema of cell
             p5.blendMode(p5.MULTIPLY);
 
-            // Background color
+            // Background color depending on status
             if (this.fixed) {
                 p5.fill('#f0f2ff');
             } else if (this.canBeSet) {
@@ -297,24 +353,17 @@ export default class Tile {
                     p5.pop();
                 }
             }
-        } else {
-            // Display image of cell
+        } else { // Display image of cell
+            p5.image(tilesImages[this.id], 0, 0, 4 * size, 4 * size);
 
-            let x = 0;
-            let y = 0;
-
-            // TODO: add x and y shifts as tile parameters (so illustrations fit together)
-            // TODO: apply to all kind of shapes and positions (heroes, overlays…)
-
-            p5.image(tilesImages[this.id], x, y, 4 * size, 4 * size);
-
+            // Colored overlay depending on status
             p5.noStroke();
             if (this.canBeSet && !this.fixed) {
                 p5.fill(240, 255, 250, 100);
-                p5.rect(x, y, 4 * size, 4 * size);
+                p5.rect(0, 0, 4 * size, 4 * size);
             } else if (!this.canBeSet && !this.fixed) {
                 p5.fill(255, 240, 245, 180);
-                p5.rect(x, y, 4 * size, 4 * size);
+                p5.rect(0, 0, 4 * size, 4 * size);
             }
         }
 
