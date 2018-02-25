@@ -140,24 +140,25 @@ export default class Hero {
                 const cell = board[x][y];
 
                 // TODO: allow vortex when starting next to a wall
+                // TODO: allow vortex over empty cell
 
-                // Compare cell to previous cell
-                // TODO: check target wall as well
+                // Check current cell and target cell walls depending on direction
+                const targetCell = board[target.x][target.y];
                 if (path[i].x === x) {
                     if (path[i].y > y) {
                         // Going down
-                        path[i].reachable = !cell.walls.bottom;
+                        path[i].reachable = !cell.walls.bottom && !targetCell.walls.top;
                     } else {
                         // Going up
-                        path[i].reachable = !cell.walls.top;
+                        path[i].reachable = !cell.walls.top && !targetCell.walls.bottom;
                     }
                 } else if (path[i].y === y) {
                     if (path[i].x > x) {
                         // Going right
-                        path[i].reachable = !cell.walls.right;
+                        path[i].reachable = !cell.walls.right && !targetCell.walls.left;
                     } else {
                         // Going left
-                        path[i].reachable = !cell.walls.left;
+                        path[i].reachable = !cell.walls.left && !targetCell.walls.right;
                     }
                 }
             }
