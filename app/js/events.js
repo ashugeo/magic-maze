@@ -1,4 +1,5 @@
 import config from './config';
+import board from './board';
 import camera from './camera';
 import Tile from './tile';
 import pieces from './pieces'
@@ -126,15 +127,30 @@ export default {
     * Push new tile to tiles array
     */
     pushNewTile() {
-        this.action = 'setting';
+        let canPushNewTile = false;
 
-        // Select tile being set
-        const tile = tiles[tiles.length-1];
+        for (let piece of pieces.pieces) {
+            const cell = board[piece.cell.x][piece.cell.y];
+            if (cell.item && cell.item.type === 'bridge' && cell.item.color === piece.color) {
+                if (!cell.opened) {
+                    cell.opened = true;
+                    canPushNewTile = true;
+                    break;
+                }
+            }
+        }
 
-        // Make sure last tile is fixed to prevent multiple tiles setting
-        if (tile.fixed) {
-            tiles.push(new Tile(1)); // TODO: remove this
-            // tiles.push(new Tile(tiles.length));
+        if (canPushNewTile) {
+            this.action = 'setting';
+
+            // Select tile being set
+            const tile = tiles[tiles.length-1];
+
+            // Make sure last tile is fixed to prevent multiple tiles setting
+            if (tile.fixed) {
+                tiles.push(new Tile(1)); // TODO: remove this
+                // tiles.push(new Tile(tiles.length));
+            }
         }
     },
 
@@ -164,10 +180,9 @@ export default {
     * @return {bool}
     */
     checkHero(cell) {
-        for (let i = 0; i < 4; i += 1) {
-            const hero = pieces.pieces[i];
-            if (hero.cell.x === cell.x && hero.cell.y === cell.y) {
-                return hero;
+        for (let piece of pieces.pieces) {
+            if (piece.cell.x === cell.x && piece.cell.y === cell.y) {
+                return piece;
             }
         }
         return false;
