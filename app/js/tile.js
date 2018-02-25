@@ -1,6 +1,7 @@
 import board from './board';
 import config from './config';
 import symbols from './symbols';
+import pieces from './pieces';
 
 const size = config.size;
 let tileCount = 0;
@@ -67,7 +68,7 @@ export default class Tile {
         this.y = y;
 
         // Check if tile can be set here
-        this.checkCanBeSet(x, y);
+        this.canBeSet = this.checkCanBeSet(x, y);
     }
 
     /**
@@ -78,13 +79,9 @@ export default class Tile {
     checkCanBeSet(x, y) {
         if (this.id === 0) return;
 
-        // Set to true by default
-        this.canBeSet = true;
-
-        // Prevent bounds overflow
+        // Prevent board overflow
         if (x < 0 || y < 0 || x > 15 || y > 15) {
-            this.canBeSet = false;
-            return;
+            return false;
         }
 
         // Check if the tile is covering any fixed tile
@@ -92,23 +89,31 @@ export default class Tile {
             for (let j = 0; j < 4; j += 1) {
                 if (board[x + i] && board[x + i][y + j]) {
                     if (Object.keys(board[x + i][y + j]).length > 0) {
-                        this.canBeSet = false;
+                        return false;
                     }
                 }
             }
         }
 
-        // Get cell next to entrance coordinates
+        // Make sure cell next to enter is a bridge
         const nextToEnter = this.getEnter(x, y, this.getOrientation());
         const cellNextToEnter = board[nextToEnter.x][nextToEnter.y];
-
-        // Make sure cell next to enter is a bridge
         if (Object.keys(cellNextToEnter).length > 0) {
             if (cellNextToEnter.item.type !== 'bridge') {
-                this.canBeSet = false;
+                return false;
+            } else {
+                // There is a bridge, make sure it has a hero on it with the same color
+                for (let piece of pieces.pieces) {
+                    if (piece.cell.x === nextToEnter.x && piece.cell.y === nextToEnter.y) {
+                        if (piece.color === cellNextToEnter.item.color) {
+                            return true;
+                        }
+                    }
+                }
             }
         } else {
-            this.canBeSet = false;
+            // No item in this cell
+            return false;
         }
     }
 
