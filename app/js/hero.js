@@ -48,13 +48,19 @@ export default class Hero {
         const piece = this.cell;
         const path = this.path = [];
 
+        if (piece.x === target.x && piece.y === target.y) {
+            // Same column and row = same cell
+            path.push({'x': piece.x, 'y': piece.y});
+            return path;
+        }
+
         // Check for vortex
         const item = board[piece.x][piece.y].item;
         if (item.type === 'vortex' && item.color === this.color) {
             const targetItem = board[target.x][target.y].item;
             if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
-                path.push({'x': piece.x, 'y': piece.y});
-                path.push({'x': target.x, 'y': target.y});
+                path.push({'x': piece.x, 'y': piece.y, 'reachable': true});
+                path.push({'x': target.x, 'y': target.y, 'reachable': true});
                 return path;
             }
         }
@@ -64,16 +70,12 @@ export default class Hero {
             // Check for escalator
             const escalator = board[piece.x][piece.y].escalator;
             if (escalator.x === target.x && escalator.y === target.y) {
-                path.push({'x': piece.x, 'y': piece.y});
-                path.push({'x': target.x, 'y': target.y});
+                path.push({'x': piece.x, 'y': piece.y, 'reachable': true});
+                path.push({'x': target.x, 'y': target.y, 'reachable': true});
                 return path;
             } else {
                 return;
             }
-        } else if (piece.x === target.x && piece.y === target.y) {
-            // Same column and row = same cell
-            path.push({'x': piece.x, 'y': piece.y})
-            return path;
         }
 
         if (piece.x < target.x) {
@@ -95,13 +97,11 @@ export default class Hero {
                 path.push({'x': piece.x, 'y': i})
             }
         }
-
         return path;
     }
 
     /**
     * Check path legality
-    * TODO: can't go on time item?
     * @param  {Object} target Target cell
     */
     checkPath(target) {
@@ -110,8 +110,13 @@ export default class Hero {
 
         const path = this.getPath(target);
         if (!path) return;
+        console.log(path);
 
         for (let i in path) {
+            if (path[i].reachable) {
+                // Already marked as reachable
+                return;
+            }
             path[i].reachable = true;
 
             if (Object.keys(board[path[i].x][path[i].y]).length === 0) {
@@ -135,30 +140,26 @@ export default class Hero {
                     return;
                 }
 
+                // Check current cell and next cell walls depending on direction
                 const x = path[i - 1].x;
                 const y = path[i - 1].y;
                 const cell = board[x][y];
-
-                // TODO: allow vortex when starting next to a wall
-                // TODO: allow vortex over empty cell
-
-                // Check current cell and target cell walls depending on direction
-                const targetCell = board[target.x][target.y];
+                const next = board[path[i].x][path[i].y];
                 if (path[i].x === x) {
                     if (path[i].y > y) {
                         // Going down
-                        path[i].reachable = !cell.walls.bottom && !targetCell.walls.top;
+                        path[i].reachable = !cell.walls.bottom && !next.walls.top;
                     } else {
                         // Going up
-                        path[i].reachable = !cell.walls.top && !targetCell.walls.bottom;
+                        path[i].reachable = !cell.walls.top && !next.walls.bottom;
                     }
                 } else if (path[i].y === y) {
                     if (path[i].x > x) {
                         // Going right
-                        path[i].reachable = !cell.walls.right && !targetCell.walls.left;
+                        path[i].reachable = !cell.walls.right && !next.walls.left;
                     } else {
                         // Going left
-                        path[i].reachable = !cell.walls.left && !targetCell.walls.right;
+                        path[i].reachable = !cell.walls.left && !next.walls.right;
                     }
                 }
             }
