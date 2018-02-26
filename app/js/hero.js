@@ -36,7 +36,7 @@ export default class Hero {
             y: cell.y
         };
         this.path = [];
-        this.move(cell)
+        this.move(cell);
     }
 
     /**
@@ -59,7 +59,7 @@ export default class Hero {
         if (item.type === 'vortex' && item.color === this.color) {
             const targetItem = board[target.x][target.y].item;
             if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
-                path.push({'x': piece.x, 'y': piece.y, 'reachable': true});
+                path.push({'x': piece.x, 'y': piece.y});
                 path.push({'x': target.x, 'y': target.y, 'reachable': true});
                 return path;
             }
@@ -70,7 +70,7 @@ export default class Hero {
             // Check for escalator
             const escalator = board[piece.x][piece.y].escalator;
             if (escalator.x === target.x && escalator.y === target.y) {
-                path.push({'x': piece.x, 'y': piece.y, 'reachable': true});
+                path.push({'x': piece.x, 'y': piece.y});
                 path.push({'x': target.x, 'y': target.y, 'reachable': true});
                 return path;
             } else {
@@ -110,13 +110,8 @@ export default class Hero {
 
         const path = this.getPath(target);
         if (!path) return;
-        console.log(path);
 
         for (let i in path) {
-            if (path[i].reachable) {
-                // Already marked as reachable
-                return;
-            }
             path[i].reachable = true;
 
             if (Object.keys(board[path[i].x][path[i].y]).length === 0) {
@@ -132,6 +127,12 @@ export default class Hero {
                         path[i].reachable = false;
                         return;
                     }
+                }
+
+                if (path[i+1] && path[i+1].reachable) {
+                    // Already marked as reachable (vortex and escalator)
+                    path[i].reachable = true;
+                    return;
                 }
 
                 if (!path[i-1].reachable) {
