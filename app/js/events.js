@@ -45,6 +45,10 @@ export default {
             if (hero.canGo(cell)) {
                 hero.set(cell);
                 this.action = '';
+                socket.emit('hero', {
+                    "id": hero.id,
+                    "cell": cell
+                });
             }
         }
 
@@ -65,7 +69,6 @@ export default {
 
         if (this.action instanceof Hero) {
             const piece = this.action;
-            // console.log(cell.x, cell.y);
             if (cell.x !== this.oldCell.x || cell.y !== this.oldCell.y) {
                 this.oldCell = cell;
                 piece.checkPath(cell);

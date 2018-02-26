@@ -72160,7 +72160,7 @@ class Hero {
             y: cell.y
         };
         this.path = [];
-        this.move(cell)
+        this.move(cell);
     }
 
     /**
@@ -72183,7 +72183,7 @@ class Hero {
         if (item.type === 'vortex' && item.color === this.color) {
             const targetItem = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][target.x][target.y].item;
             if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
-                path.push({'x': piece.x, 'y': piece.y, 'reachable': true});
+                path.push({'x': piece.x, 'y': piece.y});
                 path.push({'x': target.x, 'y': target.y, 'reachable': true});
                 return path;
             }
@@ -72194,7 +72194,7 @@ class Hero {
             // Check for escalator
             const escalator = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][piece.x][piece.y].escalator;
             if (escalator.x === target.x && escalator.y === target.y) {
-                path.push({'x': piece.x, 'y': piece.y, 'reachable': true});
+                path.push({'x': piece.x, 'y': piece.y});
                 path.push({'x': target.x, 'y': target.y, 'reachable': true});
                 return path;
             } else {
@@ -72234,13 +72234,8 @@ class Hero {
 
         const path = this.getPath(target);
         if (!path) return;
-        console.log(path);
 
         for (let i in path) {
-            if (path[i].reachable) {
-                // Already marked as reachable
-                return;
-            }
             path[i].reachable = true;
 
             if (Object.keys(__WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][path[i].x][path[i].y]).length === 0) {
@@ -72256,6 +72251,12 @@ class Hero {
                         path[i].reachable = false;
                         return;
                     }
+                }
+
+                if (path[i+1] && path[i+1].reachable) {
+                    // Already marked as reachable (vortex and escalator)
+                    path[i].reachable = true;
+                    return;
                 }
 
                 if (!path[i-1].reachable) {
@@ -72325,7 +72326,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__sketch__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile_js__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__hero__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pieces__ = __webpack_require__(2);
+
+
 
 
 
@@ -72344,11 +72349,17 @@ function fetchJSON(i) {
             fetchJSON(i + 1);
         } else {
             new __WEBPACK_IMPORTED_MODULE_0_p5___default.a(__WEBPACK_IMPORTED_MODULE_1__sketch__["a" /* default */]);
-            window.tiles.push(new __WEBPACK_IMPORTED_MODULE_2__tile_js__["a" /* default */](0));
+            window.tiles.push(new __WEBPACK_IMPORTED_MODULE_2__tile__["a" /* default */](0));
             window.tiles[0].set(10, 10);
         }
     });
 }
+
+socket.on('hero', (msg) => {
+    const hero = __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].pieces[msg.id];
+    const cell = msg.cell;
+    hero.set(cell);
+});
 
 
 /***/ }),
@@ -72531,6 +72542,10 @@ function displayTiles() {
             if (hero.canGo(cell)) {
                 hero.set(cell);
                 this.action = '';
+                socket.emit('hero', {
+                    "id": hero.id,
+                    "cell": cell
+                });
             }
         }
 
@@ -72551,7 +72566,6 @@ function displayTiles() {
 
         if (this.action instanceof __WEBPACK_IMPORTED_MODULE_5__hero__["a" /* default */]) {
             const piece = this.action;
-            // console.log(cell.x, cell.y);
             if (cell.x !== this.oldCell.x || cell.y !== this.oldCell.y) {
                 this.oldCell = cell;
                 piece.checkPath(cell);

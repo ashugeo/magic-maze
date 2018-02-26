@@ -17,7 +17,9 @@
   },
   "homepage": "https://github.com/Ashugeo/magic-maze",
   "dependencies": {
-    "p5": "^0.5.16"
+    "express": "^4.15.2",
+    "p5": "^0.5.16",
+    "socket.io": "^2.0.4"
   },
   "devDependencies": {
     "babel": "^6.23.0",

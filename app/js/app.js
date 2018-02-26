@@ -1,6 +1,8 @@
 import p5 from 'p5';
 import sketch from './sketch'
-import Tile from './tile.js';
+import Tile from './tile';
+import Hero from './hero';
+import pieces from './pieces';
 
 window.tiles = [];
 window.json = [];
@@ -21,3 +23,9 @@ function fetchJSON(i) {
         }
     });
 }
+
+socket.on('hero', (msg) => {
+    const hero = pieces.pieces[msg.id];
+    const cell = msg.cell;
+    hero.set(cell);
+});
