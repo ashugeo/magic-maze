@@ -5,15 +5,23 @@ const io = require('socket.io')(http);
 
 app.use(express.static(__dirname + '/'));
 
-app.get('/', function(req, res) {
+app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
-io.on('connection', function(socket) {
+io.on('connection', (socket) => {
     console.log('user ' + socket.id + ' connected');
 
-    socket.on('hero', function(msg) {
-        socket.broadcast.emit('hero', msg);
+    socket.on('hero', (data) => {
+        socket.broadcast.emit('hero', data);
+    });
+
+    socket.on('board', (data) => {
+        socket.broadcast.emit('board', data);
+    });
+
+    socket.on('tile', (data) => {
+        socket.broadcast.emit('tile', data);
     });
 });
 

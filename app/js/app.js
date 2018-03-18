@@ -1,5 +1,6 @@
 import p5 from 'p5';
 import sketch from './sketch'
+import board from './board';
 import Tile from './tile';
 import Hero from './hero';
 import pieces from './pieces';
@@ -24,8 +25,19 @@ function fetchJSON(i) {
     });
 }
 
-socket.on('hero', (msg) => {
-    const hero = pieces.pieces[msg.id];
-    const cell = msg.cell;
+socket.on('hero', (data) => {
+    const hero = pieces.pieces[data.id];
+    const cell = data.cell;
     hero.set(cell);
+});
+
+socket.on('board', (data) => {
+    board.save(data.x, data.y, data.cell)
+});
+
+socket.on('tile', (data) => {
+    const tile = new Tile(data.tile.id);
+    tile.rotate = data.tile.rotate;
+    window.tiles.push(tile);
+    tile.set(data.x, data.y);
 });

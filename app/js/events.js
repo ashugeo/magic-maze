@@ -114,15 +114,18 @@ export default {
         if (tile.canBeSet && !tile.fixed) {
             this.action = '';
 
-            if (o === 0) {
-                tile.set(cell.x - 2, cell.y);
-            } else if (o === 1) {
-                tile.set(cell.x - 3, cell.y - 2);
-            } else if (o === 2) {
-                tile.set(cell.x - 1, cell.y - 3);
-            } else if (o === 3) {
-                tile.set(cell.x, cell.y - 1);
-            }
+            let _x = [-2, -3, -1, 0][o];
+            let _y = [0, -2, -3, -1][o];
+
+            let x = cell.x + _x;
+            let y = cell.y + _y;
+
+            tile.set(x, y);
+            socket.emit('tile', {
+                x: x,
+                y: y,
+                tile: tile
+            });
         }
     },
 

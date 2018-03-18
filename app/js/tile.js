@@ -213,6 +213,11 @@ export default class Tile {
 
                 // Save data
                 board.save(x + i, y + j, boardCell);
+                socket.emit('board', {
+                    x: x + i,
+                    y: y + j,
+                    cell: boardCell
+                });
             }
         }
 
