@@ -55,27 +55,31 @@ export default class Hero {
         }
 
         // Check for vortex
-        const item = board.getCell(piece.x, piece.y).item;
-        if (item.type === 'vortex' && item.color === this.color) {
-            const targetItem = board.getCell(target.x, target.y).item;
-            if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
-                path.push({x: piece.x, y: piece.y});
-                path.push({x: target.x, y: target.y, reachable: true});
-                return path;
+        if (role.indexOf('vortex') > -1) {
+            const item = board.getCell(piece.x, piece.y).item;
+            if (item.type === 'vortex' && item.color === this.color) {
+                const targetItem = board.getCell(target.x, target.y).item;
+                if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
+                    path.push({x: piece.x, y: piece.y});
+                    path.push({x: target.x, y: target.y, reachable: true});
+                    return path;
+                }
             }
         }
 
         if (piece.x !== target.x && piece.y !== target.y) {
             // Not the same column or row
             // Check for escalator
-            const escalator = board.getCell(piece.x, piece.y).escalator;
-            if (escalator.x === target.x && escalator.y === target.y) {
-                path.push({x: piece.x, y: piece.y});
-                path.push({x: target.x, y: target.y, reachable: true});
-                return path;
-            } else {
-                return;
+            if (role.indexOf('escalator') > -1) {
+                const escalator = board.getCell(piece.x, piece.y).escalator;
+                if (escalator.x === target.x && escalator.y === target.y) {
+                    path.push({x: piece.x, y: piece.y});
+                    path.push({x: target.x, y: target.y, reachable: true});
+                    return path;
+                }
             }
+            
+            return;
         }
 
         if (piece.x < target.x) {
@@ -151,17 +155,21 @@ export default class Hero {
                     if (path[i].y > y) {
                         // Going down
                         path[i].reachable = !cell.walls.bottom && !next.walls.top;
+                        if (role.indexOf('down') === -1) path[i].reachable = false;
                     } else {
                         // Going up
                         path[i].reachable = !cell.walls.top && !next.walls.bottom;
+                        if (role.indexOf('up') === -1) path[i].reachable = false;
                     }
                 } else if (path[i].y === y) {
                     if (path[i].x > x) {
                         // Going right
                         path[i].reachable = !cell.walls.right && !next.walls.left;
+                        if (role.indexOf('right') === -1) path[i].reachable = false;
                     } else {
                         // Going left
                         path[i].reachable = !cell.walls.left && !next.walls.right;
+                        if (role.indexOf('left') === -1) path[i].reachable = false;
                     }
                 }
             }

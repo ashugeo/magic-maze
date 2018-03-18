@@ -16,7 +16,7 @@ export default {
         */
         document.addEventListener('keydown', (e) => {
             if (e.which === 67) { // C: engage tile setting
-                this.pushNewTile();
+                if (role.indexOf('explore') > -1) this.newTile();
             } else if (e.which === 82) { // R: rotate tile counterclockwise
                 this.rotateNewTile(-1);
             } else if (e.which === 84) { // T: rotate tile clockwise
@@ -145,21 +145,21 @@ export default {
     /**
     * Push new tile to tiles array
     */
-    pushNewTile() {
-        let canPushNewTile = false;
+    newTile() {
+        let cannewTile = false;
 
         for (let piece of pieces.pieces) {
             const cell = board.getCell(piece.cell.x, piece.cell.y);
             if (cell.item && cell.item.type === 'bridge' && cell.item.color === piece.color) {
                 if (!cell.opened) {
                     cell.opened = true;
-                    canPushNewTile = true;
+                    cannewTile = true;
                     break;
                 }
             }
         }
 
-        if (canPushNewTile) {
+        if (cannewTile) {
             this.action = 'setting';
 
             // Select tile being set

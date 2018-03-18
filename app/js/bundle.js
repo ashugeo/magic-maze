@@ -72,6 +72,7 @@
     debug: false,
     grid: false,
     cameraSpeed: 5,
+    cameraMouse: false,
     zoomMax: 4,
     zoomMin: 1,
     zoomSpeed: 15,
@@ -270,27 +271,31 @@ class Hero {
         }
 
         // Check for vortex
-        const item = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(piece.x, piece.y).item;
-        if (item.type === 'vortex' && item.color === this.color) {
-            const targetItem = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(target.x, target.y).item;
-            if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
-                path.push({x: piece.x, y: piece.y});
-                path.push({x: target.x, y: target.y, reachable: true});
-                return path;
+        if (role.indexOf('vortex') > -1) {
+            const item = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(piece.x, piece.y).item;
+            if (item.type === 'vortex' && item.color === this.color) {
+                const targetItem = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(target.x, target.y).item;
+                if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
+                    path.push({x: piece.x, y: piece.y});
+                    path.push({x: target.x, y: target.y, reachable: true});
+                    return path;
+                }
             }
         }
 
         if (piece.x !== target.x && piece.y !== target.y) {
             // Not the same column or row
             // Check for escalator
-            const escalator = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(piece.x, piece.y).escalator;
-            if (escalator.x === target.x && escalator.y === target.y) {
-                path.push({x: piece.x, y: piece.y});
-                path.push({x: target.x, y: target.y, reachable: true});
-                return path;
-            } else {
-                return;
+            if (role.indexOf('escalator') > -1) {
+                const escalator = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(piece.x, piece.y).escalator;
+                if (escalator.x === target.x && escalator.y === target.y) {
+                    path.push({x: piece.x, y: piece.y});
+                    path.push({x: target.x, y: target.y, reachable: true});
+                    return path;
+                }
             }
+            
+            return;
         }
 
         if (piece.x < target.x) {
@@ -366,17 +371,21 @@ class Hero {
                     if (path[i].y > y) {
                         // Going down
                         path[i].reachable = !cell.walls.bottom && !next.walls.top;
+                        if (role.indexOf('down') === -1) path[i].reachable = false;
                     } else {
                         // Going up
                         path[i].reachable = !cell.walls.top && !next.walls.bottom;
+                        if (role.indexOf('up') === -1) path[i].reachable = false;
                     }
                 } else if (path[i].y === y) {
                     if (path[i].x > x) {
                         // Going right
                         path[i].reachable = !cell.walls.right && !next.walls.left;
+                        if (role.indexOf('right') === -1) path[i].reachable = false;
                     } else {
                         // Going left
                         path[i].reachable = !cell.walls.left && !next.walls.right;
+                        if (role.indexOf('left') === -1) path[i].reachable = false;
                     }
                 }
             }
@@ -71862,6 +71871,7 @@ module.exports = p5;
     */
     x: 0,
     y: 0,
+    mouseIn: true,
     move(x, y) {
         if (x && y) {
             this.x = x;
@@ -71882,22 +71892,24 @@ module.exports = p5;
 
         p5.translate(this.x, this.y);
 
-        const x1 = -this.x
-        const y1 = -this.y;
-        const x2 = (-p5.width/2 + p5.mouseX) / this.zoomValue - this.x;
-        const y2 = (-p5.height/2 + p5.mouseY) / this.zoomValue - this.y;
-        p5.stroke(0);
-        p5.strokeWeight(1);
-        // p5.line(x1, y1, x2, y2);
+        if (this.mouseIn && __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraMouse) {
+            const x1 = -this.x
+            const y1 = -this.y;
+            const x2 = (-p5.width/2 + p5.mouseX) / this.zoomValue - this.x;
+            const y2 = (-p5.height/2 + p5.mouseY) / this.zoomValue - this.y;
 
-        const dist = Math.round(p5.dist(x1, y1, x2, y2) * this.zoomValue);
-        const threshold = Math.min(p5.width/2, p5.height/2) * 8/10;
-        if (dist > threshold) {
+            const dist = Math.round(p5.dist(x1, y1, x2, y2) * this.zoomValue);
             const angle = Math.atan2(y2 - y1, x2 - x1);
-            const speed = Math.min(dist - threshold, 100) / 100;
 
-            this.x -= Math.cos(angle) * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed * speed;
-            this.y -= Math.sin(angle) * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed * speed;
+            const distX = Math.round(Math.cos(angle) * dist);
+            if (Math.abs(distX) > p5.width / 2 - 100) {
+                this.x += -Math.sign(distX) * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed;
+            }
+
+            const distY = Math.round(Math.sin(angle) * dist);
+            if (Math.abs(distY) > p5.height / 2 - 100) {
+                this.y += -Math.sign(distY) * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed;
+            }
         }
     }
 });
@@ -72383,6 +72395,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 window.tiles = [];
 window.json = [];
+window.socket = io({transports: ['websocket'], upgrade: false});
+window.role = [];
 
 const tiles = 3;
 fetchJSON(0);
@@ -72393,13 +72407,56 @@ function fetchJSON(i) {
 
         if (i < tiles - 1) {
             fetchJSON(i + 1);
-        } else {
-            new __WEBPACK_IMPORTED_MODULE_0_p5___default.a(__WEBPACK_IMPORTED_MODULE_1__sketch__["a" /* default */]);
-            window.tiles.push(new __WEBPACK_IMPORTED_MODULE_3__tile__["a" /* default */](0));
-            window.tiles[0].set(10, 10);
         }
     });
 }
+
+function start() {
+    new __WEBPACK_IMPORTED_MODULE_0_p5___default.a(__WEBPACK_IMPORTED_MODULE_1__sketch__["a" /* default */]);
+    window.tiles.push(new __WEBPACK_IMPORTED_MODULE_3__tile__["a" /* default */](0));
+    window.tiles[0].set(10, 10);
+}
+
+const $players = document.getElementById('players');
+const $ui = document.getElementById('ui');
+
+socket.on('players', (players) => {
+    $players.innerHTML = players;
+    $players.innerHTML += players > 1 ? ' joueurs connectés.' : ' joueur connecté.';
+});
+
+socket.on('admin', () => {
+    // Timeout needed to give time for 'players' event
+    setTimeout(() => {
+        $ui.innerHTML += `<div class="admin">
+        <p>Vous êtes administrateur de la partie.</p>
+        <div id="start" class="button">Commencer la partie !</div>
+        </div>`;
+
+        document.getElementById('start').addEventListener('mousedown', () => {
+            socket.emit('start');
+            document.getElementsByClassName('admin')[0].innerHTML = '';
+        });
+    }, 500);
+});
+
+socket.on('start', () => {
+    start();
+});
+
+socket.on('role', (data) => {
+    // Save my role
+    role = data.roles;
+
+    // Display role
+    $ui.innerHTML += 'Actions autorisées : ';
+    for (let i in data.roles) {
+        i = parseInt(i);
+        $ui.innerHTML += data.roles[i];
+        if (data.roles[i+1]) $ui.innerHTML += ', ';
+    }
+    $ui.innerHTML += '.'
+});
 
 socket.on('hero', (data) => {
     const hero = __WEBPACK_IMPORTED_MODULE_5__pieces__["a" /* default */].pieces[data.id];
@@ -72477,8 +72534,11 @@ const sketch = (p5) => {
             tilesImages.push(p5.loadImage('img/tile' + i + '.jpg'));
         }
 
-        p5.createCanvas(p5.windowWidth, p5.windowHeight);
+        const canvas = p5.createCanvas(p5.windowWidth - 300, p5.windowHeight);
+        canvas.parent('canvas-wrap');
 
+        p5.mouseX = p5.width/2;
+        p5.mouseY = p5.height/2;
         __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].move(- __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardCols / 2 * __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size, - __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardRows / 2 * __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size);
 
         __WEBPACK_IMPORTED_MODULE_3__board__["a" /* default */].init();
@@ -72488,6 +72548,7 @@ const sketch = (p5) => {
 
     p5.draw = () => {
         p5.clear();
+        p5.background(245,250,255);
 
         // Zoom with focus point at the center of screen
         p5.translate(p5.width/2, p5.height/2);
@@ -72563,7 +72624,7 @@ function displayTiles() {
         */
         document.addEventListener('keydown', (e) => {
             if (e.which === 67) { // C: engage tile setting
-                this.pushNewTile();
+                if (role.indexOf('explore') > -1) this.newTile();
             } else if (e.which === 82) { // R: rotate tile counterclockwise
                 this.rotateNewTile(-1);
             } else if (e.which === 84) { // T: rotate tile clockwise
@@ -72580,6 +72641,19 @@ function displayTiles() {
         document.addEventListener('mousemove', () => {
             this.mouseMove();
         });
+
+        document.getElementById('canvas-wrap').addEventListener('mouseleave', () => {
+            __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].mouseIn = false;
+        });
+
+        document.getElementById('canvas-wrap').addEventListener('mouseenter', () => {
+            __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].mouseIn = true;
+        });
+
+        window.oncontextmenu = () => {
+            this.rotateNewTile(1);
+            return false;
+        }
     },
 
     click() {
@@ -72679,21 +72753,21 @@ function displayTiles() {
     /**
     * Push new tile to tiles array
     */
-    pushNewTile() {
-        let canPushNewTile = false;
+    newTile() {
+        let cannewTile = false;
 
         for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].pieces) {
             const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(piece.cell.x, piece.cell.y);
             if (cell.item && cell.item.type === 'bridge' && cell.item.color === piece.color) {
                 if (!cell.opened) {
                     cell.opened = true;
-                    canPushNewTile = true;
+                    cannewTile = true;
                     break;
                 }
             }
         }
 
-        if (canPushNewTile) {
+        if (cannewTile) {
             this.action = 'setting';
 
             // Select tile being set

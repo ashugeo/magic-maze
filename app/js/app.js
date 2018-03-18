@@ -7,15 +7,11 @@ import pieces from './pieces';
 
 window.tiles = [];
 window.json = [];
-window.actions = {};
 window.socket = io({transports: ['websocket'], upgrade: false});
+window.role = [];
 
 const tiles = 3;
 fetchJSON(0);
-
-fetch('data/actions.json').then(response => response.json()).then(data => {
-    window.actions = data;
-});
 
 function fetchJSON(i) {
     fetch('data/tile' + i + '.json').then(response => response.json()).then(data => {
@@ -42,18 +38,36 @@ socket.on('players', (players) => {
 });
 
 socket.on('admin', () => {
-    $ui.innerHTML += `<div class="admin">
+    // Timeout needed to give time for 'players' event
+    setTimeout(() => {
+        $ui.innerHTML += `<div class="admin">
         <p>Vous êtes administrateur de la partie.</p>
         <div id="start" class="button">Commencer la partie !</div>
-    </div>`;
-    
-    document.getElementById('start').addEventListener('mousedown', () => {
-        socket.emit('start');
-    });
+        </div>`;
+
+        document.getElementById('start').addEventListener('mousedown', () => {
+            socket.emit('start');
+            document.getElementsByClassName('admin')[0].innerHTML = '';
+        });
+    }, 500);
 });
 
 socket.on('start', () => {
     start();
+});
+
+socket.on('role', (data) => {
+    // Save my role
+    role = data.roles;
+
+    // Display role
+    $ui.innerHTML += 'Actions autorisées : ';
+    for (let i in data.roles) {
+        i = parseInt(i);
+        $ui.innerHTML += data.roles[i];
+        if (data.roles[i+1]) $ui.innerHTML += ', ';
+    }
+    $ui.innerHTML += '.'
 });
 
 socket.on('hero', (data) => {
