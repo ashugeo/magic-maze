@@ -69,20 +69,23 @@
 
 "use strict";
 /* harmony default export */ __webpack_exports__["a"] = ({
-    'debug': false,
-    'grid': false,
-    'cameraSpeed': 5,
-    'boardRows': 24,
-    'boardCols': 24,
-    'size': 32,
-    'heroes': ['green', 'orange', 'purple', 'yellow'],
-    'colors': {
-        'green': '#57bd6a',
-        'orange': '#e87b1a',
-        'purple': '#961c91',
-        'yellow': '#f7dc0a'
+    debug: false,
+    grid: false,
+    cameraSpeed: 5,
+    zoomMax: 4,
+    zoomMin: 1,
+    zoomSpeed: 15,
+    boardRows: 24,
+    boardCols: 24,
+    size: 32,
+    heroes: ['green', 'orange', 'purple', 'yellow'],
+    colors: {
+        green: '#57bd6a',
+        orange: '#e87b1a',
+        purple: '#961c91',
+        yellow: '#f7dc0a'
     },
-    'heroSpeed': 8
+    heroSpeed: 8
 });
 
 
@@ -108,7 +111,7 @@
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__hero__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__hero__ = __webpack_require__(3);
 
 
 
@@ -189,6 +192,209 @@
 
 /***/ }),
 /* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__pieces__ = __webpack_require__(2);
+
+
+
+
+class Hero {
+    constructor() {
+        this.id = Hero.incID(),
+        this.color = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroes[this.id],
+        this.cell = {
+            x: 0,
+            y: 0
+        },
+        this.status = '',
+        this.path = []
+    }
+
+    static incID() {
+        if (this.latestId === undefined) {
+            this.latestId = 0;
+        } else {
+            this.latestId++;
+        }
+        return this.latestId;
+    }
+
+    move(cell) {
+        this.pos = {
+            x: this.pos.x + (this.cell.x - this.pos.x) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroSpeed,
+            y: this.pos.y + (this.cell.y - this.pos.y) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroSpeed
+        }
+    }
+
+    set(cell) {
+        this.cell = {
+            x: cell.x,
+            y: cell.y
+        };
+        this.path = [];
+        this.move(cell);
+    }
+
+    /**
+    * Get path from this hero to a cell
+    * @param  {Object} target Target cell
+    * @return {Object}        Path
+    */
+    getPath(target) {
+        const piece = this.cell;
+        const path = this.path = [];
+
+        if (piece.x === target.x && piece.y === target.y) {
+            // Same column and row = same cell
+            path.push({x: piece.x, y: piece.y});
+            return path;
+        }
+
+        // Check for vortex
+        const item = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][piece.x][piece.y].item;
+        if (item.type === 'vortex' && item.color === this.color) {
+            const targetItem = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][target.x][target.y].item;
+            if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
+                path.push({x: piece.x, y: piece.y});
+                path.push({x: target.x, y: target.y, reachable: true});
+                return path;
+            }
+        }
+
+        if (piece.x !== target.x && piece.y !== target.y) {
+            // Not the same column or row
+            // Check for escalator
+            const escalator = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][piece.x][piece.y].escalator;
+            if (escalator.x === target.x && escalator.y === target.y) {
+                path.push({x: piece.x, y: piece.y});
+                path.push({x: target.x, y: target.y, reachable: true});
+                return path;
+            } else {
+                return;
+            }
+        }
+
+        if (piece.x < target.x) {
+            for (let i = piece.x; i <= target.x; i += 1) {
+                path.push({x: i, y: piece.y})
+            }
+        } else if (piece.x > target.x) {
+            for (let i = piece.x; i >= target.x; i -= 1) {
+                path.push({x: i, y: piece.y})
+            }
+        }
+
+        if (piece.y < target.y) {
+            for (let i = piece.y; i <= target.y; i += 1) {
+                path.push({x: piece.x, y: i})
+            }
+        } else if (piece.y > target.y) {
+            for (let i = piece.y; i >= target.y; i -= 1) {
+                path.push({x: piece.x, y: i})
+            }
+        }
+        return path;
+    }
+
+    /**
+    * Check path legality
+    * @param  {Object} target Target cell
+    */
+    checkPath(target) {
+        // No specified target, check for self position (current cell)
+        if (!target) target = this.cell;
+
+        const path = this.getPath(target);
+        if (!path) return;
+
+        for (let i in path) {
+            path[i].reachable = true;
+
+            if (Object.keys(__WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][path[i].x][path[i].y]).length === 0) {
+                // Out of board
+                path[i].reachable = false;
+                return;
+            }
+
+            if (i > 0) {
+                for (let piece of __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].pieces) {
+                    if (path[i].x === piece.cell.x && path[i].y === piece.cell.y) {
+                        // Another piece blocking the way
+                        path[i].reachable = false;
+                        return;
+                    }
+                }
+
+                if (path[i+1] && path[i+1].reachable) {
+                    // Already marked as reachable (vortex and escalator)
+                    path[i].reachable = true;
+                    return;
+                }
+
+                if (!path[i-1].reachable) {
+                    // Previous cell in path is unreachable, this one should be as well
+                    path[i].reachable = false;
+                    return;
+                }
+
+                // Check current cell and next cell walls depending on direction
+                const x = path[i - 1].x;
+                const y = path[i - 1].y;
+                const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][x][y];
+                const next = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][path[i].x][path[i].y];
+                if (path[i].x === x) {
+                    if (path[i].y > y) {
+                        // Going down
+                        path[i].reachable = !cell.walls.bottom && !next.walls.top;
+                    } else {
+                        // Going up
+                        path[i].reachable = !cell.walls.top && !next.walls.bottom;
+                    }
+                } else if (path[i].y === y) {
+                    if (path[i].x > x) {
+                        // Going right
+                        path[i].reachable = !cell.walls.right && !next.walls.left;
+                    } else {
+                        // Going left
+                        path[i].reachable = !cell.walls.left && !next.walls.right;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+    * Check if hero can go to target cell
+    * @param  {Object} target Target cell
+    * @return {bool}
+    */
+    canGo(target) {
+        const path = this.path;
+        // No path
+        if (path.length === 0) {
+            return false;
+        }
+
+        // Get first unreachable cell in this path
+        for (let i in path) {
+            if (!path[i].reachable) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Hero;
+
+
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {var require;var require;/*! p5.js v0.5.16 October 11, 2017 */
@@ -71600,7 +71806,7 @@ module.exports = p5;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -71620,16 +71826,18 @@ module.exports = p5;
             this.targetZoom += .1;
         }
 
-        // TODO: too many magic numbers in here
-
-        this.targetZoom = Math.min(Math.max(this.targetZoom, 1), 4);
+        // Bound to min and max zoom
+        this.targetZoom = Math.min(Math.max(this.targetZoom, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].zoomMin), __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].zoomMax);
+        // Round to one decimal
         this.targetZoom = Math.round(this.targetZoom * 10) / 10;
 
+        // Easing
         if (p5.abs(this.targetZoom - this.zoomValue) > .005) {
-            this.zoomValue += (this.targetZoom - this.zoomValue) / 15;
+            this.zoomValue += (this.targetZoom - this.zoomValue) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].zoomSpeed;
         } else {
             this.zoomValue = this.targetZoom;
         }
+
         p5.scale(this.zoomValue);
     },
 
@@ -71638,7 +71846,7 @@ module.exports = p5;
     */
     x: 0,
     y: 0,
-    pan(x, y) {
+    move(x, y) {
         if (x && y) {
             this.x = x;
             this.y = y;
@@ -71662,7 +71870,7 @@ module.exports = p5;
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -71725,13 +71933,13 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__symbols__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__symbols__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__pieces__ = __webpack_require__(2);
 
 
@@ -71749,8 +71957,8 @@ class Tile {
         this.canBeSet = false;
         this.fixed = false;
         this.shift = {
-            'x': 0,
-            'y': 0
+            x: 0,
+            y: 0
         }
     }
 
@@ -71792,8 +72000,8 @@ class Tile {
 
                 // Save shift depending on rotation
                 this.shift = {
-                    'x': [_x, _y, _x, _y][this.rotate],
-                    'y': [_y, _x, _y, _x][this.rotate]
+                    x: [_x, _y, _x, _y][this.rotate],
+                    y: [_y, _x, _y, _x][this.rotate]
                 }
             }
         }
@@ -71879,13 +72087,13 @@ class Tile {
     * @param  {int}   x mouse X coordinate
     * @param  {int}   y mouse Y coordinate
     * @param  {int}   o tile orientation
-    * @return {Objet}   {'x': , 'y':}
+    * @return {Objet}   {x, y}
     */
     getEnter(x, y, o) {
         x += [2, 4, 1, -1][o];
         y += [-1, 2, 4, 1][o];
 
-        return {'x': x, 'y': y}
+        return {x: x, y: y}
     }
 
     set(x, y) {
@@ -71916,10 +72124,10 @@ class Tile {
                 // (ex.: top wall becomes left wall after rotation)
                 let walls = ['top', 'right', 'bottom', 'left'];
                 const boardWalls = {
-                    "top":    cell.walls[walls[(4 - r) % 4]],
-                    "right":  cell.walls[walls[(5 - r) % 4]],
-                    "bottom": cell.walls[walls[(6 - r) % 4]],
-                    "left":   cell.walls[walls[(3 - r) % 4]]
+                    top:    cell.walls[walls[(4 - r) % 4]],
+                    right:  cell.walls[walls[(5 - r) % 4]],
+                    bottom: cell.walls[walls[(6 - r) % 4]],
+                    left:   cell.walls[walls[(3 - r) % 4]]
                 }
 
                 // Copy data
@@ -71927,8 +72135,8 @@ class Tile {
                 // boardCell.tileID = this.id;
                 boardCell.tileCount = tileCount;
                 boardCell.tileCell = {
-                    'x': i,
-                    'y': j
+                    x: i,
+                    y: j
                 }
 
                 // Save rotated walls
@@ -71938,8 +72146,8 @@ class Tile {
                 let esc = Object.assign({}, cell.escalator);
                 if (Object.keys(esc).length > 0) {
                     const _esc = {
-                        'x': x + [esc.x, - esc.y, - esc.x, esc.y][r] + [0, 3, 3, 0][r],
-                        'y': y + [esc.y, esc.x, - esc.y, - esc.x][r] + [0, 0, 3, 3][r]
+                        x: x + [esc.x, - esc.y, - esc.x, esc.y][r] + [0, 3, 3, 0][r],
+                        y: y + [esc.y, esc.x, - esc.y, - esc.x][r] + [0, 0, 3, 3][r]
                     }
                     esc.x = _esc.x;
                     esc.y = _esc.y;
@@ -72115,219 +72323,16 @@ class Tile {
 
 
 /***/ }),
-/* 7 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__pieces__ = __webpack_require__(2);
-
-
-
-
-class Hero {
-    constructor() {
-        this.id = Hero.incID(),
-        this.color = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroes[this.id],
-        this.cell = {
-            x: 0,
-            y: 0
-        },
-        this.status = '',
-        this.path = []
-    }
-
-    static incID() {
-        if (this.latestId === undefined) {
-            this.latestId = 0;
-        } else {
-            this.latestId++;
-        }
-        return this.latestId;
-    }
-
-    move(cell) {
-        this.pos = {
-            x: this.pos.x + (this.cell.x - this.pos.x) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroSpeed,
-            y: this.pos.y + (this.cell.y - this.pos.y) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroSpeed
-        }
-    }
-
-    set(cell) {
-        this.cell = {
-            x: cell.x,
-            y: cell.y
-        };
-        this.path = [];
-        this.move(cell);
-    }
-
-    /**
-    * Get path from this hero to a cell
-    * @param  {Object} target Target cell
-    * @return {Object}        Path
-    */
-    getPath(target) {
-        const piece = this.cell;
-        const path = this.path = [];
-
-        if (piece.x === target.x && piece.y === target.y) {
-            // Same column and row = same cell
-            path.push({'x': piece.x, 'y': piece.y});
-            return path;
-        }
-
-        // Check for vortex
-        const item = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][piece.x][piece.y].item;
-        if (item.type === 'vortex' && item.color === this.color) {
-            const targetItem = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][target.x][target.y].item;
-            if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
-                path.push({'x': piece.x, 'y': piece.y});
-                path.push({'x': target.x, 'y': target.y, 'reachable': true});
-                return path;
-            }
-        }
-
-        if (piece.x !== target.x && piece.y !== target.y) {
-            // Not the same column or row
-            // Check for escalator
-            const escalator = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][piece.x][piece.y].escalator;
-            if (escalator.x === target.x && escalator.y === target.y) {
-                path.push({'x': piece.x, 'y': piece.y});
-                path.push({'x': target.x, 'y': target.y, 'reachable': true});
-                return path;
-            } else {
-                return;
-            }
-        }
-
-        if (piece.x < target.x) {
-            for (let i = piece.x; i <= target.x; i += 1) {
-                path.push({'x': i, 'y': piece.y})
-            }
-        } else if (piece.x > target.x) {
-            for (let i = piece.x; i >= target.x; i -= 1) {
-                path.push({'x': i, 'y': piece.y})
-            }
-        }
-
-        if (piece.y < target.y) {
-            for (let i = piece.y; i <= target.y; i += 1) {
-                path.push({'x': piece.x, 'y': i})
-            }
-        } else if (piece.y > target.y) {
-            for (let i = piece.y; i >= target.y; i -= 1) {
-                path.push({'x': piece.x, 'y': i})
-            }
-        }
-        return path;
-    }
-
-    /**
-    * Check path legality
-    * @param  {Object} target Target cell
-    */
-    checkPath(target) {
-        // No specified target, check for self position (current cell)
-        if (!target) target = this.cell;
-
-        const path = this.getPath(target);
-        if (!path) return;
-
-        for (let i in path) {
-            path[i].reachable = true;
-
-            if (Object.keys(__WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][path[i].x][path[i].y]).length === 0) {
-                // Out of board
-                path[i].reachable = false;
-                return;
-            }
-
-            if (i > 0) {
-                for (let piece of __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].pieces) {
-                    if (path[i].x === piece.cell.x && path[i].y === piece.cell.y) {
-                        // Another piece blocking the way
-                        path[i].reachable = false;
-                        return;
-                    }
-                }
-
-                if (path[i+1] && path[i+1].reachable) {
-                    // Already marked as reachable (vortex and escalator)
-                    path[i].reachable = true;
-                    return;
-                }
-
-                if (!path[i-1].reachable) {
-                    // Previous cell in path is unreachable, this one should be as well
-                    path[i].reachable = false;
-                    return;
-                }
-
-                // Check current cell and next cell walls depending on direction
-                const x = path[i - 1].x;
-                const y = path[i - 1].y;
-                const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][x][y];
-                const next = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][path[i].x][path[i].y];
-                if (path[i].x === x) {
-                    if (path[i].y > y) {
-                        // Going down
-                        path[i].reachable = !cell.walls.bottom && !next.walls.top;
-                    } else {
-                        // Going up
-                        path[i].reachable = !cell.walls.top && !next.walls.bottom;
-                    }
-                } else if (path[i].y === y) {
-                    if (path[i].x > x) {
-                        // Going right
-                        path[i].reachable = !cell.walls.right && !next.walls.left;
-                    } else {
-                        // Going left
-                        path[i].reachable = !cell.walls.left && !next.walls.right;
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-    * Check if hero can go to target cell
-    * @param  {Object} target Target cell
-    * @return {bool}
-    */
-    canGo(target) {
-        const path = this.path;
-        // No path
-        if (path.length === 0) {
-            return false;
-        }
-
-        // Get first unreachable cell in this path
-        for (let i in path) {
-            if (!path[i].reachable) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = Hero;
-
-
-
-/***/ }),
 /* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__sketch__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__hero__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__hero__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pieces__ = __webpack_require__(2);
 
 
@@ -72394,12 +72399,12 @@ module.exports = g;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__symbols__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__symbols__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__events__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pieces__ = __webpack_require__(2);
 
@@ -72429,7 +72434,7 @@ const sketch = (p5) => {
             }
         }
 
-        __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].pan(- __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardCols / 2 * __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size, - __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardRows / 2 * __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size);
+        __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].move(- __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardCols / 2 * __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size, - __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardRows / 2 * __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size);
 
         // board.init();
         __WEBPACK_IMPORTED_MODULE_5__events__["a" /* default */].init();
@@ -72444,7 +72449,7 @@ const sketch = (p5) => {
         __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoom();
 
         p5.push();
-        __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].pan();
+        __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].move();
 
         // Display tiles
         displayTiles();
@@ -72491,10 +72496,10 @@ function displayTiles() {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pieces__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(3);
 
 
 
@@ -72543,8 +72548,8 @@ function displayTiles() {
                 hero.set(cell);
                 this.action = '';
                 socket.emit('hero', {
-                    "id": hero.id,
-                    "cell": cell
+                    id: hero.id,
+                    cell: cell
                 });
             }
         }
