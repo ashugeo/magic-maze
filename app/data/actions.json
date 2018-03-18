@@ -1,0 +1,78 @@
+{
+    "0": {
+        "players": [1],
+        "roles": ["up"]
+    },
+    "1": {
+        "players": [1],
+        "roles": ["down"]
+    },
+    "2": {
+        "players": [1],
+        "roles": ["left"]
+    },
+    "3": {
+        "players": [1],
+        "roles": ["right"]
+    },
+    "4": {
+        "players": [1],
+        "roles": ["explore"]
+    },
+    "5": {
+        "players": [1],
+        "roles": ["escalator"]
+    },
+    "6": {
+        "players": [1],
+        "roles": ["vortex"]
+    },
+    "7": {
+        "players": [2],
+        "roles": ["escalator", "explore", "down", "left"]
+    },
+    "8": {
+        "players": [2],
+        "roles": ["vortex", "up", "right"]
+    },
+    "9": {
+        "players": [3],
+        "roles": ["up", "right"]
+    },
+    "10": {
+        "players": [3],
+        "roles": ["escalator", "explore", "down"]
+    },
+    "11": {
+        "players": [3, 4, 5, 6, 7, 8],
+        "roles": ["vortex", "left"]
+    },
+    "12": {
+        "players": [4, 5, 6, 7, 8],
+        "roles": ["explore", "down"]
+    },
+    "13": {
+        "players": [4, 5, 6, 7, 8],
+        "roles": ["up"]
+    },
+    "14": {
+        "players": [4, 5, 6, 7, 8],
+        "roles": ["escalator", "right"]
+    },
+    "15": {
+        "players": [5, 6, 7, 8],
+        "roles": ["left"]
+    },
+    "16": {
+        "players": [6, 7, 8],
+        "roles": ["right"]
+    },
+    "17": {
+        "players": [7, 8],
+        "roles": ["down"]
+    },
+    "18": {
+        "players": [8],
+        "roles": ["up"]
+    }
+}
