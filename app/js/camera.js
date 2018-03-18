@@ -52,5 +52,23 @@ export default {
         }
 
         p5.translate(this.x, this.y);
+
+        const x1 = -this.x
+        const y1 = -this.y;
+        const x2 = (-p5.width/2 + p5.mouseX) / this.zoomValue - this.x;
+        const y2 = (-p5.height/2 + p5.mouseY) / this.zoomValue - this.y;
+        p5.stroke(0);
+        p5.strokeWeight(1);
+        // p5.line(x1, y1, x2, y2);
+
+        const dist = Math.round(p5.dist(x1, y1, x2, y2) * this.zoomValue);
+        const threshold = Math.min(p5.width/2, p5.height/2) * 8/10;
+        if (dist > threshold) {
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            const speed = Math.min(dist - threshold, 100) / 100;
+
+            this.x -= Math.cos(angle) * config.cameraSpeed * speed;
+            this.y -= Math.sin(angle) * config.cameraSpeed * speed;
+        }
     }
 }

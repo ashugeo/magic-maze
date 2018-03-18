@@ -318,7 +318,6 @@ class Hero {
     /**
     * Check path legality
     * @param  {Object} target Target cell
-    * TODO: vortex over empty spot
     */
     checkPath(target) {
         // No specified target, check for self position (current cell)
@@ -328,11 +327,18 @@ class Hero {
         if (!path) return;
 
         for (let i in path) {
+            i = parseInt(i);
             path[i].reachable = true;
 
             if (Object.keys(__WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(path[i].x, path[i].y)).length === 0) {
                 // Out of board
                 path[i].reachable = false;
+                return;
+            }
+
+            if (path[i+1] && path[i+1].reachable) {
+                // Already marked as reachable (vortex and escalator)
+                path[i].reachable = true;
                 return;
             }
 
@@ -343,12 +349,6 @@ class Hero {
                         path[i].reachable = false;
                         return;
                     }
-                }
-
-                if (path[i+1] && path[i+1].reachable) {
-                    // Already marked as reachable (vortex and escalator)
-                    path[i].reachable = true;
-                    return;
                 }
 
                 if (!path[i-1].reachable) {
@@ -71881,6 +71881,24 @@ module.exports = p5;
         }
 
         p5.translate(this.x, this.y);
+
+        const x1 = -this.x
+        const y1 = -this.y;
+        const x2 = (-p5.width/2 + p5.mouseX) / this.zoomValue - this.x;
+        const y2 = (-p5.height/2 + p5.mouseY) / this.zoomValue - this.y;
+        p5.stroke(0);
+        p5.strokeWeight(1);
+        // p5.line(x1, y1, x2, y2);
+
+        const dist = Math.round(p5.dist(x1, y1, x2, y2) * this.zoomValue);
+        const threshold = Math.min(p5.width/2, p5.height/2) * 8/10;
+        if (dist > threshold) {
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            const speed = Math.min(dist - threshold, 100) / 100;
+
+            this.x -= Math.cos(angle) * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed * speed;
+            this.y -= Math.sin(angle) * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed * speed;
+        }
     }
 });
 
@@ -72172,6 +72190,11 @@ class Tile {
 
                 // Save data
                 __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].save(x + i, y + j, boardCell);
+                socket.emit('board', {
+                    x: x + i,
+                    y: y + j,
+                    cell: boardCell
+                });
             }
         }
 
@@ -72347,9 +72370,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__sketch__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__hero__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pieces__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__board__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__hero__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__pieces__ = __webpack_require__(2);
+
 
 
 
@@ -72370,16 +72395,27 @@ function fetchJSON(i) {
             fetchJSON(i + 1);
         } else {
             new __WEBPACK_IMPORTED_MODULE_0_p5___default.a(__WEBPACK_IMPORTED_MODULE_1__sketch__["a" /* default */]);
-            window.tiles.push(new __WEBPACK_IMPORTED_MODULE_2__tile__["a" /* default */](0));
+            window.tiles.push(new __WEBPACK_IMPORTED_MODULE_3__tile__["a" /* default */](0));
             window.tiles[0].set(10, 10);
         }
     });
 }
 
-socket.on('hero', (msg) => {
-    const hero = __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].pieces[msg.id];
-    const cell = msg.cell;
+socket.on('hero', (data) => {
+    const hero = __WEBPACK_IMPORTED_MODULE_5__pieces__["a" /* default */].pieces[data.id];
+    const cell = data.cell;
     hero.set(cell);
+});
+
+socket.on('board', (data) => {
+    __WEBPACK_IMPORTED_MODULE_2__board__["a" /* default */].save(data.x, data.y, data.cell)
+});
+
+socket.on('tile', (data) => {
+    const tile = new __WEBPACK_IMPORTED_MODULE_3__tile__["a" /* default */](data.tile.id);
+    tile.rotate = data.tile.rotate;
+    window.tiles.push(tile);
+    tile.set(data.x, data.y);
 });
 
 
@@ -72625,15 +72661,18 @@ function displayTiles() {
         if (tile.canBeSet && !tile.fixed) {
             this.action = '';
 
-            if (o === 0) {
-                tile.set(cell.x - 2, cell.y);
-            } else if (o === 1) {
-                tile.set(cell.x - 3, cell.y - 2);
-            } else if (o === 2) {
-                tile.set(cell.x - 1, cell.y - 3);
-            } else if (o === 3) {
-                tile.set(cell.x, cell.y - 1);
-            }
+            let _x = [-2, -3, -1, 0][o];
+            let _y = [0, -2, -3, -1][o];
+
+            let x = cell.x + _x;
+            let y = cell.y + _y;
+
+            tile.set(x, y);
+            socket.emit('tile', {
+                x: x,
+                y: y,
+                tile: tile
+            });
         }
     },
 
