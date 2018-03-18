@@ -25,7 +25,7 @@ const sketch = (p5) => {
             }
         }
 
-        camera.pan(- config.boardCols / 2 * config.size, - config.boardRows / 2 * config.size);
+        camera.move(- config.boardCols / 2 * config.size, - config.boardRows / 2 * config.size);
 
         // board.init();
         events.init();
@@ -40,7 +40,7 @@ const sketch = (p5) => {
         camera.zoom();
 
         p5.push();
-        camera.pan();
+        camera.move();
 
         // Display tiles
         displayTiles();

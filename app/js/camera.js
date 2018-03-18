@@ -13,16 +13,18 @@ export default {
             this.targetZoom += .1;
         }
 
-        // TODO: too many magic numbers in here
-
-        this.targetZoom = Math.min(Math.max(this.targetZoom, 1), 4);
+        // Bound to min and max zoom
+        this.targetZoom = Math.min(Math.max(this.targetZoom, config.zoomMin), config.zoomMax);
+        // Round to one decimal
         this.targetZoom = Math.round(this.targetZoom * 10) / 10;
 
+        // Easing
         if (p5.abs(this.targetZoom - this.zoomValue) > .005) {
-            this.zoomValue += (this.targetZoom - this.zoomValue) / 15;
+            this.zoomValue += (this.targetZoom - this.zoomValue) / config.zoomSpeed;
         } else {
             this.zoomValue = this.targetZoom;
         }
+
         p5.scale(this.zoomValue);
     },
 
@@ -31,7 +33,7 @@ export default {
     */
     x: 0,
     y: 0,
-    pan(x, y) {
+    move(x, y) {
         if (x && y) {
             this.x = x;
             this.y = y;
