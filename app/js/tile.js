@@ -27,7 +27,7 @@ export default class Tile {
         if (!config.debug) {
             const o = this.getOrientation();
             const enter = this.getEnter(x, y, o);
-            const target = board[enter.x][enter.y];
+            const target = board.getCell(enter.x, enter.y);
             const parentTile = tiles[target.tileCount];
 
             if (parentTile) {
@@ -87,8 +87,8 @@ export default class Tile {
         // Check if the tile is covering any fixed tile
         for (let i = 0; i < 4; i += 1) {
             for (let j = 0; j < 4; j += 1) {
-                if (board[x + i] && board[x + i][y + j]) {
-                    if (Object.keys(board[x + i][y + j]).length > 0) {
+                if (board.getCell(x + i) && board.getCell(x + i, y + j)) {
+                    if (Object.keys(board.getCell(x + i, y + j)).length > 0) {
                         return false;
                     }
                 }
@@ -97,7 +97,7 @@ export default class Tile {
 
         // Make sure cell next to enter is a bridge
         const nextToEnter = this.getEnter(x, y, this.getOrientation());
-        const cellNextToEnter = board[nextToEnter.x][nextToEnter.y];
+        const cellNextToEnter = board.getCell(nextToEnter.x, nextToEnter.y);
         if (Object.keys(cellNextToEnter).length > 0) {
             if (cellNextToEnter.item.type !== 'bridge') {
                 return false;
@@ -212,7 +212,7 @@ export default class Tile {
                 }
 
                 // Save data
-                board[x + i][y + j] = boardCell;
+                board.save(x + i, y + j, boardCell);
             }
         }
 

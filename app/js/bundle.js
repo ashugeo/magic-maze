@@ -98,8 +98,23 @@
 
 
 /* harmony default export */ __webpack_exports__["a"] = ({
-    checkFree(col, row) {
-        // console.log(col, row, this[col][row]);
+    board: [],
+
+    init() {
+        for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardCols; i += 1) {
+            this.board[i] = {};
+            for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardRows; j += 1) {
+                this.board[i][j] = {};
+            }
+        }
+    },
+
+    getCell(x, y) {
+        return this.board[x][y];
+    },
+
+    save(x, y, cell) {
+        this.board[x][y] = cell;
     }
 });
 
@@ -255,9 +270,9 @@ class Hero {
         }
 
         // Check for vortex
-        const item = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][piece.x][piece.y].item;
+        const item = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(piece.x, piece.y).item;
         if (item.type === 'vortex' && item.color === this.color) {
-            const targetItem = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][target.x][target.y].item;
+            const targetItem = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(target.x, target.y).item;
             if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
                 path.push({x: piece.x, y: piece.y});
                 path.push({x: target.x, y: target.y, reachable: true});
@@ -268,7 +283,7 @@ class Hero {
         if (piece.x !== target.x && piece.y !== target.y) {
             // Not the same column or row
             // Check for escalator
-            const escalator = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][piece.x][piece.y].escalator;
+            const escalator = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(piece.x, piece.y).escalator;
             if (escalator.x === target.x && escalator.y === target.y) {
                 path.push({x: piece.x, y: piece.y});
                 path.push({x: target.x, y: target.y, reachable: true});
@@ -303,6 +318,7 @@ class Hero {
     /**
     * Check path legality
     * @param  {Object} target Target cell
+    * TODO: vortex over empty spot
     */
     checkPath(target) {
         // No specified target, check for self position (current cell)
@@ -314,7 +330,7 @@ class Hero {
         for (let i in path) {
             path[i].reachable = true;
 
-            if (Object.keys(__WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][path[i].x][path[i].y]).length === 0) {
+            if (Object.keys(__WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(path[i].x, path[i].y)).length === 0) {
                 // Out of board
                 path[i].reachable = false;
                 return;
@@ -344,8 +360,8 @@ class Hero {
                 // Check current cell and next cell walls depending on direction
                 const x = path[i - 1].x;
                 const y = path[i - 1].y;
-                const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][x][y];
-                const next = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][path[i].x][path[i].y];
+                const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(x, y)
+                const next = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(path[i].x, path[i].y);
                 if (path[i].x === x) {
                     if (path[i].y > y) {
                         // Going down
@@ -71970,7 +71986,7 @@ class Tile {
         if (!__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].debug) {
             const o = this.getOrientation();
             const enter = this.getEnter(x, y, o);
-            const target = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][enter.x][enter.y];
+            const target = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].getCell(enter.x, enter.y);
             const parentTile = tiles[target.tileCount];
 
             if (parentTile) {
@@ -72030,8 +72046,8 @@ class Tile {
         // Check if the tile is covering any fixed tile
         for (let i = 0; i < 4; i += 1) {
             for (let j = 0; j < 4; j += 1) {
-                if (__WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i] && __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i][y + j]) {
-                    if (Object.keys(__WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i][y + j]).length > 0) {
+                if (__WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].getCell(x + i) && __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].getCell(x + i, y + j)) {
+                    if (Object.keys(__WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].getCell(x + i, y + j)).length > 0) {
                         return false;
                     }
                 }
@@ -72040,7 +72056,7 @@ class Tile {
 
         // Make sure cell next to enter is a bridge
         const nextToEnter = this.getEnter(x, y, this.getOrientation());
-        const cellNextToEnter = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][nextToEnter.x][nextToEnter.y];
+        const cellNextToEnter = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].getCell(nextToEnter.x, nextToEnter.y);
         if (Object.keys(cellNextToEnter).length > 0) {
             if (cellNextToEnter.item.type !== 'bridge') {
                 return false;
@@ -72155,7 +72171,7 @@ class Tile {
                 }
 
                 // Save data
-                __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */][x + i][y + j] = boardCell;
+                __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].save(x + i, y + j, boardCell);
             }
         }
 
@@ -72427,16 +72443,9 @@ const sketch = (p5) => {
 
         p5.createCanvas(p5.windowWidth, p5.windowHeight);
 
-        for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardCols; i += 1) {
-            __WEBPACK_IMPORTED_MODULE_3__board__["a" /* default */][i] = {};
-            for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardRows; j += 1) {
-                __WEBPACK_IMPORTED_MODULE_3__board__["a" /* default */][i][j] = {};
-            }
-        }
-
         __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].move(- __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardCols / 2 * __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size, - __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardRows / 2 * __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size);
 
-        // board.init();
+        __WEBPACK_IMPORTED_MODULE_3__board__["a" /* default */].init();
         __WEBPACK_IMPORTED_MODULE_5__events__["a" /* default */].init();
         __WEBPACK_IMPORTED_MODULE_6__pieces__["a" /* default */].init();
     }
@@ -72635,7 +72644,7 @@ function displayTiles() {
         let canPushNewTile = false;
 
         for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].pieces) {
-            const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */][piece.cell.x][piece.cell.y];
+            const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(piece.cell.x, piece.cell.y);
             if (cell.item && cell.item.type === 'bridge' && cell.item.color === piece.color) {
                 if (!cell.opened) {
                     cell.opened = true;

@@ -18,16 +18,9 @@ const sketch = (p5) => {
 
         p5.createCanvas(p5.windowWidth, p5.windowHeight);
 
-        for (let i = 0; i < config.boardCols; i += 1) {
-            board[i] = {};
-            for (let j = 0; j < config.boardRows; j += 1) {
-                board[i][j] = {};
-            }
-        }
-
         camera.move(- config.boardCols / 2 * config.size, - config.boardRows / 2 * config.size);
 
-        // board.init();
+        board.init();
         events.init();
         pieces.init();
     }

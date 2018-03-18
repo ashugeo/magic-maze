@@ -133,7 +133,7 @@ export default {
         let canPushNewTile = false;
 
         for (let piece of pieces.pieces) {
-            const cell = board[piece.cell.x][piece.cell.y];
+            const cell = board.getCell(piece.cell.x, piece.cell.y);
             if (cell.item && cell.item.type === 'bridge' && cell.item.color === piece.color) {
                 if (!cell.opened) {
                     cell.opened = true;

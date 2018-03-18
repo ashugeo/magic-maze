@@ -55,9 +55,9 @@ export default class Hero {
         }
 
         // Check for vortex
-        const item = board[piece.x][piece.y].item;
+        const item = board.getCell(piece.x, piece.y).item;
         if (item.type === 'vortex' && item.color === this.color) {
-            const targetItem = board[target.x][target.y].item;
+            const targetItem = board.getCell(target.x, target.y).item;
             if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
                 path.push({x: piece.x, y: piece.y});
                 path.push({x: target.x, y: target.y, reachable: true});
@@ -68,7 +68,7 @@ export default class Hero {
         if (piece.x !== target.x && piece.y !== target.y) {
             // Not the same column or row
             // Check for escalator
-            const escalator = board[piece.x][piece.y].escalator;
+            const escalator = board.getCell(piece.x, piece.y).escalator;
             if (escalator.x === target.x && escalator.y === target.y) {
                 path.push({x: piece.x, y: piece.y});
                 path.push({x: target.x, y: target.y, reachable: true});
@@ -103,6 +103,7 @@ export default class Hero {
     /**
     * Check path legality
     * @param  {Object} target Target cell
+    * TODO: vortex over empty spot
     */
     checkPath(target) {
         // No specified target, check for self position (current cell)
@@ -114,7 +115,7 @@ export default class Hero {
         for (let i in path) {
             path[i].reachable = true;
 
-            if (Object.keys(board[path[i].x][path[i].y]).length === 0) {
+            if (Object.keys(board.getCell(path[i].x, path[i].y)).length === 0) {
                 // Out of board
                 path[i].reachable = false;
                 return;
@@ -144,8 +145,8 @@ export default class Hero {
                 // Check current cell and next cell walls depending on direction
                 const x = path[i - 1].x;
                 const y = path[i - 1].y;
-                const cell = board[x][y];
-                const next = board[path[i].x][path[i].y];
+                const cell = board.getCell(x, y)
+                const next = board.getCell(path[i].x, path[i].y);
                 if (path[i].x === x) {
                     if (path[i].y > y) {
                         // Going down
