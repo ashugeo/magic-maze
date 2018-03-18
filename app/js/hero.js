@@ -50,7 +50,7 @@ export default class Hero {
 
         if (piece.x === target.x && piece.y === target.y) {
             // Same column and row = same cell
-            path.push({'x': piece.x, 'y': piece.y});
+            path.push({x: piece.x, y: piece.y});
             return path;
         }
 
@@ -59,8 +59,8 @@ export default class Hero {
         if (item.type === 'vortex' && item.color === this.color) {
             const targetItem = board[target.x][target.y].item;
             if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
-                path.push({'x': piece.x, 'y': piece.y});
-                path.push({'x': target.x, 'y': target.y, 'reachable': true});
+                path.push({x: piece.x, y: piece.y});
+                path.push({x: target.x, y: target.y, reachable: true});
                 return path;
             }
         }
@@ -70,8 +70,8 @@ export default class Hero {
             // Check for escalator
             const escalator = board[piece.x][piece.y].escalator;
             if (escalator.x === target.x && escalator.y === target.y) {
-                path.push({'x': piece.x, 'y': piece.y});
-                path.push({'x': target.x, 'y': target.y, 'reachable': true});
+                path.push({x: piece.x, y: piece.y});
+                path.push({x: target.x, y: target.y, reachable: true});
                 return path;
             } else {
                 return;
@@ -80,21 +80,21 @@ export default class Hero {
 
         if (piece.x < target.x) {
             for (let i = piece.x; i <= target.x; i += 1) {
-                path.push({'x': i, 'y': piece.y})
+                path.push({x: i, y: piece.y})
             }
         } else if (piece.x > target.x) {
             for (let i = piece.x; i >= target.x; i -= 1) {
-                path.push({'x': i, 'y': piece.y})
+                path.push({x: i, y: piece.y})
             }
         }
 
         if (piece.y < target.y) {
             for (let i = piece.y; i <= target.y; i += 1) {
-                path.push({'x': piece.x, 'y': i})
+                path.push({x: piece.x, y: i})
             }
         } else if (piece.y > target.y) {
             for (let i = piece.y; i >= target.y; i -= 1) {
-                path.push({'x': piece.x, 'y': i})
+                path.push({x: piece.x, y: i})
             }
         }
         return path;

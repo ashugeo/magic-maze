@@ -14,8 +14,8 @@ export default class Tile {
         this.canBeSet = false;
         this.fixed = false;
         this.shift = {
-            'x': 0,
-            'y': 0
+            x: 0,
+            y: 0
         }
     }
 
@@ -57,8 +57,8 @@ export default class Tile {
 
                 // Save shift depending on rotation
                 this.shift = {
-                    'x': [_x, _y, _x, _y][this.rotate],
-                    'y': [_y, _x, _y, _x][this.rotate]
+                    x: [_x, _y, _x, _y][this.rotate],
+                    y: [_y, _x, _y, _x][this.rotate]
                 }
             }
         }
@@ -144,13 +144,13 @@ export default class Tile {
     * @param  {int}   x mouse X coordinate
     * @param  {int}   y mouse Y coordinate
     * @param  {int}   o tile orientation
-    * @return {Objet}   {'x': , 'y':}
+    * @return {Objet}   {x, y}
     */
     getEnter(x, y, o) {
         x += [2, 4, 1, -1][o];
         y += [-1, 2, 4, 1][o];
 
-        return {'x': x, 'y': y}
+        return {x: x, y: y}
     }
 
     set(x, y) {
@@ -181,10 +181,10 @@ export default class Tile {
                 // (ex.: top wall becomes left wall after rotation)
                 let walls = ['top', 'right', 'bottom', 'left'];
                 const boardWalls = {
-                    "top":    cell.walls[walls[(4 - r) % 4]],
-                    "right":  cell.walls[walls[(5 - r) % 4]],
-                    "bottom": cell.walls[walls[(6 - r) % 4]],
-                    "left":   cell.walls[walls[(3 - r) % 4]]
+                    top:    cell.walls[walls[(4 - r) % 4]],
+                    right:  cell.walls[walls[(5 - r) % 4]],
+                    bottom: cell.walls[walls[(6 - r) % 4]],
+                    left:   cell.walls[walls[(3 - r) % 4]]
                 }
 
                 // Copy data
@@ -192,8 +192,8 @@ export default class Tile {
                 // boardCell.tileID = this.id;
                 boardCell.tileCount = tileCount;
                 boardCell.tileCell = {
-                    'x': i,
-                    'y': j
+                    x: i,
+                    y: j
                 }
 
                 // Save rotated walls
@@ -203,8 +203,8 @@ export default class Tile {
                 let esc = Object.assign({}, cell.escalator);
                 if (Object.keys(esc).length > 0) {
                     const _esc = {
-                        'x': x + [esc.x, - esc.y, - esc.x, esc.y][r] + [0, 3, 3, 0][r],
-                        'y': y + [esc.y, esc.x, - esc.y, - esc.x][r] + [0, 0, 3, 3][r]
+                        x: x + [esc.x, - esc.y, - esc.x, esc.y][r] + [0, 3, 3, 0][r],
+                        y: y + [esc.y, esc.x, - esc.y, - esc.x][r] + [0, 0, 3, 3][r]
                     }
                     esc.x = _esc.x;
                     esc.y = _esc.y;

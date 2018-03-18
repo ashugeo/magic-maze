@@ -46,8 +46,8 @@ export default {
                 hero.set(cell);
                 this.action = '';
                 socket.emit('hero', {
-                    "id": hero.id,
-                    "cell": cell
+                    id: hero.id,
+                    cell: cell
                 });
             }
         }
