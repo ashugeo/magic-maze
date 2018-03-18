@@ -16,7 +16,8 @@ const sketch = (p5) => {
             tilesImages.push(p5.loadImage('img/tile' + i + '.jpg'));
         }
 
-        p5.createCanvas(p5.windowWidth, p5.windowHeight);
+        const canvas = p5.createCanvas(p5.windowWidth - 300, p5.windowHeight);
+        canvas.parent('canvas-wrap');
 
         camera.move(- config.boardCols / 2 * config.size, - config.boardRows / 2 * config.size);
 
