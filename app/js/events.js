@@ -41,6 +41,11 @@ export default {
         document.getElementById('canvas-wrap').addEventListener('mouseenter', () => {
             camera.mouseIn = true;
         });
+
+        window.oncontextmenu = () => {
+            this.rotateNewTile(1);
+            return false;
+        }
     },
 
     click() {
