@@ -103,7 +103,6 @@ export default class Hero {
     /**
     * Check path legality
     * @param  {Object} target Target cell
-    * TODO: vortex over empty spot
     */
     checkPath(target) {
         // No specified target, check for self position (current cell)
@@ -113,11 +112,18 @@ export default class Hero {
         if (!path) return;
 
         for (let i in path) {
+            i = parseInt(i);
             path[i].reachable = true;
 
             if (Object.keys(board.getCell(path[i].x, path[i].y)).length === 0) {
                 // Out of board
                 path[i].reachable = false;
+                return;
+            }
+
+            if (path[i+1] && path[i+1].reachable) {
+                // Already marked as reachable (vortex and escalator)
+                path[i].reachable = true;
                 return;
             }
 
@@ -128,12 +134,6 @@ export default class Hero {
                         path[i].reachable = false;
                         return;
                     }
-                }
-
-                if (path[i+1] && path[i+1].reachable) {
-                    // Already marked as reachable (vortex and escalator)
-                    path[i].reachable = true;
-                    return;
                 }
 
                 if (!path[i-1].reachable) {
