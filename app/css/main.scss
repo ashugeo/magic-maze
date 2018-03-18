@@ -7,4 +7,44 @@
 body {
     overflow: hidden;
     touch-action: none;
+    display: flex;
+}
+
+#ui {
+    position: relative;
+    width: 300px;
+    height: 100vh;
+    background-color: #345;
+    color: white;
+    padding: 2em;
+    font-family: sans-serif;
+
+    .admin {
+        position: absolute;
+        width: 100%;
+        bottom: 0;
+        left: 0;
+        padding: 2em;
+    }
+}
+
+#canvas-wrap {
+    flex: 1;
+    background-color: rgb(245,250,255);
+}
+
+.button {
+    display: block;
+    background-color: rgba(0,0,0,.2);
+    border-radius: 4px;
+    padding: 1em 2em;
+    margin: 1em 0;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-size: .8em;
+    letter-spacing: .05em;
+
+    &:hover {
+        background-color: rgba(0,0,0,.3);
+    }
 }
