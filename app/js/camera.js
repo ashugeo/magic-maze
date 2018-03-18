@@ -33,6 +33,7 @@ export default {
     */
     x: 0,
     y: 0,
+    mouseIn: true,
     move(x, y) {
         if (x && y) {
             this.x = x;
@@ -53,22 +54,24 @@ export default {
 
         p5.translate(this.x, this.y);
 
-        const x1 = -this.x
-        const y1 = -this.y;
-        const x2 = (-p5.width/2 + p5.mouseX) / this.zoomValue - this.x;
-        const y2 = (-p5.height/2 + p5.mouseY) / this.zoomValue - this.y;
-        p5.stroke(0);
-        p5.strokeWeight(1);
-        // p5.line(x1, y1, x2, y2);
+        if (this.mouseIn && config.cameraMouse) {
+            const x1 = -this.x
+            const y1 = -this.y;
+            const x2 = (-p5.width/2 + p5.mouseX) / this.zoomValue - this.x;
+            const y2 = (-p5.height/2 + p5.mouseY) / this.zoomValue - this.y;
 
-        const dist = Math.round(p5.dist(x1, y1, x2, y2) * this.zoomValue);
-        const threshold = Math.min(p5.width/2, p5.height/2) * 8/10;
-        if (dist > threshold) {
+            const dist = Math.round(p5.dist(x1, y1, x2, y2) * this.zoomValue);
             const angle = Math.atan2(y2 - y1, x2 - x1);
-            const speed = Math.min(dist - threshold, 100) / 100;
 
-            this.x -= Math.cos(angle) * config.cameraSpeed * speed;
-            this.y -= Math.sin(angle) * config.cameraSpeed * speed;
+            const distX = Math.round(Math.cos(angle) * dist);
+            if (Math.abs(distX) > p5.width / 2 - 100) {
+                this.x += -Math.sign(distX) * config.cameraSpeed;
+            }
+
+            const distY = Math.round(Math.sin(angle) * dist);
+            if (Math.abs(distY) > p5.height / 2 - 100) {
+                this.y += -Math.sign(distY) * config.cameraSpeed;
+            }
         }
     }
 }

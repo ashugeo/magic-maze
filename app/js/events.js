@@ -33,6 +33,14 @@ export default {
         document.addEventListener('mousemove', () => {
             this.mouseMove();
         });
+
+        document.getElementById('canvas-wrap').addEventListener('mouseleave', () => {
+            camera.mouseIn = false;
+        });
+
+        document.getElementById('canvas-wrap').addEventListener('mouseenter', () => {
+            camera.mouseIn = true;
+        });
     },
 
     click() {

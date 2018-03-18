@@ -2,6 +2,7 @@ export default {
     debug: false,
     grid: false,
     cameraSpeed: 5,
+    cameraMouse: false,
     zoomMax: 4,
     zoomMin: 1,
     zoomSpeed: 15,

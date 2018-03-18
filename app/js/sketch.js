@@ -19,6 +19,8 @@ const sketch = (p5) => {
         const canvas = p5.createCanvas(p5.windowWidth - 300, p5.windowHeight);
         canvas.parent('canvas-wrap');
 
+        p5.mouseX = p5.width/2;
+        p5.mouseY = p5.height/2;
         camera.move(- config.boardCols / 2 * config.size, - config.boardRows / 2 * config.size);
 
         board.init();
