@@ -294,7 +294,7 @@ class Hero {
                     return path;
                 }
             }
-            
+
             return;
         }
 
@@ -335,14 +335,24 @@ class Hero {
             i = parseInt(i);
             path[i].reachable = true;
 
+            // Out of board
             if (Object.keys(__WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(path[i].x, path[i].y)).length === 0) {
-                // Out of board
                 path[i].reachable = false;
                 return;
             }
 
+            // Already marked as reachable (vortex and escalator)
             if (path[i+1] && path[i+1].reachable) {
-                // Already marked as reachable (vortex and escalator)
+
+                // Make sure there is no other piece on target
+                for (let piece of __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].pieces) {
+                    if (path[i+1].x === piece.cell.x && path[i+1].y === piece.cell.y) {
+                        // Another piece blocking the way
+                        path[i+1].reachable = false;
+                        return;
+                    }
+                }
+
                 path[i].reachable = true;
                 return;
             }
@@ -365,7 +375,7 @@ class Hero {
                 // Check current cell and next cell walls depending on direction
                 const x = path[i - 1].x;
                 const y = path[i - 1].y;
-                const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(x, y)
+                const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(x, y);
                 const next = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(path[i].x, path[i].y);
                 if (path[i].x === x) {
                     if (path[i].y > y) {
@@ -399,7 +409,8 @@ class Hero {
     */
     canGo(target) {
         const path = this.path;
-        // No path
+
+        // No path, no go
         if (path.length === 0) {
             return false;
         }
@@ -72444,16 +72455,16 @@ socket.on('start', () => {
     start();
 });
 
-socket.on('role', (data) => {
+socket.on('role', (roles) => {
     // Save my role
-    role = data.roles;
+    role = roles;
 
     // Display role
     $ui.innerHTML += 'Actions autorisées : ';
-    for (let i in data.roles) {
+    for (let i in roles) {
         i = parseInt(i);
-        $ui.innerHTML += data.roles[i];
-        if (data.roles[i+1]) $ui.innerHTML += ', ';
+        $ui.innerHTML += roles[i];
+        if (roles[i+1]) $ui.innerHTML += ', ';
     }
     $ui.innerHTML += '.'
 });

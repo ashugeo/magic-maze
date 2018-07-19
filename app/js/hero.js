@@ -78,7 +78,7 @@ export default class Hero {
                     return path;
                 }
             }
-            
+
             return;
         }
 
@@ -119,14 +119,24 @@ export default class Hero {
             i = parseInt(i);
             path[i].reachable = true;
 
+            // Out of board
             if (Object.keys(board.getCell(path[i].x, path[i].y)).length === 0) {
-                // Out of board
                 path[i].reachable = false;
                 return;
             }
 
+            // Already marked as reachable (vortex and escalator)
             if (path[i+1] && path[i+1].reachable) {
-                // Already marked as reachable (vortex and escalator)
+
+                // Make sure there is no other piece on target
+                for (let piece of pieces.pieces) {
+                    if (path[i+1].x === piece.cell.x && path[i+1].y === piece.cell.y) {
+                        // Another piece blocking the way
+                        path[i+1].reachable = false;
+                        return;
+                    }
+                }
+
                 path[i].reachable = true;
                 return;
             }
@@ -149,7 +159,7 @@ export default class Hero {
                 // Check current cell and next cell walls depending on direction
                 const x = path[i - 1].x;
                 const y = path[i - 1].y;
-                const cell = board.getCell(x, y)
+                const cell = board.getCell(x, y);
                 const next = board.getCell(path[i].x, path[i].y);
                 if (path[i].x === x) {
                     if (path[i].y > y) {
@@ -183,7 +193,8 @@ export default class Hero {
     */
     canGo(target) {
         const path = this.path;
-        // No path
+
+        // No path, no go
         if (path.length === 0) {
             return false;
         }
