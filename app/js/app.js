@@ -56,16 +56,16 @@ socket.on('start', () => {
     start();
 });
 
-socket.on('role', (data) => {
+socket.on('role', (roles) => {
     // Save my role
-    role = data.roles;
+    role = roles;
 
     // Display role
     $ui.innerHTML += 'Actions autorisées : ';
-    for (let i in data.roles) {
+    for (let i in roles) {
         i = parseInt(i);
-        $ui.innerHTML += data.roles[i];
-        if (data.roles[i+1]) $ui.innerHTML += ', ';
+        $ui.innerHTML += roles[i];
+        if (roles[i+1]) $ui.innerHTML += ', ';
     }
     $ui.innerHTML += '.'
 });

@@ -44,19 +44,26 @@ io.sockets.on('connection', (socket) => {
         if (socket.id === adminID) {
 
             // Get all actions for that number of players
-            let currentActions = [];
+            let roles = [];
             for (let i in actions) {
                 if (actions[i].players.indexOf(players.length) > -1) {
-                    currentActions.push(actions[i]);
+                    roles.push(actions[i].roles);
                 }
             }
 
-            // Give actions to players randomly
-            shuffle(currentActions);
-            for (let i in currentActions) {
-                i = parseInt(i);
-                // Tell this player his role
-                io.to(players[i]).emit('role', currentActions[i])
+            if (players.length === 1) {
+                // Only one player, merge roles together
+                let allRoles = [].concat(...roles);
+                io.to(players[0]).emit('role', allRoles);
+            } else {
+                // Give actions to players randomly
+                shuffleArray(roles);
+                for (let i in roles) {
+                    i = parseInt(i);
+
+                    // Tell this player his role(s)
+                    io.to(players[i]).emit('role', roles[i])
+                }
             }
 
             // Tell everyone to start game
@@ -79,7 +86,7 @@ io.sockets.on('connection', (socket) => {
 
 http.listen(3000);
 
-function shuffle(a) {
+function shuffleArray(a) {
     var j, x, i;
     for (i = a.length - 1; i > 0; i--) {
         j = Math.floor(Math.random() * (i + 1));
