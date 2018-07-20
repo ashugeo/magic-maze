@@ -72702,6 +72702,7 @@ function displayTiles() {
         if (this.hero) {
             hero.path = [];
             this.toggleHero(hero);
+            this.hero = false;
         }
     },
 
