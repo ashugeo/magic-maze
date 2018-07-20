@@ -27,7 +27,11 @@ export default {
         });
 
         document.addEventListener('mousedown', () => {
-            this.click();
+            this.mouseDown();
+        });
+
+        document.addEventListener('mouseup', () => {
+            this.mouseUp();
         });
 
         document.addEventListener('mousemove', () => {
@@ -48,25 +52,36 @@ export default {
         }
     },
 
-    click() {
+    mouseDown() {
         const cell = this.getHoveredCell();
 
         if (this.action === 'setting') {
             this.setTile(cell);
-        } else if (this.action instanceof Hero) {
-            const hero = this.action;
+        }
+
+        const isHero = this.checkHero(cell);
+        if (isHero) {
+            this.toggleHero(isHero);
+        }
+    },
+
+    mouseUp() {
+        const cell = this.getHoveredCell();
+        const hero = this.hero;
+
+        if (this.action === 'hero') {
             if (hero.canGo(cell)) {
                 hero.set(cell);
-                this.action = '';
                 socket.emit('hero', {
                     id: hero.id,
                     cell: cell
                 });
             }
+            this.action = '';
         }
 
-        const hero = this.checkHero(cell)
-        if (hero) {
+        if (this.hero) {
+            hero.path = [];
             this.toggleHero(hero);
         }
     },
@@ -80,11 +95,11 @@ export default {
     mouseMove() {
         const cell = this.getHoveredCell();
 
-        if (this.action instanceof Hero) {
-            const piece = this.action;
+        if (this.action === 'hero') {
+            const hero = this.hero;
             if (cell.x !== this.oldCell.x || cell.y !== this.oldCell.y) {
                 this.oldCell = cell;
-                piece.checkPath(cell);
+                hero.checkPath(cell);
             }
         }
     },
@@ -219,7 +234,8 @@ export default {
 
         if (hero.status !== 'selected') {
             hero.status = 'selected';
-            this.action = hero;
+            this.action = 'hero';
+            this.hero = hero;
             hero.checkPath();
         } else {
             hero.status = 'set';
