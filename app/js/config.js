@@ -1,6 +1,6 @@
 export default {
     debug: false,
-    grid: false,
+    grid: true,
     cameraSpeed: 5,
     cameraMouse: false,
     zoomMax: 4,
@@ -16,5 +16,9 @@ export default {
         purple: '#961c91',
         yellow: '#f7dc0a'
     },
-    heroSpeed: 8
+    heroSpeed: 8,
+    firstTile: {
+        x: 10,
+        y: 10
+    }
 }

@@ -1,5 +1,6 @@
 import p5 from 'p5';
-import sketch from './sketch'
+import sketch from './sketch';
+import config from './config';
 import board from './board';
 import Tile from './tile';
 import Hero from './hero';
@@ -26,7 +27,7 @@ function fetchJSON(i) {
 function start() {
     new p5(sketch);
     window.tiles.push(new Tile(0));
-    window.tiles[0].set(10, 10);
+    window.tiles[0].set(config.firstTile.x, config.firstTile.y);
 }
 
 const $players = document.getElementById('players');

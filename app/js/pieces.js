@@ -37,8 +37,13 @@ export default {
     display() {
         p5.noStroke();
         for (let piece of this.pieces) {
-            // Piece movement animation
-            piece.move(piece.cell);
+            // Piece movement animation, only if necessary
+            if (Math.abs(piece.cell.x - piece.pos.x) > 1 / 1000 || Math.abs(piece.cell.y - piece.pos.y) > 1 / 1000) {
+                piece.move(piece.cell);
+            } else if (piece.cell.x !== piece.pos.x || piece.cell.y !== piece.pos.y) {
+                piece.pos.x = piece.cell.x;
+                piece.pos.y = piece.cell.y;
+            }
 
             // Display path
             p5.push();
