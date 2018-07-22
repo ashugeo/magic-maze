@@ -90,8 +90,7 @@ export default {
     oldCell: {},
 
     /**
-    * Mouve movements events
-    * @return {[type]} [description]
+    * Mouse movements events
     */
     mouseMove() {
         const cell = this.getHoveredCell();
@@ -110,12 +109,12 @@ export default {
     * @return {Object} position {'x': ,'y': }
     */
     getHoveredCell() {
-        const i = p5.floor((p5.mouseX - p5.width/2 - (camera.x * camera.zoomValue)) / (config.size * camera.zoomValue));
-        const j = p5.floor((p5.mouseY - p5.height/2 - (camera.y * camera.zoomValue)) / (config.size * camera.zoomValue));
+        const x = p5.floor((p5.mouseX - p5.width/2 - (camera.x * camera.zoomValue)) / (config.size * camera.zoomValue));
+        const y = p5.floor((p5.mouseY - p5.height/2 - (camera.y * camera.zoomValue)) / (config.size * camera.zoomValue));
 
         const cell = {
-            'x': i,
-            'y': j
+            'x': x,
+            'y': y
         }
 
         return cell;
@@ -155,27 +154,31 @@ export default {
                 y: y,
                 tile: tile
             });
+
+            this.bridgeCell.opened = true;
         }
     },
+
+    bridgeCell: {},
 
     /**
     * Push new tile to tiles array
     */
     newTile() {
-        let cannewTile = false;
+        let canAddTile = false;
 
         for (let piece of pieces.pieces) {
             const cell = board.getCell(piece.cell.x, piece.cell.y);
             if (cell.item && cell.item.type === 'bridge' && cell.item.color === piece.color) {
+                this.bridgeCell = cell;
                 if (!cell.opened) {
-                    cell.opened = true;
-                    cannewTile = true;
+                    canAddTile = true;
                     break;
                 }
             }
         }
 
-        if (cannewTile) {
+        if (canAddTile) {
             this.action = 'setting';
 
             // Select tile being set

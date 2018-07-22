@@ -72709,8 +72709,7 @@ function displayTiles() {
     oldCell: {},
 
     /**
-    * Mouve movements events
-    * @return {[type]} [description]
+    * Mouse movements events
     */
     mouseMove() {
         const cell = this.getHoveredCell();
@@ -72729,12 +72728,12 @@ function displayTiles() {
     * @return {Object} position {'x': ,'y': }
     */
     getHoveredCell() {
-        const i = p5.floor((p5.mouseX - p5.width/2 - (__WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].x * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue));
-        const j = p5.floor((p5.mouseY - p5.height/2 - (__WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].y * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue));
+        const x = p5.floor((p5.mouseX - p5.width/2 - (__WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].x * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue));
+        const y = p5.floor((p5.mouseY - p5.height/2 - (__WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].y * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue));
 
         const cell = {
-            'x': i,
-            'y': j
+            'x': x,
+            'y': y
         }
 
         return cell;
@@ -72774,27 +72773,31 @@ function displayTiles() {
                 y: y,
                 tile: tile
             });
+
+            this.bridgeCell.opened = true;
         }
     },
+
+    bridgeCell: {},
 
     /**
     * Push new tile to tiles array
     */
     newTile() {
-        let cannewTile = false;
+        let canAddTile = false;
 
         for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].pieces) {
             const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(piece.cell.x, piece.cell.y);
             if (cell.item && cell.item.type === 'bridge' && cell.item.color === piece.color) {
+                this.bridgeCell = cell;
                 if (!cell.opened) {
-                    cell.opened = true;
-                    cannewTile = true;
+                    canAddTile = true;
                     break;
                 }
             }
         }
 
-        if (cannewTile) {
+        if (canAddTile) {
             this.action = 'setting';
 
             // Select tile being set
