@@ -3,9 +3,9 @@ import board from './board';
 import pieces from './pieces'
 
 export default class Hero {
-    constructor() {
-        this.id = Hero.incID(),
-        this.color = config.heroes[this.id],
+    constructor(id) {
+        this.id = id,
+        this.color = config.heroes[id],
         this.cell = {
             x: 0,
             y: 0
@@ -14,29 +14,34 @@ export default class Hero {
         this.path = []
     }
 
-    static incID() {
-        if (this.latestId === undefined) {
-            this.latestId = 0;
-        } else {
-            this.latestId++;
-        }
-        return this.latestId;
+    /**
+    * Move hero to cell
+    * @param {Object} cell cell x and y coordinates
+    */
+    move() {
+        let x = this.pos.x + (this.target.x - this.pos.x) / config.heroSpeed;
+        let y = this.pos.y + (this.target.y - this.pos.y) / config.heroSpeed;
+        this.pos = {x, y};
     }
 
-    move(cell) {
-        this.pos = {
-            x: this.pos.x + (this.cell.x - this.pos.x) / config.heroSpeed,
-            y: this.pos.y + (this.cell.y - this.pos.y) / config.heroSpeed
-        }
-    }
-
+    /**
+    * Set hero on cell
+    * @param {Object} cell cell x and y coordinates
+    */
     set(cell) {
         this.cell = {
             x: cell.x,
             y: cell.y
         };
+
+        // console.log((4 + cell.x - config.firstTile.x) % 4, (4 + cell.y - config.firstTile.y) % 4);
+        this.target = {
+            // x: cell.x + [.25, .1, -.1, -.25][(4 + cell.x - config.firstTile.x) % 4],
+            // y: cell.y + [.25, .1, -.1, -.25][(4 + cell.y - config.firstTile.y) % 4]
+            x: cell.x,
+            y: cell.y
+        }
         this.path = [];
-        this.move(cell);
     }
 
     /**

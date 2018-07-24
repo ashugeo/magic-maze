@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 8);
+/******/ 	return __webpack_require__(__webpack_require__.s = 9);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -140,30 +140,14 @@
 
     pieces: [],
 
-    initPos: [
-        {
-            x: 11,
-            y: 11
-        },
-        {
-            x: 12,
-            y: 11
-        },
-        {
-            x: 12,
-            y: 12
-        },
-        {
-            x: 11,
-            y: 12
-        }
-    ],
-
     init() {
         for (let i = 0; i < 4; i += 1) {
-            this.pieces.push(new __WEBPACK_IMPORTED_MODULE_2__hero__["a" /* default */]());
-            this.pieces[i].cell = this.initPos[i];
-            this.pieces[i].pos = this.initPos[i];
+            this.pieces.push(new __WEBPACK_IMPORTED_MODULE_2__hero__["a" /* default */](i));
+            this.pieces[i].set({
+                x: __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].firstTile.x + [1, 2, 2, 1][i],
+                y: __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].firstTile.y + [1, 1, 2, 2][i]
+            });
+            this.pieces[i].pos = this.pieces[i].target;
             this.pieces[i].status = 'set';
         }
     },
@@ -172,11 +156,8 @@
         p5.noStroke();
         for (let piece of this.pieces) {
             // Piece movement animation, only if necessary
-            if (Math.abs(piece.cell.x - piece.pos.x) > 1 / 1000 || Math.abs(piece.cell.y - piece.pos.y) > 1 / 1000) {
-                piece.move(piece.cell);
-            } else if (piece.cell.x !== piece.pos.x || piece.cell.y !== piece.pos.y) {
-                piece.pos.x = piece.cell.x;
-                piece.pos.y = piece.cell.y;
+            if (Math.abs(piece.pos.x - piece.target.x) > 1 / 1000 || Math.abs(piece.pos.y - piece.target.y) > 1 / 1000) {
+                piece.move();
             }
 
             // Display path
@@ -228,9 +209,9 @@
 
 
 class Hero {
-    constructor() {
-        this.id = Hero.incID(),
-        this.color = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroes[this.id],
+    constructor(id) {
+        this.id = id,
+        this.color = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroes[id],
         this.cell = {
             x: 0,
             y: 0
@@ -239,29 +220,34 @@ class Hero {
         this.path = []
     }
 
-    static incID() {
-        if (this.latestId === undefined) {
-            this.latestId = 0;
-        } else {
-            this.latestId++;
-        }
-        return this.latestId;
+    /**
+    * Move hero to cell
+    * @param {Object} cell cell x and y coordinates
+    */
+    move() {
+        let x = this.pos.x + (this.target.x - this.pos.x) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroSpeed;
+        let y = this.pos.y + (this.target.y - this.pos.y) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroSpeed;
+        this.pos = {x, y};
     }
 
-    move(cell) {
-        this.pos = {
-            x: this.pos.x + (this.cell.x - this.pos.x) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroSpeed,
-            y: this.pos.y + (this.cell.y - this.pos.y) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroSpeed
-        }
-    }
-
+    /**
+    * Set hero on cell
+    * @param {Object} cell cell x and y coordinates
+    */
     set(cell) {
         this.cell = {
             x: cell.x,
             y: cell.y
         };
+
+        // console.log((4 + cell.x - config.firstTile.x) % 4, (4 + cell.y - config.firstTile.y) % 4);
+        this.target = {
+            // x: cell.x + [.25, .1, -.1, -.25][(4 + cell.x - config.firstTile.x) % 4],
+            // y: cell.y + [.25, .1, -.1, -.25][(4 + cell.y - config.firstTile.y) % 4]
+            x: cell.x,
+            y: cell.y
+        }
         this.path = [];
-        this.move(cell);
     }
 
     /**
@@ -71848,7 +71834,7 @@ module.exports = p5;
 
 },{"../core/core":55,"./p5.Geometry":102}]},{},[46])(46)
 });
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
 
 /***/ }),
 /* 5 */
@@ -72000,6 +71986,267 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
 
 /***/ }),
 /* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pieces__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(3);
+
+
+
+
+
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+
+    action: '',
+
+    init() {
+        /**
+        * General key press actions
+        * @param {Object} e event
+        */
+        document.addEventListener('keydown', (e) => {
+            if (e.which === 67) { // C: engage tile setting
+                if (role.indexOf('explore') > -1) this.newTile();
+            } else if (e.which === 82) { // R: rotate tile counterclockwise
+                this.rotateNewTile(-1);
+            } else if (e.which === 84) { // T: rotate tile clockwise
+                this.rotateNewTile(1);
+            } else if (e.which === 27) { // Esc: cancel current action
+                this.cancel();
+            }
+        });
+
+        document.addEventListener('mousedown', () => {
+            this.mouseDown();
+        });
+
+        document.addEventListener('mouseup', () => {
+            this.mouseUp();
+        });
+
+        document.addEventListener('mousemove', () => {
+            this.mouseMove();
+        });
+
+        document.getElementById('canvas-wrap').addEventListener('mouseleave', () => {
+            __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].mouseIn = false;
+        });
+
+        document.getElementById('canvas-wrap').addEventListener('mouseenter', () => {
+            __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].mouseIn = true;
+        });
+
+        window.oncontextmenu = () => {
+            this.rotateNewTile(1);
+            return false;
+        }
+    },
+
+    mouseDown() {
+        const cell = this.getHoveredCell();
+
+        if (this.action === 'setting') {
+            this.setTile(cell);
+        }
+
+        const isHero = this.checkHero(cell);
+        if (isHero) {
+            this.toggleHero(isHero);
+        }
+    },
+
+    mouseUp() {
+        const cell = this.getHoveredCell();
+        const hero = this.hero;
+
+        if (this.action === 'hero') {
+            if (hero.canGo(cell)) {
+                hero.set(cell);
+                socket.emit('hero', {
+                    id: hero.id,
+                    cell: cell
+                });
+            }
+            this.action = '';
+        }
+
+        if (this.hero) {
+            hero.path = [];
+            this.toggleHero(hero);
+            this.hero = false;
+        }
+    },
+
+    oldCell: {},
+
+    /**
+    * Mouse movements events
+    */
+    mouseMove() {
+        const cell = this.getHoveredCell();
+
+        if (this.action === 'hero') {
+            const hero = this.hero;
+            if (cell.x !== this.oldCell.x || cell.y !== this.oldCell.y) {
+                this.oldCell = cell;
+                hero.checkPath(cell);
+            }
+        }
+    },
+
+    /**
+    * Get hovered cell coordinates
+    * @return {Object} position {'x': ,'y': }
+    */
+    getHoveredCell() {
+        const x = p5.floor((p5.mouseX - p5.width/2 - (__WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].x * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue));
+        const y = p5.floor((p5.mouseY - p5.height/2 - (__WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].y * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue));
+
+        const cell = {
+            'x': x,
+            'y': y
+        }
+
+        return cell;
+    },
+
+    /**
+    * Cancel current action
+    */
+    cancel() {
+        if (this.action === 'setting') {
+            tiles.pop();
+        }
+        this.action = '';
+    },
+
+    /**
+    * Set tile being placed
+    * @param {Object} cell cell to set tile onto
+    */
+    setTile(cell) {
+        // Select tile being set
+        const tile = tiles[tiles.length-1];
+        const o = tile.getOrientation();
+
+        if (tile.canBeSet && !tile.fixed) {
+            this.action = '';
+
+            let _x = [-2, -3, -1, 0][o];
+            let _y = [0, -2, -3, -1][o];
+
+            let x = cell.x + _x;
+            let y = cell.y + _y;
+
+            tile.set(x, y);
+            socket.emit('tile', {
+                x: x,
+                y: y,
+                tile: tile
+            });
+
+            this.bridgeCell.opened = true;
+        }
+    },
+
+    bridgeCell: {},
+
+    /**
+    * Push new tile to tiles array
+    */
+    newTile() {
+        let canAddTile = false;
+
+        for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].pieces) {
+            const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(piece.cell.x, piece.cell.y);
+            if (cell.item && cell.item.type === 'bridge' && cell.item.color === piece.color) {
+                this.bridgeCell = cell;
+                if (!cell.opened) {
+                    canAddTile = true;
+                    break;
+                }
+            }
+        }
+
+        if (canAddTile) {
+            this.action = 'setting';
+
+            // Select tile being set
+            const tile = tiles[tiles.length-1];
+
+            // Make sure last tile is fixed to prevent multiple tiles setting
+            if (tile.fixed) {
+                tiles.push(new __WEBPACK_IMPORTED_MODULE_3__tile__["a" /* default */](1)); // TODO: remove this
+                // tiles.push(new Tile(tiles.length));
+            }
+        }
+    },
+
+    /**
+    * Rotate tile being set
+    * @param  {int} dir direction (1 for clockwise, -1 for counterclockwise)
+    */
+    rotateNewTile(dir) {
+        // Select tile being set
+        const tile = tiles[tiles.length-1];
+
+        // Make sure tile is not fixed
+        if (!tile.fixed) {
+            if (dir === 1) {
+                // Rotate clockwise
+                tile.rotate < 3 ? tile.rotate += dir : tile.rotate = 0;
+            } else if (dir === -1) {
+                // Rotate counterclockwise
+                tile.rotate > 0 ? tile.rotate += dir : tile.rotate = 3;
+            }
+        }
+    },
+
+    /**
+    * Check if there's a hero in this cell
+    * @param  {Object} cell cell to check
+    * @return {bool}
+    */
+    checkHero(cell) {
+        for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].pieces) {
+            if (piece.cell.x === cell.x && piece.cell.y === cell.y) {
+                return piece;
+            }
+        }
+        return false;
+    },
+
+    /**
+    * Select or deselect hero
+    * @param  {Object} hero hero to select
+    */
+    toggleHero(hero) {
+        for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].pieces) {
+            // Prevent selection of multiple pieces
+            if (piece.status === 'selected' && piece.id !== hero.id) return;
+        }
+
+        if (hero.status !== 'selected') {
+            hero.status = 'selected';
+            this.action = 'hero';
+            this.hero = hero;
+            hero.checkPath();
+        } else {
+            hero.status = 'set';
+        }
+    }
+});
+
+
+/***/ }),
+/* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -72394,19 +72641,21 @@ class Tile {
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__sketch__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__sketch__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__tile__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__tile__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pieces__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__events__ = __webpack_require__(7);
+
 
 
 
@@ -72435,8 +72684,13 @@ function fetchJSON(i) {
 
 function start() {
     new __WEBPACK_IMPORTED_MODULE_0_p5___default.a(__WEBPACK_IMPORTED_MODULE_1__sketch__["a" /* default */]);
+    __WEBPACK_IMPORTED_MODULE_3__board__["a" /* default */].init();
+
     window.tiles.push(new __WEBPACK_IMPORTED_MODULE_4__tile__["a" /* default */](0));
     window.tiles[0].set(__WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].firstTile.x, __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].firstTile.y);
+
+    __WEBPACK_IMPORTED_MODULE_7__events__["a" /* default */].init();
+    __WEBPACK_IMPORTED_MODULE_6__pieces__["a" /* default */].init();
 }
 
 const $players = document.getElementById('players');
@@ -72499,7 +72753,7 @@ socket.on('tile', (data) => {
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports) {
 
 var g;
@@ -72526,7 +72780,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -72536,7 +72790,7 @@ module.exports = g;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__symbols__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__events__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__events__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pieces__ = __webpack_require__(2);
 
 
@@ -72562,10 +72816,6 @@ const sketch = (p5) => {
         p5.mouseX = p5.width/2;
         p5.mouseY = p5.height/2;
         __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].move(- __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardCols / 2 * __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size, - __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardRows / 2 * __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size);
-
-        __WEBPACK_IMPORTED_MODULE_3__board__["a" /* default */].init();
-        __WEBPACK_IMPORTED_MODULE_5__events__["a" /* default */].init();
-        __WEBPACK_IMPORTED_MODULE_6__pieces__["a" /* default */].init();
     }
 
     p5.draw = () => {
@@ -72615,267 +72865,6 @@ function displayTiles() {
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (sketch);
-
-
-/***/ }),
-/* 11 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pieces__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(3);
-
-
-
-
-
-
-
-/* harmony default export */ __webpack_exports__["a"] = ({
-
-    action: '',
-
-    init() {
-        /**
-        * General key press actions
-        * @param {Object} e event
-        */
-        document.addEventListener('keydown', (e) => {
-            if (e.which === 67) { // C: engage tile setting
-                if (role.indexOf('explore') > -1) this.newTile();
-            } else if (e.which === 82) { // R: rotate tile counterclockwise
-                this.rotateNewTile(-1);
-            } else if (e.which === 84) { // T: rotate tile clockwise
-                this.rotateNewTile(1);
-            } else if (e.which === 27) { // Esc: cancel current action
-                this.cancel();
-            }
-        });
-
-        document.addEventListener('mousedown', () => {
-            this.mouseDown();
-        });
-
-        document.addEventListener('mouseup', () => {
-            this.mouseUp();
-        });
-
-        document.addEventListener('mousemove', () => {
-            this.mouseMove();
-        });
-
-        document.getElementById('canvas-wrap').addEventListener('mouseleave', () => {
-            __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].mouseIn = false;
-        });
-
-        document.getElementById('canvas-wrap').addEventListener('mouseenter', () => {
-            __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].mouseIn = true;
-        });
-
-        window.oncontextmenu = () => {
-            this.rotateNewTile(1);
-            return false;
-        }
-    },
-
-    mouseDown() {
-        const cell = this.getHoveredCell();
-
-        if (this.action === 'setting') {
-            this.setTile(cell);
-        }
-
-        const isHero = this.checkHero(cell);
-        if (isHero) {
-            this.toggleHero(isHero);
-        }
-    },
-
-    mouseUp() {
-        const cell = this.getHoveredCell();
-        const hero = this.hero;
-
-        if (this.action === 'hero') {
-            if (hero.canGo(cell)) {
-                hero.set(cell);
-                socket.emit('hero', {
-                    id: hero.id,
-                    cell: cell
-                });
-            }
-            this.action = '';
-        }
-
-        if (this.hero) {
-            hero.path = [];
-            this.toggleHero(hero);
-            this.hero = false;
-        }
-    },
-
-    oldCell: {},
-
-    /**
-    * Mouse movements events
-    */
-    mouseMove() {
-        const cell = this.getHoveredCell();
-
-        if (this.action === 'hero') {
-            const hero = this.hero;
-            if (cell.x !== this.oldCell.x || cell.y !== this.oldCell.y) {
-                this.oldCell = cell;
-                hero.checkPath(cell);
-            }
-        }
-    },
-
-    /**
-    * Get hovered cell coordinates
-    * @return {Object} position {'x': ,'y': }
-    */
-    getHoveredCell() {
-        const x = p5.floor((p5.mouseX - p5.width/2 - (__WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].x * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue));
-        const y = p5.floor((p5.mouseY - p5.height/2 - (__WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].y * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue));
-
-        const cell = {
-            'x': x,
-            'y': y
-        }
-
-        return cell;
-    },
-
-    /**
-    * Cancel current action
-    */
-    cancel() {
-        if (this.action === 'setting') {
-            tiles.pop();
-        }
-        this.action = '';
-    },
-
-    /**
-    * Set tile being placed
-    * @param {Object} cell cell to set tile onto
-    */
-    setTile(cell) {
-        // Select tile being set
-        const tile = tiles[tiles.length-1];
-        const o = tile.getOrientation();
-
-        if (tile.canBeSet && !tile.fixed) {
-            this.action = '';
-
-            let _x = [-2, -3, -1, 0][o];
-            let _y = [0, -2, -3, -1][o];
-
-            let x = cell.x + _x;
-            let y = cell.y + _y;
-
-            tile.set(x, y);
-            socket.emit('tile', {
-                x: x,
-                y: y,
-                tile: tile
-            });
-
-            this.bridgeCell.opened = true;
-        }
-    },
-
-    bridgeCell: {},
-
-    /**
-    * Push new tile to tiles array
-    */
-    newTile() {
-        let canAddTile = false;
-
-        for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].pieces) {
-            const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(piece.cell.x, piece.cell.y);
-            if (cell.item && cell.item.type === 'bridge' && cell.item.color === piece.color) {
-                this.bridgeCell = cell;
-                if (!cell.opened) {
-                    canAddTile = true;
-                    break;
-                }
-            }
-        }
-
-        if (canAddTile) {
-            this.action = 'setting';
-
-            // Select tile being set
-            const tile = tiles[tiles.length-1];
-
-            // Make sure last tile is fixed to prevent multiple tiles setting
-            if (tile.fixed) {
-                tiles.push(new __WEBPACK_IMPORTED_MODULE_3__tile__["a" /* default */](1)); // TODO: remove this
-                // tiles.push(new Tile(tiles.length));
-            }
-        }
-    },
-
-    /**
-    * Rotate tile being set
-    * @param  {int} dir direction (1 for clockwise, -1 for counterclockwise)
-    */
-    rotateNewTile(dir) {
-        // Select tile being set
-        const tile = tiles[tiles.length-1];
-
-        // Make sure tile is not fixed
-        if (!tile.fixed) {
-            if (dir === 1) {
-                // Rotate clockwise
-                tile.rotate < 3 ? tile.rotate += dir : tile.rotate = 0;
-            } else if (dir === -1) {
-                // Rotate counterclockwise
-                tile.rotate > 0 ? tile.rotate += dir : tile.rotate = 3;
-            }
-        }
-    },
-
-    /**
-    * Check if there's a hero in this cell
-    * @param  {Object} cell cell to check
-    * @return {bool}
-    */
-    checkHero(cell) {
-        for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].pieces) {
-            if (piece.cell.x === cell.x && piece.cell.y === cell.y) {
-                return piece;
-            }
-        }
-        return false;
-    },
-
-    /**
-    * Select or deselect hero
-    * @param  {Object} hero hero to select
-    */
-    toggleHero(hero) {
-        for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].pieces) {
-            // Prevent selection of multiple pieces
-            if (piece.status === 'selected' && piece.id !== hero.id) return;
-        }
-
-        if (hero.status !== 'selected') {
-            hero.status = 'selected';
-            this.action = 'hero';
-            this.hero = hero;
-            hero.checkPath();
-        } else {
-            hero.status = 'set';
-        }
-    }
-});
 
 
 /***/ })
