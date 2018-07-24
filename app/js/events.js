@@ -71,6 +71,7 @@ export default {
 
         if (this.action === 'hero') {
             if (hero.canGo(cell)) {
+                // FIXME: hero will sometimes go to a cell it shouldn't if spammed/timed correctly
                 hero.set(cell);
                 socket.emit('hero', {
                     id: hero.id,
