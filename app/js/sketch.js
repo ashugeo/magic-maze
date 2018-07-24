@@ -22,10 +22,6 @@ const sketch = (p5) => {
         p5.mouseX = p5.width/2;
         p5.mouseY = p5.height/2;
         camera.move(- config.boardCols / 2 * config.size, - config.boardRows / 2 * config.size);
-
-        board.init();
-        events.init();
-        pieces.init();
     }
 
     p5.draw = () => {

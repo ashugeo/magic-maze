@@ -5,6 +5,7 @@ import board from './board';
 import Tile from './tile';
 import Hero from './hero';
 import pieces from './pieces';
+import events from './events';
 
 window.tiles = [];
 window.json = [];
@@ -26,8 +27,13 @@ function fetchJSON(i) {
 
 function start() {
     new p5(sketch);
+    board.init();
+
     window.tiles.push(new Tile(0));
     window.tiles[0].set(config.firstTile.x, config.firstTile.y);
+
+    events.init();
+    pieces.init();
 }
 
 const $players = document.getElementById('players');
