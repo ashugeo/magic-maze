@@ -13,8 +13,8 @@
         "1": {
             "walls": {
                 "top": true,
-                "right": false,
-                "bottom": false,
+                "right": true,
+                "bottom": true,
                 "left": true
             },
             "item": false,
@@ -22,10 +22,10 @@
         },
         "2": {
             "walls": {
-                "top": false,
+                "top": true,
                 "right": true,
-                "bottom": true,
-                "left": false
+                "bottom": false,
+                "left": true
             },
             "item": false,
             "escalator": false
@@ -49,14 +49,17 @@
                 "bottom": true,
                 "left": false
             },
-            "item": false,
+            "item": {
+                "type": "bridge",
+                "color": "green"
+            },
             "escalator": false
         },
         "1": {
             "walls": {
-                "top": false,
+                "top": true,
                 "right": false,
-                "bottom": true,
+                "bottom": false,
                 "left": false
             },
             "item": false,
@@ -64,8 +67,8 @@
         },
         "2": {
             "walls": {
-                "top": true,
-                "right": false,
+                "top": false,
+                "right": true,
                 "bottom": false,
                 "left": false
             },
@@ -77,7 +80,7 @@
                 "top": true,
                 "right": true,
                 "bottom": true,
-                "left": false
+                "left": true
             },
             "item": false,
             "escalator": false
@@ -87,7 +90,7 @@
         "0": {
             "walls": {
                 "top": true,
-                "right": false,
+                "right": true,
                 "bottom": true,
                 "left": true
             },
@@ -96,10 +99,10 @@
         },
         "1": {
             "walls": {
-                "top": true,
-                "right": false,
+                "top": false,
+                "right": true,
                 "bottom": false,
-                "left": false
+                "left": true
             },
             "item": false,
             "escalator": false
@@ -107,9 +110,9 @@
         "2": {
             "walls": {
                 "top": false,
-                "right": true,
-                "bottom": false,
-                "left": false
+                "right": false,
+                "bottom": true,
+                "left": true
             },
             "item": false,
             "escalator": false
@@ -119,7 +122,7 @@
                 "top": true,
                 "right": false,
                 "bottom": false,
-                "left": true
+                "left": false
             },
             "item": {
                 "type": "enter"
@@ -142,16 +145,19 @@
             "walls": {
                 "top": false,
                 "right": true,
-                "bottom": true,
+                "bottom": false,
                 "left": true
             },
-            "item": false,
+            "item": {
+                "type": "bridge",
+                "color": "orange"
+            },
             "escalator": false
         },
         "2": {
             "walls": {
-                "top": false,
-                "right": false,
+                "top": true,
+                "right": true,
                 "bottom": true,
                 "left": true
             },
@@ -163,9 +169,12 @@
                 "top": false,
                 "right": true,
                 "bottom": true,
-                "left": false
+                "left": true
             },
-            "item": false,
+            "item": {
+                "type": "vortex",
+                "color": "purple"
+            },
             "escalator": false
         }
     }
