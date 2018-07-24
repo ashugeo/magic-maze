@@ -6,30 +6,14 @@ export default {
 
     pieces: [],
 
-    initPos: [
-        {
-            x: 11,
-            y: 11
-        },
-        {
-            x: 12,
-            y: 11
-        },
-        {
-            x: 12,
-            y: 12
-        },
-        {
-            x: 11,
-            y: 12
-        }
-    ],
-
     init() {
         for (let i = 0; i < 4; i += 1) {
-            this.pieces.push(new Hero());
-            this.pieces[i].cell = this.initPos[i];
-            this.pieces[i].pos = this.initPos[i];
+            this.pieces.push(new Hero(i));
+            this.pieces[i].set({
+                x: config.firstTile.x + [1, 2, 2, 1][i],
+                y: config.firstTile.y + [1, 1, 2, 2][i]
+            });
+            this.pieces[i].pos = this.pieces[i].target;
             this.pieces[i].status = 'set';
         }
     },
@@ -38,11 +22,8 @@ export default {
         p5.noStroke();
         for (let piece of this.pieces) {
             // Piece movement animation, only if necessary
-            if (Math.abs(piece.cell.x - piece.pos.x) > 1 / 1000 || Math.abs(piece.cell.y - piece.pos.y) > 1 / 1000) {
-                piece.move(piece.cell);
-            } else if (piece.cell.x !== piece.pos.x || piece.cell.y !== piece.pos.y) {
-                piece.pos.x = piece.cell.x;
-                piece.pos.y = piece.cell.y;
+            if (Math.abs(piece.pos.x - piece.target.x) > 1 / 1000 || Math.abs(piece.pos.y - piece.target.y) > 1 / 1000) {
+                piece.move();
             }
 
             // Display path
