@@ -79,6 +79,7 @@
     boardRows: 24,
     boardCols: 24,
     size: 32,
+    tiles: 5,
     heroes: ['green', 'orange', 'purple', 'yellow'],
     colors: {
         green: '#57bd6a',
@@ -72184,8 +72185,9 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
 
             // Make sure last tile is fixed to prevent multiple tiles setting
             if (tile.fixed) {
-                tiles.push(new __WEBPACK_IMPORTED_MODULE_3__tile__["a" /* default */](1)); // TODO: remove this
-                // tiles.push(new Tile(tiles.length));
+                // tiles.push(new Tile(1)); // TODO: remove this
+                tiles.push(new __WEBPACK_IMPORTED_MODULE_3__tile__["a" /* default */]((tiles.length - 1) % __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].tiles + 1));
+                // tiles.push(new Tile(1));
             }
         }
     },
@@ -72293,30 +72295,41 @@ class Tile {
 
                 const s = 4.6; // Shift in pixels
 
+                console.log('orientation', o, 'rotate', this.rotate, 'tileCell', target.tileCell);
+
                 // Shift depends on position and orientation
                 if (target.tileCell.x === 0 && o === 1) {
-                    _y = [2*s, s, 0, -s][target.tileCell.y];
+                    _y += [2*s, s, 0, -s][target.tileCell.y];
+                    _y = [_y, _y, -_y, -_y][this.rotate];
                 } else if (target.tileCell.x === 3 && o === 3) {
-                    _y = [-s, 0, s, 2*s][target.tileCell.y];
+                    _y += [-s, 0, s, 2*s][target.tileCell.y];
+                    _y = [-_y, -_y, _y, _y][this.rotate];
                 }
 
                 if (target.tileCell.y === 3 && o === 0) {
-                    _x = [2*s, s, 0, 0][target.tileCell.x];
+                    _x += [2*s, s, 0, 0][target.tileCell.x];
+                    _x = [_x, -_x, -_x, _x][this.rotate];
                 } else if (target.tileCell.y === 0 && o === 2) {
-                    _x = [0, 0, s, 2*s][target.tileCell.x];
+                    _x += [0, 0, s, 2*s][target.tileCell.x];
+                    _x = [-_x, _x, _x, -_x][this.rotate];
                 }
 
+                console.log('shift', _x, _y);
+
                 // Add parent tile shift depending on its rotation
-                const pX = parentTile.shift.x;
-                const pY = parentTile.shift.y;
-                _x += [pX, -pY, pX, -pY][parentTile.rotate];
-                _y += [-pY, pX, -pY, pX][parentTile.rotate];
+                // const pX = parentTile.shift.x;
+                // const pY = parentTile.shift.y;
+                // _x += [pX, -pY, pX, -pY][parentTile.rotate];
+                // _y += [-pY, pX, -pY, pX][parentTile.rotate];
 
                 // Save shift depending on rotation
                 this.shift = {
                     x: [_x, _y, _x, _y][this.rotate],
                     y: [_y, _x, _y, _x][this.rotate]
                 }
+
+                console.log('total', this.shift);
+                console.log('---');
             }
         }
 
@@ -72390,7 +72403,7 @@ class Tile {
 
         // Determine rotation
         let r = [0, 3, 1, 2][i];
-        r += this.rotate
+        r += this.rotate;
         r %= 4;
 
         return r;
@@ -72515,6 +72528,14 @@ class Tile {
             _y -= [0, 1, 1, 0][r];
         } else {
             // Shift adjustment for images
+            // const sX = this.shift.x;
+            // const sY = this.shift.y;
+
+            // _x += [sY, sX, sY, sX][r];
+            // _y += [sX, sY, sX, -sY][r];
+            // _x += [sX, sY, -sX, -sY][o];
+            // _y += [sY, -sX, -sY, sX][o];
+
             _x += this.shift.x;
             _y += this.shift.y;
         }
@@ -72670,14 +72691,13 @@ window.json = [];
 window.socket = io({transports: ['websocket'], upgrade: false});
 window.role = [];
 
-const tiles = 3;
 fetchJSON(0);
 
 function fetchJSON(i) {
     fetch('data/tile' + i + '.json').then(response => response.json()).then(data => {
         window.json.push(data);
 
-        if (i < tiles - 1) {
+        if (i < __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].tiles - 1) {
             fetchJSON(i + 1);
         }
     });
@@ -72807,7 +72827,7 @@ const sketch = (p5) => {
     window.tilesImages = [];
 
     p5.setup = () => {
-        for (let i = 0; i < 3; i +=1) {
+        for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].tiles; i +=1) {
             tilesImages.push(p5.loadImage('img/tile' + i + '.jpg'));
         }
 

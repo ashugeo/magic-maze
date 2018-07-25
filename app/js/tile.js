@@ -36,30 +36,41 @@ export default class Tile {
 
                 const s = 4.6; // Shift in pixels
 
+                console.log('orientation', o, 'rotate', this.rotate, 'tileCell', target.tileCell);
+
                 // Shift depends on position and orientation
                 if (target.tileCell.x === 0 && o === 1) {
-                    _y = [2*s, s, 0, -s][target.tileCell.y];
+                    _y += [2*s, s, 0, -s][target.tileCell.y];
+                    _y = [_y, _y, -_y, -_y][this.rotate];
                 } else if (target.tileCell.x === 3 && o === 3) {
-                    _y = [-s, 0, s, 2*s][target.tileCell.y];
+                    _y += [-s, 0, s, 2*s][target.tileCell.y];
+                    _y = [-_y, -_y, _y, _y][this.rotate];
                 }
 
                 if (target.tileCell.y === 3 && o === 0) {
-                    _x = [2*s, s, 0, 0][target.tileCell.x];
+                    _x += [2*s, s, 0, 0][target.tileCell.x];
+                    _x = [_x, -_x, -_x, _x][this.rotate];
                 } else if (target.tileCell.y === 0 && o === 2) {
-                    _x = [0, 0, s, 2*s][target.tileCell.x];
+                    _x += [0, 0, s, 2*s][target.tileCell.x];
+                    _x = [-_x, _x, _x, -_x][this.rotate];
                 }
 
+                console.log('shift', _x, _y);
+
                 // Add parent tile shift depending on its rotation
-                const pX = parentTile.shift.x;
-                const pY = parentTile.shift.y;
-                _x += [pX, -pY, pX, -pY][parentTile.rotate];
-                _y += [-pY, pX, -pY, pX][parentTile.rotate];
+                // const pX = parentTile.shift.x;
+                // const pY = parentTile.shift.y;
+                // _x += [pX, -pY, pX, -pY][parentTile.rotate];
+                // _y += [-pY, pX, -pY, pX][parentTile.rotate];
 
                 // Save shift depending on rotation
                 this.shift = {
                     x: [_x, _y, _x, _y][this.rotate],
                     y: [_y, _x, _y, _x][this.rotate]
                 }
+
+                console.log('total', this.shift);
+                console.log('---');
             }
         }
 
@@ -133,7 +144,7 @@ export default class Tile {
 
         // Determine rotation
         let r = [0, 3, 1, 2][i];
-        r += this.rotate
+        r += this.rotate;
         r %= 4;
 
         return r;
@@ -258,6 +269,14 @@ export default class Tile {
             _y -= [0, 1, 1, 0][r];
         } else {
             // Shift adjustment for images
+            // const sX = this.shift.x;
+            // const sY = this.shift.y;
+
+            // _x += [sY, sX, sY, sX][r];
+            // _y += [sX, sY, sX, -sY][r];
+            // _x += [sX, sY, -sX, -sY][o];
+            // _y += [sY, -sX, -sY, sX][o];
+
             _x += this.shift.x;
             _y += this.shift.y;
         }
