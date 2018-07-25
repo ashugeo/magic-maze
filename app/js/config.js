@@ -9,6 +9,7 @@ export default {
     boardRows: 24,
     boardCols: 24,
     size: 32,
+    tiles: 5,
     heroes: ['green', 'orange', 'purple', 'yellow'],
     colors: {
         green: '#57bd6a',

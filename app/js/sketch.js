@@ -12,7 +12,7 @@ const sketch = (p5) => {
     window.tilesImages = [];
 
     p5.setup = () => {
-        for (let i = 0; i < 3; i +=1) {
+        for (let i = 0; i < config.tiles; i +=1) {
             tilesImages.push(p5.loadImage('img/tile' + i + '.jpg'));
         }
 

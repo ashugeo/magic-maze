@@ -12,14 +12,13 @@ window.json = [];
 window.socket = io({transports: ['websocket'], upgrade: false});
 window.role = [];
 
-const tiles = 3;
 fetchJSON(0);
 
 function fetchJSON(i) {
     fetch('data/tile' + i + '.json').then(response => response.json()).then(data => {
         window.json.push(data);
 
-        if (i < tiles - 1) {
+        if (i < config.tiles - 1) {
             fetchJSON(i + 1);
         }
     });
