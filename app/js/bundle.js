@@ -91,7 +91,8 @@
     firstTile: {
         x: 10,
         y: 10
-    }
+    },
+    timer: 180
 });
 
 
@@ -71996,6 +71997,8 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pieces__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__clock__ = __webpack_require__(12);
+
 
 
 
@@ -72057,17 +72060,22 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
             this.setTile(cell);
         }
 
-        const isHero = this.checkHero(cell);
+        const isHero = this.checkForHero(cell);
         if (isHero) {
             this.toggleHero(isHero);
+            this.oldHeroCell = cell;
         }
     },
+
+    oldHeroCell: {},
 
     mouseUp() {
         const cell = this.getHoveredCell();
         const hero = this.hero;
 
-        if (this.action === 'hero') {
+        if (!hero) return;
+
+        if (!(cell.x === this.oldHeroCell.x && cell.y === this.oldHeroCell.y) && this.action === 'hero') {
             if (hero.canGo(cell)) {
                 // FIXME: hero will sometimes go to a cell it shouldn't if spammed/timed correctly
                 hero.set(cell);
@@ -72075,18 +72083,17 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
                     id: hero.id,
                     cell: cell
                 });
+                this.checkForEvents(cell);
             }
-            this.action = '';
         }
 
-        if (this.hero) {
-            hero.path = [];
-            this.toggleHero(hero);
-            this.hero = false;
-        }
+        this.action = '';
+        hero.path = [];
+        this.toggleHero(hero);
+        this.hero = false;
     },
 
-    oldCell: {},
+    oldMouseCell: {},
 
     /**
     * Mouse movements events
@@ -72096,8 +72103,8 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
 
         if (this.action === 'hero') {
             const hero = this.hero;
-            if (cell.x !== this.oldCell.x || cell.y !== this.oldCell.y) {
-                this.oldCell = cell;
+            if (cell.x !== this.oldMouseCell.x || cell.y !== this.oldMouseCell.y) {
+                this.oldMouseCell = cell;
                 hero.checkPath(cell);
             }
         }
@@ -72216,7 +72223,7 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
     * @param  {Object} cell cell to check
     * @return {bool}
     */
-    checkHero(cell) {
+    checkForHero(cell) {
         for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].pieces) {
             if (piece.cell.x === cell.x && piece.cell.y === cell.y) {
                 return piece;
@@ -72242,6 +72249,14 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
             hero.checkPath();
         } else {
             hero.status = 'set';
+        }
+    },
+
+    checkForEvents(cell) {
+        const item = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(cell.x, cell.y).item;
+
+        if (item.type === 'time') {
+            __WEBPACK_IMPORTED_MODULE_6__clock__["a" /* default */].invert();
         }
     }
 });
@@ -72656,6 +72671,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pieces__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__events__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__clock__ = __webpack_require__(12);
+
 
 
 
@@ -72691,10 +72708,11 @@ function start() {
 
     __WEBPACK_IMPORTED_MODULE_7__events__["a" /* default */].init();
     __WEBPACK_IMPORTED_MODULE_6__pieces__["a" /* default */].init();
+    __WEBPACK_IMPORTED_MODULE_8__clock__["a" /* default */].init();
 }
 
-const $players = document.getElementById('players');
 const $ui = document.getElementById('ui');
+const $players = document.getElementById('players');
 
 socket.on('players', (players) => {
     $players.innerHTML = players;
@@ -72865,6 +72883,64 @@ function displayTiles() {
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (sketch);
+
+
+/***/ }),
+/* 12 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+    init() {
+        this.$clock = document.getElementById('clock');
+        this.interval = setInterval(() => { this.ticker() }, 1000);
+    },
+
+    tick: 0,
+    inverted: false,
+    elapsed: 0,
+    remaining: __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].timer,
+
+    ticker() {
+        this.display();
+
+        // No time left
+        if (this.remaining === 0) {
+            this.stop();
+            return;
+        }
+
+        this.tick += 1;
+        this.elapsed += 1;
+        this.remaining -= 1;
+    },
+
+    stop() {
+        clearInterval(this.interval);
+    },
+
+    invert() {
+        this.inverted = !this.inverted;
+        let r = this.remaining;
+        this.remaining = this.elapsed;
+        this.elapsed = r;
+    },
+
+    toString(time) {
+        let minutes = Math.floor(time / 60);
+        let seconds = time % 60;
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+        // let string = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+        return `${minutes}m ${seconds}s`;
+    },
+
+    display() {
+        this.$clock.innerHTML = this.toString(this.remaining);
+    }
+});
 
 
 /***/ })

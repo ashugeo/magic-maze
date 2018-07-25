@@ -21,5 +21,6 @@ export default {
     firstTile: {
         x: 10,
         y: 10
-    }
+    },
+    timer: 180
 }

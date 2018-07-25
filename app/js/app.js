@@ -6,6 +6,7 @@ import Tile from './tile';
 import Hero from './hero';
 import pieces from './pieces';
 import events from './events';
+import clock from './clock';
 
 window.tiles = [];
 window.json = [];
@@ -33,10 +34,11 @@ function start() {
 
     events.init();
     pieces.init();
+    clock.init();
 }
 
-const $players = document.getElementById('players');
 const $ui = document.getElementById('ui');
+const $players = document.getElementById('players');
 
 socket.on('players', (players) => {
     $players.innerHTML = players;

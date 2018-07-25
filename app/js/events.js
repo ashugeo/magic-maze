@@ -4,6 +4,7 @@ import camera from './camera';
 import Tile from './tile';
 import pieces from './pieces'
 import Hero from './hero';
+import clock from './clock';
 
 export default {
 
@@ -59,17 +60,22 @@ export default {
             this.setTile(cell);
         }
 
-        const isHero = this.checkHero(cell);
+        const isHero = this.checkForHero(cell);
         if (isHero) {
             this.toggleHero(isHero);
+            this.oldHeroCell = cell;
         }
     },
+
+    oldHeroCell: {},
 
     mouseUp() {
         const cell = this.getHoveredCell();
         const hero = this.hero;
 
-        if (this.action === 'hero') {
+        if (!hero) return;
+
+        if (!(cell.x === this.oldHeroCell.x && cell.y === this.oldHeroCell.y) && this.action === 'hero') {
             if (hero.canGo(cell)) {
                 // FIXME: hero will sometimes go to a cell it shouldn't if spammed/timed correctly
                 hero.set(cell);
@@ -77,18 +83,17 @@ export default {
                     id: hero.id,
                     cell: cell
                 });
+                this.checkForEvents(cell);
             }
-            this.action = '';
         }
 
-        if (this.hero) {
-            hero.path = [];
-            this.toggleHero(hero);
-            this.hero = false;
-        }
+        this.action = '';
+        hero.path = [];
+        this.toggleHero(hero);
+        this.hero = false;
     },
 
-    oldCell: {},
+    oldMouseCell: {},
 
     /**
     * Mouse movements events
@@ -98,8 +103,8 @@ export default {
 
         if (this.action === 'hero') {
             const hero = this.hero;
-            if (cell.x !== this.oldCell.x || cell.y !== this.oldCell.y) {
-                this.oldCell = cell;
+            if (cell.x !== this.oldMouseCell.x || cell.y !== this.oldMouseCell.y) {
+                this.oldMouseCell = cell;
                 hero.checkPath(cell);
             }
         }
@@ -218,7 +223,7 @@ export default {
     * @param  {Object} cell cell to check
     * @return {bool}
     */
-    checkHero(cell) {
+    checkForHero(cell) {
         for (let piece of pieces.pieces) {
             if (piece.cell.x === cell.x && piece.cell.y === cell.y) {
                 return piece;
@@ -244,6 +249,14 @@ export default {
             hero.checkPath();
         } else {
             hero.status = 'set';
+        }
+    },
+
+    checkForEvents(cell) {
+        const item = board.getCell(cell.x, cell.y).item;
+
+        if (item.type === 'time') {
+            clock.invert();
         }
     }
 }
