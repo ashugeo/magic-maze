@@ -49,7 +49,10 @@
                 "bottom": false,
                 "left": false
             },
-            "item": false,
+            "item": {
+                "type": "bridge",
+                "color": "orange"
+            },
             "escalator": false
         },
         "1": {
@@ -121,7 +124,10 @@
                 "bottom": false,
                 "left": true
             },
-            "item": false,
+            "item": {
+                "type": "bridge",
+                "color": "orange"
+            },
             "escalator": false
         }
     },
