@@ -72343,15 +72343,13 @@ class Tile {
         // Check if the tile is covering any fixed tile
         for (let i = 0; i < 4; i += 1) {
             for (let j = 0; j < 4; j += 1) {
-                if (__WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].getCell(x + i) && __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].getCell(x + i, y + j)) {
+                if (__WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].getCell(x + i, y + j)) {
                     if (Object.keys(__WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].getCell(x + i, y + j)).length > 0) {
                         return false;
                     }
                 }
             }
         }
-
-        // FIXME: tiles can actually be set exactly on top of each other
 
         // Make sure cell next to enter is a bridge
         const nextToEnter = this.getEnter(x, y, this.getOrientation());

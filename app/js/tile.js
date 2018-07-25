@@ -85,15 +85,13 @@ export default class Tile {
         // Check if the tile is covering any fixed tile
         for (let i = 0; i < 4; i += 1) {
             for (let j = 0; j < 4; j += 1) {
-                if (board.getCell(x + i) && board.getCell(x + i, y + j)) {
+                if (board.getCell(x + i, y + j)) {
                     if (Object.keys(board.getCell(x + i, y + j)).length > 0) {
                         return false;
                     }
                 }
             }
         }
-
-        // FIXME: tiles can actually be set exactly on top of each other
 
         // Make sure cell next to enter is a bridge
         const nextToEnter = this.getEnter(x, y, this.getOrientation());
