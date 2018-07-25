@@ -188,8 +188,7 @@ export default {
             // Make sure last tile is fixed to prevent multiple tiles setting
             if (tile.fixed) {
                 // tiles.push(new Tile(1)); // TODO: remove this
-                tiles.push(new Tile((tiles.length - 1) % config.tiles + 1));
-                // tiles.push(new Tile(1));
+                tiles.push(new Tile((tiles.length - 1) % (config.tiles - 1) + 1));
             }
         }
     },
