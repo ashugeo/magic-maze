@@ -4,23 +4,23 @@ import Hero from './hero';
 
 export default {
 
-    pieces: [],
+    all: [],
 
     init() {
         for (let i = 0; i < 4; i += 1) {
-            this.pieces.push(new Hero(i));
-            this.pieces[i].set({
+            this.all.push(new Hero(i));
+            this.all[i].set({
                 x: config.firstTile.x + [1, 2, 2, 1][i],
                 y: config.firstTile.y + [1, 1, 2, 2][i]
             });
-            this.pieces[i].pos = this.pieces[i].target;
-            this.pieces[i].status = 'set';
+            this.all[i].pos = this.all[i].target;
+            this.all[i].status = 'set';
         }
     },
 
     display() {
         p5.noStroke();
-        for (let piece of this.pieces) {
+        for (let piece of this.all) {
             // Piece movement animation, only if necessary
             if (Math.abs(piece.pos.x - piece.target.x) > 1 / 1000 || Math.abs(piece.pos.y - piece.target.y) > 1 / 1000) {
                 piece.move();

@@ -102,7 +102,7 @@ export default class Tile {
                 return false;
             } else {
                 // There is a bridge, make sure it has a hero on it with the same color
-                for (let piece of pieces.pieces) {
+                for (let piece of pieces.all) {
                     if (piece.cell.x === nextToEnter.x && piece.cell.y === nextToEnter.y) {
                         if (piece.color === cellNextToEnter.item.color) {
                             return true;

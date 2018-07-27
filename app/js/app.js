@@ -7,6 +7,7 @@ import Hero from './hero';
 import pieces from './pieces';
 import events from './events';
 import clock from './clock';
+import game from './game';
 
 window.tiles = [];
 window.json = [];
@@ -35,6 +36,7 @@ function start() {
     events.init();
     pieces.init();
     clock.init();
+    game.init();
 }
 
 const $ui = document.getElementById('ui');
@@ -79,7 +81,7 @@ socket.on('role', (roles) => {
 });
 
 socket.on('hero', (data) => {
-    const hero = pieces.pieces[data.id];
+    const hero = pieces.all[data.id];
     const cell = data.cell;
     hero.set(cell);
 });

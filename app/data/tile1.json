@@ -7,7 +7,10 @@
                 "bottom": false,
                 "left": true
             },
-            "item": false,
+            "item": {
+                "type": "exit",
+                "color": "purple"
+            },
             "escalator": false
         },
         "1": {

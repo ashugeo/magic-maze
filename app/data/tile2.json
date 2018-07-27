@@ -27,7 +27,10 @@
                 "bottom": false,
                 "left": true
             },
-            "item": false,
+            "item": {
+                "type": "article",
+                "color": "yellow"
+            },
             "escalator": false
         },
         "3": {

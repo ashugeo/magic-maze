@@ -134,7 +134,7 @@ export default class Hero {
             if (path[i+1] && path[i+1].reachable) {
 
                 // Make sure there is no other piece on target
-                for (let piece of pieces.pieces) {
+                for (let piece of pieces.all) {
                     if (path[i+1].x === piece.cell.x && path[i+1].y === piece.cell.y) {
                         // Another piece blocking the way
                         path[i+1].reachable = false;
@@ -147,7 +147,7 @@ export default class Hero {
             }
 
             if (i > 0) {
-                for (let piece of pieces.pieces) {
+                for (let piece of pieces.all) {
                     if (path[i].x === piece.cell.x && path[i].y === piece.cell.y) {
                         // Another piece blocking the way
                         path[i].reachable = false;
@@ -212,5 +212,22 @@ export default class Hero {
         }
 
         return true;
+    }
+
+    steal() {
+        this.stolen = true;
+    }
+
+    hasStolen() {
+        return this.stolen;
+    }
+
+    exit(cell) {
+        this.exited = true;
+        // this.set({x: 0, y: 0});
+    }
+
+    hasExited() {
+        return this.exited;
     }
 }

@@ -5,6 +5,7 @@ import Tile from './tile';
 import pieces from './pieces'
 import Hero from './hero';
 import clock from './clock';
+import game from './game';
 
 export default {
 
@@ -173,7 +174,7 @@ export default {
     newTile() {
         let canAddTile = false;
 
-        for (let piece of pieces.pieces) {
+        for (let piece of pieces.all) {
             const cell = board.getCell(piece.cell.x, piece.cell.y);
             if (cell.item && cell.item.type === 'bridge' && cell.item.color === piece.color) {
                 this.bridgeCell = cell;
@@ -224,7 +225,7 @@ export default {
     * @return {bool}
     */
     checkForHero(cell) {
-        for (let piece of pieces.pieces) {
+        for (let piece of pieces.all) {
             if (piece.cell.x === cell.x && piece.cell.y === cell.y) {
                 return piece;
             }
@@ -237,10 +238,13 @@ export default {
     * @param  {Object} hero hero to select
     */
     toggleHero(hero) {
-        for (let piece of pieces.pieces) {
+        for (let piece of pieces.all) {
             // Prevent selection of multiple pieces
             if (piece.status === 'selected' && piece.id !== hero.id) return;
         }
+
+        // Prevent selection of exited hero
+        if (hero.exited) return;
 
         if (hero.status !== 'selected') {
             hero.status = 'selected';
@@ -253,6 +257,7 @@ export default {
     },
 
     checkForEvents(cell) {
+        const hero = this.hero;
         const item = board.getCell(cell.x, cell.y).item;
 
         if (item.type === 'time' && !item.used) {
@@ -266,6 +271,14 @@ export default {
                 x: cell.x,
                 y: cell.y
             });
+        } else if (item.type === 'article' && item.color === hero.color) {
+            // Same color article
+            hero.steal();
+        } else if (item.type === 'exit' && hero.hasStolen() && (item.color === hero.color || game.scenario === 1)) {
+            // Same color exit or scenario 1 (only has purple exit)
+            this.toggleHero(hero);
+            hero.exit();
+            game.checkForWin();
         }
     }
 }
