@@ -377,7 +377,7 @@ export default class Tile {
             }
         }
 
-        this.displayItems();
+        if (this.fixed) this.displayItems();
 
         p5.pop();
     }
