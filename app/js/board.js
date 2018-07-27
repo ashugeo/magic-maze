@@ -13,6 +13,7 @@ export default {
     },
 
     getCell(x, y) {
+        if (!this.board[x]) return false;
         return this.board[x][y];
     },
 

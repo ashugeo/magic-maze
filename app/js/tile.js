@@ -23,11 +23,17 @@ export default class Tile {
         // Position hasn't changed
         if (x === this.x && y === this.y) return;
 
+        // Prevent board overflow
+        if (x < 0 || y < 0 || x > config.boardRows - 4 || y > config.boardCols - 4) {
+            return;
+        }
+
+        const o = this.getOrientation();
+        const enter = this.getEnter(x, y, o);
+        const target = board.getCell(enter.x, enter.y);
+
         // Compute shift
-        if (!config.debug) {
-            const o = this.getOrientation();
-            const enter = this.getEnter(x, y, o);
-            const target = board.getCell(enter.x, enter.y);
+        if (!config.debug && target) {
             const parentTile = tiles[target.tileCount];
 
             if (parentTile) {
@@ -66,7 +72,7 @@ export default class Tile {
         this.y = y;
 
         // Check if tile can be set here
-        this.canBeSet = this.checkCanBeSet(x, y);
+        if (target) this.canBeSet = this.checkCanBeSet(x, y);
     }
 
     /**
@@ -75,12 +81,7 @@ export default class Tile {
     * @param  {int} y row
     */
     checkCanBeSet(x, y) {
-        if (this.id === 0) return;
-
-        // Prevent board overflow
-        if (x < 0 || y < 0 || x > 15 || y > 15) {
-            return false;
-        }
+        if (this.id === 0) return false;
 
         // Check if the tile is covering any fixed tile
         for (let i = 0; i < 4; i += 1) {

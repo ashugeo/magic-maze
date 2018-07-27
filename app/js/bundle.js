@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 9);
+/******/ 	return __webpack_require__(__webpack_require__.s = 10);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -117,6 +117,7 @@
     },
 
     getCell(x, y) {
+        if (!this.board[x]) return false;
         return this.board[x][y];
     },
 
@@ -71836,7 +71837,7 @@ module.exports = p5;
 
 },{"../core/core":55,"./p5.Geometry":102}]},{},[46])(46)
 });
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
 
 /***/ }),
 /* 5 */
@@ -71969,18 +71970,25 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
     grid() {
         p5.textSize(8);
         p5.fill(0, 0, 0, 128);
-        for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardCols; i += 1) {
-            // Draw rulers
+        for (let i = 0; i <= __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardCols; i += 1) {
+            // Draw vertical lines
             p5.strokeWeight(.5);
             p5.stroke(255, 0, 0, 80);
-            p5.line(0, i*size, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardRows*size, i*size);
-            p5.line(i*size, 0, i*size, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardCols*size);
+            p5.line(i * size, 0, i * size, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardRows * size);
 
-            for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardRows; j += 1) {
-                // Add coordinates as text
-                p5.noStroke();
-                p5.text(i + ':' + j, i*size + 6, j*size + 20);
+            if (i !== __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardCols) {
+                for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardRows; j += 1) {
+                    // Add coordinates as text
+                    p5.noStroke();
+                    p5.text(i + ':' + j, i * size + 6, j * size + 20);
+                }
             }
+        }
+
+        for (let i = 0; i <= __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardRows; i += 1) {
+            // Draw horizontal lines
+            p5.stroke(0, 0, 255, 80);
+            p5.line(0, i * size, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardCols * size, i * size);
         }
     }
 });
@@ -71997,7 +72005,7 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pieces__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__clock__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__clock__ = __webpack_require__(9);
 
 
 
@@ -72296,11 +72304,17 @@ class Tile {
         // Position hasn't changed
         if (x === this.x && y === this.y) return;
 
+        // Prevent board overflow
+        if (x < 0 || y < 0 || x > __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardRows - 4 || y > __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardCols - 4) {
+            return;
+        }
+
+        const o = this.getOrientation();
+        const enter = this.getEnter(x, y, o);
+        const target = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].getCell(enter.x, enter.y);
+
         // Compute shift
-        if (!__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].debug) {
-            const o = this.getOrientation();
-            const enter = this.getEnter(x, y, o);
-            const target = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].getCell(enter.x, enter.y);
+        if (!__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].debug && target) {
             const parentTile = tiles[target.tileCount];
 
             if (parentTile) {
@@ -72339,7 +72353,7 @@ class Tile {
         this.y = y;
 
         // Check if tile can be set here
-        this.canBeSet = this.checkCanBeSet(x, y);
+        if (target) this.canBeSet = this.checkCanBeSet(x, y);
     }
 
     /**
@@ -72348,12 +72362,7 @@ class Tile {
     * @param  {int} y row
     */
     checkCanBeSet(x, y) {
-        if (this.id === 0) return;
-
-        // Prevent board overflow
-        if (x < 0 || y < 0 || x > 15 || y > 15) {
-            return false;
-        }
+        if (this.id === 0) return false;
 
         // Check if the tile is covering any fixed tile
         for (let i = 0; i < 4; i += 1) {
@@ -72661,17 +72670,75 @@ class Tile {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+    init() {
+        this.$clock = document.getElementById('clock');
+        this.interval = setInterval(() => { this.ticker() }, 1000);
+    },
+
+    tick: 0,
+    inverted: false,
+    elapsed: 0,
+    remaining: __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].timer,
+
+    ticker() {
+        this.display();
+
+        // No time left
+        if (this.remaining === 0) {
+            this.stop();
+            return;
+        }
+
+        this.tick += 1;
+        this.elapsed += 1;
+        this.remaining -= 1;
+    },
+
+    stop() {
+        clearInterval(this.interval);
+    },
+
+    invert() {
+        this.inverted = !this.inverted;
+        let r = this.remaining;
+        this.remaining = this.elapsed;
+        this.elapsed = r;
+    },
+
+    toString(time) {
+        let minutes = Math.floor(time / 60);
+        let seconds = time % 60;
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+        // let string = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+        return `${minutes}m ${seconds}s`;
+    },
+
+    display() {
+        this.$clock.innerHTML = this.toString(this.remaining);
+    }
+});
+
+
+/***/ }),
+/* 10 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__sketch__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__sketch__ = __webpack_require__(12);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__tile__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pieces__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__events__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__clock__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__clock__ = __webpack_require__(9);
 
 
 
@@ -72771,7 +72838,7 @@ socket.on('tile', (data) => {
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports) {
 
 var g;
@@ -72798,7 +72865,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -72883,64 +72950,6 @@ function displayTiles() {
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (sketch);
-
-
-/***/ }),
-/* 12 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
-
-
-/* harmony default export */ __webpack_exports__["a"] = ({
-    init() {
-        this.$clock = document.getElementById('clock');
-        this.interval = setInterval(() => { this.ticker() }, 1000);
-    },
-
-    tick: 0,
-    inverted: false,
-    elapsed: 0,
-    remaining: __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].timer,
-
-    ticker() {
-        this.display();
-
-        // No time left
-        if (this.remaining === 0) {
-            this.stop();
-            return;
-        }
-
-        this.tick += 1;
-        this.elapsed += 1;
-        this.remaining -= 1;
-    },
-
-    stop() {
-        clearInterval(this.interval);
-    },
-
-    invert() {
-        this.inverted = !this.inverted;
-        let r = this.remaining;
-        this.remaining = this.elapsed;
-        this.elapsed = r;
-    },
-
-    toString(time) {
-        let minutes = Math.floor(time / 60);
-        let seconds = time % 60;
-        seconds = seconds < 10 ? '0' + seconds : seconds;
-        // let string = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
-        return `${minutes}m ${seconds}s`;
-    },
-
-    display() {
-        this.$clock.innerHTML = this.toString(this.remaining);
-    }
-});
 
 
 /***/ })
