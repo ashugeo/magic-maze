@@ -15,6 +15,7 @@ const sketch = (p5) => {
         for (let i = 0; i < config.tiles; i +=1) {
             tilesImages.push(p5.loadImage('img/tile' + i + '.jpg'));
         }
+        window.usedImage = p5.loadImage('img/used.png');
 
         const canvas = p5.createCanvas(p5.windowWidth - 300, p5.windowHeight);
         canvas.parent('canvas-wrap');

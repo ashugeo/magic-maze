@@ -255,8 +255,17 @@ export default {
     checkForEvents(cell) {
         const item = board.getCell(cell.x, cell.y).item;
 
-        if (item.type === 'time') {
+        if (item.type === 'time' && !item.used) {
+            // Time cell, invert clock
             clock.invert();
+            socket.emit('invertClock');
+
+            // Time cell is now used
+            board.setUsed(cell.x, cell.y);
+            socket.emit('used', {
+                x: cell.x,
+                y: cell.y
+            });
         }
     }
 }

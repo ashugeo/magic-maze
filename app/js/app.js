@@ -94,3 +94,11 @@ socket.on('tile', (data) => {
     window.tiles.push(tile);
     tile.set(data.x, data.y);
 });
+
+socket.on('invertClock', (data) => {
+    clock.invert();
+});
+
+socket.on('used', (data) => {
+    board.setUsed(data.x, data.y);
+});

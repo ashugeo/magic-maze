@@ -19,5 +19,9 @@ export default {
 
     save(x, y, cell) {
         this.board[x][y] = cell;
+    },
+
+    setUsed(x, y) {
+        this.board[x][y].item.used = true;
     }
 }

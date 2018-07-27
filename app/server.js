@@ -82,6 +82,14 @@ io.sockets.on('connection', (socket) => {
     socket.on('tile', (data) => {
         socket.broadcast.emit('tile', data);
     });
+
+    socket.on('invertClock', (data) => {
+        socket.broadcast.emit('invertClock');
+    });
+
+    socket.on('used', (data) => {
+        socket.broadcast.emit('used', data);
+    });
 });
 
 http.listen(3000);

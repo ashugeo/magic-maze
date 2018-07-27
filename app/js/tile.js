@@ -377,6 +377,20 @@ export default class Tile {
             }
         }
 
+        this.displayItems();
+
         p5.pop();
+    }
+
+    displayItems() {
+        for (let j = 0; j < Object.keys(this.data).length; j += 1) {
+            for (let i = 0; i < Object.keys(this.data[j]).length; i += 1) {
+                const cell = board.getCell(this.x + i, this.y + j);
+                if (cell.item.used) {
+                    p5.translate((i + .25) * size, (j + .25) * size);
+                    p5.image(usedImage, 0, 0, size / 2, size / 2);
+                }
+            }
+        }
     }
 }
