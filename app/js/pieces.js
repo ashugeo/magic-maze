@@ -1,6 +1,7 @@
 import config from './config';
 import board from './board';
 import Hero from './hero';
+import camera from './camera'
 
 export default {
 
@@ -99,18 +100,22 @@ export default {
             // Display piece
             p5.push();
             p5.translate(piece.pos.x * config.size, piece.pos.y * config.size);
+            // p5.noFill();
+            // p5.stroke(config.colors[piece.color]);
+            // p5.strokeWeight(2);
+            // p5.ellipse(config.size / 2, config.size / 2, 18 + Math.cos(p5.frameCount / 10));
             p5.fill(config.colors[piece.color]);
 
             if (piece.status === 'selected') {
                 // Hero is selected, show it with a stroke
                 p5.stroke(0, 20);
                 p5.strokeWeight(4);
-                p5.ellipse(config.size / 2, config.size / 2, 16, 16);
+                p5.ellipse(config.size / 2, config.size / 2, 16);
             }
 
             p5.stroke(0, 20);
             p5.strokeWeight(4);
-            p5.ellipse(config.size / 2, config.size/2, 12, 12);
+            p5.ellipse(config.size / 2, config.size/2, 12);
             p5.pop();
         }
     }

@@ -139,6 +139,8 @@
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__hero__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__camera__ = __webpack_require__(5);
+
 
 
 
@@ -240,18 +242,22 @@
             // Display piece
             p5.push();
             p5.translate(piece.pos.x * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, piece.pos.y * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size);
+            // p5.noFill();
+            // p5.stroke(config.colors[piece.color]);
+            // p5.strokeWeight(2);
+            // p5.ellipse(config.size / 2, config.size / 2, 18 + Math.cos(p5.frameCount / 10));
             p5.fill(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].colors[piece.color]);
 
             if (piece.status === 'selected') {
                 // Hero is selected, show it with a stroke
                 p5.stroke(0, 20);
                 p5.strokeWeight(4);
-                p5.ellipse(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size / 2, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size / 2, 16, 16);
+                p5.ellipse(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size / 2, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size / 2, 16);
             }
 
             p5.stroke(0, 20);
             p5.strokeWeight(4);
-            p5.ellipse(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size / 2, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, 12, 12);
+            p5.ellipse(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size / 2, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, 12);
             p5.pop();
         }
     }
