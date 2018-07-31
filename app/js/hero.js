@@ -170,20 +170,24 @@ export default class Hero {
                     if (path[i].y > y) {
                         // Going down
                         path[i].reachable = !cell.walls.bottom && !next.walls.top;
+                        if (this.color === 'orange' && cell.walls.bottom === 'orange' && next.walls.top === 'orange') path[i].reachable = true;
                         if (role.indexOf('down') === -1) path[i].reachable = false;
                     } else {
                         // Going up
                         path[i].reachable = !cell.walls.top && !next.walls.bottom;
+                        if (this.color === 'orange' && cell.walls.top === 'orange' && next.walls.bottom === 'orange') path[i].reachable = true;
                         if (role.indexOf('up') === -1) path[i].reachable = false;
                     }
                 } else if (path[i].y === y) {
                     if (path[i].x > x) {
                         // Going right
                         path[i].reachable = !cell.walls.right && !next.walls.left;
+                        if (this.color === 'orange' && cell.walls.right === 'orange' && next.walls.left === 'orange') path[i].reachable = true;
                         if (role.indexOf('right') === -1) path[i].reachable = false;
                     } else {
                         // Going left
                         path[i].reachable = !cell.walls.left && !next.walls.right;
+                        if (this.color === 'orange' && cell.walls.left === 'orange' && next.walls.right === 'orange') path[i].reachable = true;
                         if (role.indexOf('left') === -1) path[i].reachable = false;
                     }
                 }

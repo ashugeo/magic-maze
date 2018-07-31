@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 10);
+/******/ 	return __webpack_require__(__webpack_require__.s = 11);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -383,20 +383,24 @@ class Hero {
                     if (path[i].y > y) {
                         // Going down
                         path[i].reachable = !cell.walls.bottom && !next.walls.top;
+                        if (this.color === 'orange' && cell.walls.bottom === 'orange' && next.walls.top === 'orange') path[i].reachable = true;
                         if (role.indexOf('down') === -1) path[i].reachable = false;
                     } else {
                         // Going up
                         path[i].reachable = !cell.walls.top && !next.walls.bottom;
+                        if (this.color === 'orange' && cell.walls.top === 'orange' && next.walls.bottom === 'orange') path[i].reachable = true;
                         if (role.indexOf('up') === -1) path[i].reachable = false;
                     }
                 } else if (path[i].y === y) {
                     if (path[i].x > x) {
                         // Going right
                         path[i].reachable = !cell.walls.right && !next.walls.left;
+                        if (this.color === 'orange' && cell.walls.right === 'orange' && next.walls.left === 'orange') path[i].reachable = true;
                         if (role.indexOf('right') === -1) path[i].reachable = false;
                     } else {
                         // Going left
                         path[i].reachable = !cell.walls.left && !next.walls.right;
+                        if (this.color === 'orange' && cell.walls.left === 'orange' && next.walls.right === 'orange') path[i].reachable = true;
                         if (role.indexOf('left') === -1) path[i].reachable = false;
                     }
                 }
@@ -71858,7 +71862,7 @@ module.exports = p5;
 
 },{"../core/core":55,"./p5.Geometry":102}]},{},[46])(46)
 });
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
 
 /***/ }),
 /* 5 */
@@ -72027,7 +72031,7 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pieces__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__clock__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__game__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__game__ = __webpack_require__(10);
 
 
 
@@ -72786,10 +72790,42 @@ class Tile {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__pieces__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__board__ = __webpack_require__(1);
+
+
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+
+    scenario: 0,
+
+    init() {
+        this.scenario = 1;
+    },
+
+    checkForWin() {
+        for (let piece of __WEBPACK_IMPORTED_MODULE_1__pieces__["a" /* default */].all) {
+            // Has every hero stolen their article?
+            if (!piece.hasStolen()) return false;
+
+            // Is every hero out?
+            if (!piece.hasExited()) return false;
+        }
+    }
+});
+
+
+/***/ }),
+/* 11 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__sketch__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__sketch__ = __webpack_require__(13);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__tile__ = __webpack_require__(8);
@@ -72797,7 +72833,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pieces__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__events__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__clock__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__game__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__game__ = __webpack_require__(10);
 
 
 
@@ -72907,7 +72943,7 @@ socket.on('used', (data) => {
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports) {
 
 var g;
@@ -72934,7 +72970,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -73020,38 +73056,6 @@ function displayTiles() {
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (sketch);
-
-
-/***/ }),
-/* 13 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__pieces__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__board__ = __webpack_require__(1);
-
-
-
-
-/* harmony default export */ __webpack_exports__["a"] = ({
-
-    scenario: 0,
-
-    init() {
-        this.scenario = 1;
-    },
-
-    checkForWin() {
-        for (let piece of __WEBPACK_IMPORTED_MODULE_1__pieces__["a" /* default */].all) {
-            // Has every hero stolen their article?
-            if (!piece.hasStolen()) return false;
-
-            // Is every hero out?
-            if (!piece.hasExited()) return false;
-        }
-    }
-});
 
 
 /***/ })

@@ -91,7 +91,7 @@
             "walls": {
                 "top": false,
                 "right": true,
-                "bottom": true,
+                "bottom": "orange",
                 "left": true
             },
             "item": false,
@@ -134,7 +134,7 @@
     "3": {
         "0": {
             "walls": {
-                "top": true,
+                "top": "orange",
                 "right": false,
                 "bottom": true,
                 "left": true
@@ -157,7 +157,7 @@
         "2": {
             "walls": {
                 "top": false,
-                "right": true,
+                "right": "orange",
                 "bottom": true,
                 "left": false
             },
@@ -169,7 +169,7 @@
                 "top": false,
                 "right": true,
                 "bottom": true,
-                "left": true
+                "left": "orange"
             },
             "item": false,
             "escalator": false

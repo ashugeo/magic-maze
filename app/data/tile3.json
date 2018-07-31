@@ -70,7 +70,7 @@
         "2": {
             "walls": {
                 "top": true,
-                "right": true,
+                "right": "orange",
                 "bottom": true,
                 "left": false
             },
@@ -82,7 +82,7 @@
                 "top": false,
                 "right": true,
                 "bottom": false,
-                "left": true
+                "left": "orange"
             },
             "item": false,
             "escalator": false
