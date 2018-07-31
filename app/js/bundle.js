@@ -171,14 +171,62 @@
             p5.push();
             const path = piece.path;
             for (let cell of path) {
-                p5.push();
-                p5.translate(cell.x * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, cell.y * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size);
+                const boardCell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(cell.x, cell.y);
+                const tileCell = boardCell.tileCell;
+                let tileShift = 0;
+
+                let x1 = 0;
+                let y1 = 0;
+                let l = 1;
+                let h = 1;
+
+                if (tileCell) {
+                    tileShift = tiles[boardCell.tileCount].shift;
+                    const walls = boardCell.walls;
+                    const s = .16; // Shift
+
+                    x1 = [.32, .16, 0, -.16][tileCell.x];
+                    y1 = [.32, .16, 0, -.16][tileCell.y];
+                    let x2 = 1 + [.16, 0, -.16, -.32][tileCell.x];
+                    let y2 = 1 + [.16, 0, -.16, -.32][tileCell.y];
+
+                    if (walls.left) {
+                        x1 += [0, 0, 0, .22][tileCell.x];
+                    } else {
+                        x1 += [-.32, 0, 0, 0][tileCell.x];
+                    }
+
+                    if (walls.right) {
+                        x2 += [-.22, 0, 0, 0][tileCell.x];
+                    } else {
+                        x2 += [0, 0, 0, .32][tileCell.x];
+                    }
+
+                    if (walls.top) {
+                        y1 += [0, 0, 0, .16][tileCell.y];
+                    } else {
+                        y1 += [-.32, 0, 0, 0][tileCell.y];
+                    }
+
+                    if (walls.bottom) {
+                        y2 += [-.22, 0, 0, 0][tileCell.y];
+                    } else {
+                        y2 += [0, 0, 0, .32][tileCell.y];
+                    }
+
+                    l = x2 - x1;
+                    h = y2 - y1;
+                }
+
                 if (cell.reachable) {
                     p5.fill(0, 255, 0, 40);
                 } else {
                     p5.fill(255, 0, 0, 40);
                 }
-                p5.rect(0, 0, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size);
+
+                p5.push();
+                p5.translate(cell.x * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size + tileShift.x, cell.y * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size + tileShift.y);
+                p5.rect(x1 * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, y1 * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, l * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, h * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size);
                 p5.pop();
             }
 
@@ -186,7 +234,7 @@
             p5.push();
             p5.translate(piece.pos.x * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, piece.pos.y * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size);
             p5.fill(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].colors[piece.color]);
-            
+
             if (piece.status === 'selected') {
                 // Hero is selected, show it with a stroke
                 p5.stroke(0, 20);
