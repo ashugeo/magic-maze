@@ -49,28 +49,28 @@ export default {
                     let x2 = 1 + [.16, 0, -.16, -.32][tileCell.x];
                     let y2 = 1 + [.16, 0, -.16, -.32][tileCell.y];
 
-                    if (walls.left) {
-                        x1 += [0, 0, 0, .22][tileCell.x];
-                    } else {
-                        x1 += [-.32, 0, 0, 0][tileCell.x];
+                    if (walls.left && tileCell.x === 3) {
+                        x1 += .22;
+                    } else if (!walls.left && tileCell.x === 0) {
+                        x1 -= .32;
                     }
 
-                    if (walls.right) {
-                        x2 += [-.22, 0, 0, 0][tileCell.x];
-                    } else {
-                        x2 += [0, 0, 0, .32][tileCell.x];
+                    if (walls.right && tileCell.x === 0) {
+                        x2 -= .22;
+                    } else if (!walls.right && tileCell.x === 3){
+                        x2 += .32;
                     }
 
-                    if (walls.top) {
-                        y1 += [0, 0, 0, .16][tileCell.y];
-                    } else {
-                        y1 += [-.32, 0, 0, 0][tileCell.y];
+                    if (walls.top && tileCell.y === 3) {
+                        y1 += .16;
+                    } else if (!walls.top && tileCell.y === 0) {
+                        y1 -= .32;
                     }
 
-                    if (walls.bottom) {
-                        y2 += [-.22, 0, 0, 0][tileCell.y];
-                    } else {
-                        y2 += [0, 0, 0, .32][tileCell.y];
+                    if (walls.bottom && tileCell.y === 0) {
+                        y2 -= .22;
+                    } else if (!walls.bottom && tileCell.y === 3) {
+                        y2 += .32;
                     }
 
                     l = x2 - x1;
