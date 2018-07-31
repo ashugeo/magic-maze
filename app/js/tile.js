@@ -387,8 +387,13 @@ export default class Tile {
             for (let i = 0; i < Object.keys(this.data[j]).length; i += 1) {
                 const cell = board.getCell(this.x + i, this.y + j);
                 if (cell.item.used) {
-                    p5.translate((i + .25) * size, (j + .25) * size);
-                    p5.image(usedImage, 0, 0, size / 2, size / 2);
+                    let x = (i + 1 / 3 + [.25, .1, -.1, -.25][i]) * size;
+                    let y = (j + 1 / 3 + [.25, .1, -.1, -.25][j]) * size;
+
+                    p5.push();
+                    p5.translate(x, y);
+                    p5.image(usedImage, 0, 0, size / 3, size / 3);
+                    p5.pop();
                 }
             }
         }

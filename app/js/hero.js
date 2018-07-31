@@ -34,12 +34,9 @@ export default class Hero {
             y: cell.y
         };
 
-        // console.log((4 + cell.x - config.firstTile.x) % 4, (4 + cell.y - config.firstTile.y) % 4);
         this.target = {
-            // x: cell.x + [.25, .1, -.1, -.25][(4 + cell.x - config.firstTile.x) % 4],
-            // y: cell.y + [.25, .1, -.1, -.25][(4 + cell.y - config.firstTile.y) % 4]
-            x: cell.x,
-            y: cell.y
+            x: cell.x + [.25, .1, -.1, -.25][(4 + cell.x - config.firstTile.x) % 4],
+            y: cell.y + [.25, .1, -.1, -.25][(4 + cell.y - config.firstTile.y) % 4]
         }
         this.path = [];
     }

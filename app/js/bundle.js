@@ -186,17 +186,17 @@
             p5.push();
             p5.translate(piece.pos.x * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size, piece.pos.y * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size);
             p5.fill(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].colors[piece.color]);
+            
             if (piece.status === 'selected') {
                 // Hero is selected, show it with a stroke
                 p5.stroke(0, 20);
                 p5.strokeWeight(4);
-                // p5.noFill();
-                p5.ellipse(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, 20, 20);
+                p5.ellipse(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size / 2, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size / 2, 16, 16);
             }
 
             p5.stroke(0, 20);
             p5.strokeWeight(4);
-            p5.ellipse(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, 16, 16);
+            p5.ellipse(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size / 2, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size/2, 12, 12);
             p5.pop();
         }
     }
@@ -247,12 +247,9 @@ class Hero {
             y: cell.y
         };
 
-        // console.log((4 + cell.x - config.firstTile.x) % 4, (4 + cell.y - config.firstTile.y) % 4);
         this.target = {
-            // x: cell.x + [.25, .1, -.1, -.25][(4 + cell.x - config.firstTile.x) % 4],
-            // y: cell.y + [.25, .1, -.1, -.25][(4 + cell.y - config.firstTile.y) % 4]
-            x: cell.x,
-            y: cell.y
+            x: cell.x + [.25, .1, -.1, -.25][(4 + cell.x - __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].firstTile.x) % 4],
+            y: cell.y + [.25, .1, -.1, -.25][(4 + cell.y - __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].firstTile.y) % 4]
         }
         this.path = [];
     }
@@ -72716,8 +72713,13 @@ class Tile {
             for (let i = 0; i < Object.keys(this.data[j]).length; i += 1) {
                 const cell = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].getCell(this.x + i, this.y + j);
                 if (cell.item.used) {
-                    p5.translate((i + .25) * size, (j + .25) * size);
-                    p5.image(usedImage, 0, 0, size / 2, size / 2);
+                    let x = (i + 1 / 3 + [.25, .1, -.1, -.25][i]) * size;
+                    let y = (j + 1 / 3 + [.25, .1, -.1, -.25][j]) * size;
+
+                    p5.push();
+                    p5.translate(x, y);
+                    p5.image(usedImage, 0, 0, size / 3, size / 3);
+                    p5.pop();
                 }
             }
         }
