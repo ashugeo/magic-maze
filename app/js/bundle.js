@@ -295,9 +295,13 @@ class Hero {
             y: cell.y
         };
 
+        const boardCell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(cell.x, cell.y);
+        const tileCell = boardCell.tileCell;
+        const tileShift = tiles[boardCell.tileCount].shift;
+
         this.target = {
-            x: cell.x + [.25, .1, -.1, -.25][(4 + cell.x - __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].firstTile.x) % 4],
-            y: cell.y + [.25, .1, -.1, -.25][(4 + cell.y - __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].firstTile.y) % 4]
+            x: cell.x + [.25, .1, -.1, -.25][tileCell.x] + tileShift.x / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size,
+            y: cell.y + [.25, .1, -.1, -.25][tileCell.y] + tileShift.y / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size
         }
         this.path = [];
     }
