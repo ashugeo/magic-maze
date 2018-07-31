@@ -227,6 +227,7 @@ export default {
     checkForHero(cell) {
         for (let piece of pieces.all) {
             if (piece.cell.x === cell.x && piece.cell.y === cell.y) {
+                if (!piece.selectable) return false;
                 return piece;
             }
         }

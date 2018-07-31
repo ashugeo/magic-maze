@@ -18,10 +18,17 @@ export default class Hero {
     * Move hero to cell
     * @param {Object} cell cell x and y coordinates
     */
-    move() {
-        let x = this.pos.x + (this.target.x - this.pos.x) / config.heroSpeed;
-        let y = this.pos.y + (this.target.y - this.pos.y) / config.heroSpeed;
-        this.pos = {x, y};
+    move(force = false) {
+        if (force) {
+            this.pos = {x: this.target.x, y: this.target.y};
+        } else {
+            let deltaX = this.target.x - this.pos.x;
+            let deltaY = this.target.y - this.pos.y;
+            let delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            let x = this.pos.x + deltaX / delta / config.heroSpeed;
+            let y = this.pos.y + deltaY / delta / config.heroSpeed;
+            this.pos = {x, y};
+        }
     }
 
     /**

@@ -22,8 +22,15 @@ export default {
         p5.noStroke();
         for (let piece of this.all) {
             // Piece movement animation, only if necessary
-            if (Math.abs(piece.pos.x - piece.target.x) > 1 / 1000 || Math.abs(piece.pos.y - piece.target.y) > 1 / 1000) {
+            let deltaX = piece.target.x - piece.pos.x;
+            let deltaY = piece.target.y - piece.pos.y;
+            let delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            if (delta > 1 / 20) {
+                piece.selectable = false;
                 piece.move();
+            } else if (!piece.selectable) {
+                piece.move(true);
+                piece.selectable = true;
             }
 
             // Display path

@@ -87,7 +87,7 @@
         purple: '#961c91',
         yellow: '#f7dc0a'
     },
-    heroSpeed: 8,
+    heroSpeed: 16,
     firstTile: {
         x: 10,
         y: 10
@@ -163,8 +163,15 @@
         p5.noStroke();
         for (let piece of this.all) {
             // Piece movement animation, only if necessary
-            if (Math.abs(piece.pos.x - piece.target.x) > 1 / 1000 || Math.abs(piece.pos.y - piece.target.y) > 1 / 1000) {
+            let deltaX = piece.target.x - piece.pos.x;
+            let deltaY = piece.target.y - piece.pos.y;
+            let delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            if (delta > 1 / 20) {
+                piece.selectable = false;
                 piece.move();
+            } else if (!piece.selectable) {
+                piece.move(true);
+                piece.selectable = true;
             }
 
             // Display path
@@ -279,10 +286,17 @@ class Hero {
     * Move hero to cell
     * @param {Object} cell cell x and y coordinates
     */
-    move() {
-        let x = this.pos.x + (this.target.x - this.pos.x) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroSpeed;
-        let y = this.pos.y + (this.target.y - this.pos.y) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroSpeed;
-        this.pos = {x, y};
+    move(force = false) {
+        if (force) {
+            this.pos = {x: this.target.x, y: this.target.y};
+        } else {
+            let deltaX = this.target.x - this.pos.x;
+            let deltaY = this.target.y - this.pos.y;
+            let delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            let x = this.pos.x + deltaX / delta / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroSpeed;
+            let y = this.pos.y + deltaY / delta / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].heroSpeed;
+            this.pos = {x, y};
+        }
     }
 
     /**
@@ -72310,6 +72324,7 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
     checkForHero(cell) {
         for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].all) {
             if (piece.cell.x === cell.x && piece.cell.y === cell.y) {
+                if (!piece.selectable) return false;
                 return piece;
             }
         }

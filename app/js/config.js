@@ -17,7 +17,7 @@ export default {
         purple: '#961c91',
         yellow: '#f7dc0a'
     },
-    heroSpeed: 8,
+    heroSpeed: 16,
     firstTile: {
         x: 10,
         y: 10
