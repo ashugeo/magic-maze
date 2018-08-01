@@ -138,8 +138,8 @@
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__hero__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__camera__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__hero__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__camera__ = __webpack_require__(3);
 
 
 
@@ -266,6 +266,91 @@
 
 /***/ }),
 /* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+    /**
+    * Animate camera zoom
+    */
+    zoomValue: 2,
+    targetZoom: 2,
+    zoom() {
+        if (p5.keyIsDown(65)) { // A: zoom out
+            this.targetZoom -= .1;
+        } else if (p5.keyIsDown(69)) { // E: zoom in
+            this.targetZoom += .1;
+        }
+
+        // Bound to min and max zoom
+        this.targetZoom = Math.min(Math.max(this.targetZoom, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].zoomMin), __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].zoomMax);
+        // Round to one decimal
+        this.targetZoom = Math.round(this.targetZoom * 10) / 10;
+
+        // Easing
+        if (p5.abs(this.targetZoom - this.zoomValue) > .005) {
+            this.zoomValue += (this.targetZoom - this.zoomValue) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].zoomSpeed;
+        } else {
+            this.zoomValue = this.targetZoom;
+        }
+
+        p5.scale(this.zoomValue);
+    },
+
+    /**
+    * Move camera around
+    */
+    x: 0,
+    y: 0,
+    mouseIn: true,
+    move(x, y) {
+        if (x && y) {
+            this.x = x;
+            this.y = y;
+        }
+        if (p5.keyIsDown(90)) { // Z: move up
+            this.y += __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed;
+        }
+        if (p5.keyIsDown(81)) { // Q: move left
+            this.x += __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed;
+        }
+        if (p5.keyIsDown(83)) { // S: move down
+            this.y -= __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed;
+        }
+        if (p5.keyIsDown(68)) { // D: move right
+            this.x -= __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed;
+        }
+
+        p5.translate(this.x, this.y);
+
+        if (this.mouseIn && __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraMouse) {
+            const x1 = -this.x
+            const y1 = -this.y;
+            const x2 = (-p5.width/2 + p5.mouseX) / this.zoomValue - this.x;
+            const y2 = (-p5.height/2 + p5.mouseY) / this.zoomValue - this.y;
+
+            const dist = Math.round(p5.dist(x1, y1, x2, y2) * this.zoomValue);
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+
+            const distX = Math.round(Math.cos(angle) * dist);
+            if (Math.abs(distX) > p5.width / 2 - 100) {
+                this.x += -Math.sign(distX) * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed;
+            }
+
+            const distY = Math.round(Math.sin(angle) * dist);
+            if (Math.abs(distY) > p5.height / 2 - 100) {
+                this.y += -Math.sign(distY) * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed;
+            }
+        }
+    }
+});
+
+
+/***/ }),
+/* 4 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -522,7 +607,7 @@ class Hero {
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {var require;var require;/*! p5.js v0.5.16 October 11, 2017 */
@@ -71934,91 +72019,6 @@ module.exports = p5;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
 
 /***/ }),
-/* 5 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
-
-
-/* harmony default export */ __webpack_exports__["a"] = ({
-    /**
-    * Animate camera zoom
-    */
-    zoomValue: 2,
-    targetZoom: 2,
-    zoom() {
-        if (p5.keyIsDown(65)) { // A: zoom out
-            this.targetZoom -= .1;
-        } else if (p5.keyIsDown(69)) { // E: zoom in
-            this.targetZoom += .1;
-        }
-
-        // Bound to min and max zoom
-        this.targetZoom = Math.min(Math.max(this.targetZoom, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].zoomMin), __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].zoomMax);
-        // Round to one decimal
-        this.targetZoom = Math.round(this.targetZoom * 10) / 10;
-
-        // Easing
-        if (p5.abs(this.targetZoom - this.zoomValue) > .005) {
-            this.zoomValue += (this.targetZoom - this.zoomValue) / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].zoomSpeed;
-        } else {
-            this.zoomValue = this.targetZoom;
-        }
-
-        p5.scale(this.zoomValue);
-    },
-
-    /**
-    * Move camera around
-    */
-    x: 0,
-    y: 0,
-    mouseIn: true,
-    move(x, y) {
-        if (x && y) {
-            this.x = x;
-            this.y = y;
-        }
-        if (p5.keyIsDown(90)) { // Z: move up
-            this.y += __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed;
-        }
-        if (p5.keyIsDown(81)) { // Q: move left
-            this.x += __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed;
-        }
-        if (p5.keyIsDown(83)) { // S: move down
-            this.y -= __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed;
-        }
-        if (p5.keyIsDown(68)) { // D: move right
-            this.x -= __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed;
-        }
-
-        p5.translate(this.x, this.y);
-
-        if (this.mouseIn && __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraMouse) {
-            const x1 = -this.x
-            const y1 = -this.y;
-            const x2 = (-p5.width/2 + p5.mouseX) / this.zoomValue - this.x;
-            const y2 = (-p5.height/2 + p5.mouseY) / this.zoomValue - this.y;
-
-            const dist = Math.round(p5.dist(x1, y1, x2, y2) * this.zoomValue);
-            const angle = Math.atan2(y2 - y1, x2 - x1);
-
-            const distX = Math.round(Math.cos(angle) * dist);
-            if (Math.abs(distX) > p5.width / 2 - 100) {
-                this.x += -Math.sign(distX) * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed;
-            }
-
-            const distY = Math.round(Math.sin(angle) * dist);
-            if (Math.abs(distY) > p5.height / 2 - 100) {
-                this.y += -Math.sign(distY) * __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cameraSpeed;
-            }
-        }
-    }
-});
-
-
-/***/ }),
 /* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -72095,10 +72095,10 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pieces__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__clock__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__game__ = __webpack_require__(10);
 
@@ -72119,7 +72119,7 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
         * General key press actions
         * @param {Object} e event
         */
-        document.addEventListener('keydown', (e) => {
+        document.addEventListener('keydown', e => {
             if (e.which === 67) { // C: engage tile setting
                 if (role.indexOf('explore') > -1) this.newTile();
             } else if (e.which === 82) { // R: rotate tile counterclockwise
@@ -72875,9 +72875,11 @@ class Tile {
 /* harmony default export */ __webpack_exports__["a"] = ({
 
     scenario: 0,
+    bots: 0,
 
-    init() {
+    init(options) {
         this.scenario = 1;
+        this.bots = options.bots;
     },
 
     checkForWin() {
@@ -72898,13 +72900,13 @@ class Tile {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__sketch__ = __webpack_require__(13);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__tile__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pieces__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__events__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__clock__ = __webpack_require__(9);
@@ -72937,23 +72939,24 @@ function fetchJSON(i) {
     });
 }
 
-function start() {
+function start(options) {
+    __WEBPACK_IMPORTED_MODULE_9__game__["a" /* default */].init(options);
     new __WEBPACK_IMPORTED_MODULE_0_p5___default.a(__WEBPACK_IMPORTED_MODULE_1__sketch__["a" /* default */]);
     __WEBPACK_IMPORTED_MODULE_3__board__["a" /* default */].init();
 
     window.tiles.push(new __WEBPACK_IMPORTED_MODULE_4__tile__["a" /* default */](0));
     window.tiles[0].set(__WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].firstTile.x, __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].firstTile.y);
 
+
     __WEBPACK_IMPORTED_MODULE_7__events__["a" /* default */].init();
     __WEBPACK_IMPORTED_MODULE_6__pieces__["a" /* default */].init();
     __WEBPACK_IMPORTED_MODULE_8__clock__["a" /* default */].init();
-    __WEBPACK_IMPORTED_MODULE_9__game__["a" /* default */].init();
 }
 
 const $ui = document.getElementById('ui');
 const $players = document.getElementById('players');
 
-socket.on('players', (players) => {
+socket.on('players', players => {
     $players.innerHTML = players;
     $players.innerHTML += players > 1 ? ' joueurs connectés.' : ' joueur connecté.';
 });
@@ -72961,23 +72964,26 @@ socket.on('players', (players) => {
 socket.on('admin', () => {
     // Timeout needed to give time for 'players' event
     setTimeout(() => {
-        $ui.innerHTML += `<div class="admin">
+        $ui.innerHTML += `<div id="admin">
         <p>Vous êtes administrateur de la partie.</p>
-        <div id="start" class="button">Commencer la partie !</div>
+        <input type="number" id="bots" value="0" /> bot(s)
+        <button id="start">Commencer la partie !</button>
         </div>`;
 
         document.getElementById('start').addEventListener('mousedown', () => {
-            socket.emit('start');
-            document.getElementsByClassName('admin')[0].innerHTML = '';
+            socket.emit('start', {
+                bots: parseInt(document.getElementById('bots').value)
+            });
+            document.getElementById('admin').innerHTML = '';
         });
-    }, 500);
+    }, 100);
 });
 
-socket.on('start', () => {
-    start();
+socket.on('start', options => {
+    start(options);
 });
 
-socket.on('role', (roles) => {
+socket.on('role', roles => {
     // Save my role
     role = roles;
 
@@ -72991,28 +72997,28 @@ socket.on('role', (roles) => {
     $ui.innerHTML += '.'
 });
 
-socket.on('hero', (data) => {
+socket.on('hero', data => {
     const hero = __WEBPACK_IMPORTED_MODULE_6__pieces__["a" /* default */].all[data.id];
     const cell = data.cell;
     hero.set(cell);
 });
 
-socket.on('board', (data) => {
+socket.on('board', data => {
     __WEBPACK_IMPORTED_MODULE_3__board__["a" /* default */].save(data.x, data.y, data.cell)
 });
 
-socket.on('tile', (data) => {
+socket.on('tile', data => {
     const tile = new __WEBPACK_IMPORTED_MODULE_4__tile__["a" /* default */](data.tile.id);
     tile.rotate = data.tile.rotate;
     window.tiles.push(tile);
     tile.set(data.x, data.y);
 });
 
-socket.on('invertClock', (data) => {
+socket.on('invertClock', data => {
     __WEBPACK_IMPORTED_MODULE_8__clock__["a" /* default */].invert();
 });
 
-socket.on('used', (data) => {
+socket.on('used', data => {
     __WEBPACK_IMPORTED_MODULE_3__board__["a" /* default */].setUsed(data.x, data.y);
 });
 
@@ -73049,10 +73055,10 @@ module.exports = g;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__symbols__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__events__ = __webpack_require__(7);
@@ -73066,7 +73072,7 @@ module.exports = g;
 
 // import Tile from './tile'
 
-const sketch = (p5) => {
+const sketch = p5 => {
     window.p5 = p5;
     window.tilesImages = [];
 

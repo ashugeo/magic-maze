@@ -26,23 +26,24 @@ function fetchJSON(i) {
     });
 }
 
-function start() {
+function start(options) {
+    game.init(options);
     new p5(sketch);
     board.init();
 
     window.tiles.push(new Tile(0));
     window.tiles[0].set(config.firstTile.x, config.firstTile.y);
 
+
     events.init();
     pieces.init();
     clock.init();
-    game.init();
 }
 
 const $ui = document.getElementById('ui');
 const $players = document.getElementById('players');
 
-socket.on('players', (players) => {
+socket.on('players', players => {
     $players.innerHTML = players;
     $players.innerHTML += players > 1 ? ' joueurs connectés.' : ' joueur connecté.';
 });
@@ -50,23 +51,26 @@ socket.on('players', (players) => {
 socket.on('admin', () => {
     // Timeout needed to give time for 'players' event
     setTimeout(() => {
-        $ui.innerHTML += `<div class="admin">
+        $ui.innerHTML += `<div id="admin">
         <p>Vous êtes administrateur de la partie.</p>
-        <div id="start" class="button">Commencer la partie !</div>
+        <input type="number" id="bots" value="0" /> bot(s)
+        <button id="start">Commencer la partie !</button>
         </div>`;
 
         document.getElementById('start').addEventListener('mousedown', () => {
-            socket.emit('start');
-            document.getElementsByClassName('admin')[0].innerHTML = '';
+            socket.emit('start', {
+                bots: parseInt(document.getElementById('bots').value)
+            });
+            document.getElementById('admin').innerHTML = '';
         });
-    }, 500);
+    }, 100);
 });
 
-socket.on('start', () => {
-    start();
+socket.on('start', options => {
+    start(options);
 });
 
-socket.on('role', (roles) => {
+socket.on('role', roles => {
     // Save my role
     role = roles;
 
@@ -80,27 +84,27 @@ socket.on('role', (roles) => {
     $ui.innerHTML += '.'
 });
 
-socket.on('hero', (data) => {
+socket.on('hero', data => {
     const hero = pieces.all[data.id];
     const cell = data.cell;
     hero.set(cell);
 });
 
-socket.on('board', (data) => {
+socket.on('board', data => {
     board.save(data.x, data.y, data.cell)
 });
 
-socket.on('tile', (data) => {
+socket.on('tile', data => {
     const tile = new Tile(data.tile.id);
     tile.rotate = data.tile.rotate;
     window.tiles.push(tile);
     tile.set(data.x, data.y);
 });
 
-socket.on('invertClock', (data) => {
+socket.on('invertClock', data => {
     clock.invert();
 });
 
-socket.on('used', (data) => {
+socket.on('used', data => {
     board.setUsed(data.x, data.y);
 });

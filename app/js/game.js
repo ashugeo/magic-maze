@@ -5,9 +5,11 @@ import board from './board';
 export default {
 
     scenario: 0,
+    bots: 0,
 
-    init() {
+    init(options) {
         this.scenario = 1;
+        this.bots = options.bots;
     },
 
     checkForWin() {

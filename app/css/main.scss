@@ -19,7 +19,7 @@ body {
     padding: 2em;
     font-family: sans-serif;
 
-    .admin {
+    #admin {
         position: absolute;
         width: 100%;
         bottom: 0;
@@ -33,18 +33,46 @@ body {
     background-color: rgb(245,250,255);
 }
 
-.button {
+button {
     display: block;
+    color: inherit;
     background-color: rgba(0,0,0,.2);
+    border: none;
     border-radius: 4px;
+    margin-top: 1em;
     padding: 1em 2em;
-    margin: 1em 0;
     cursor: pointer;
     text-transform: uppercase;
     font-size: .8em;
     letter-spacing: .05em;
 
-    &:hover {
+    &:hover,
+    &:focus {
+        outline: none;
         background-color: rgba(0,0,0,.3);
+    }
+}
+
+input[type="number"] {
+    width: 64px;
+    height: 24px;
+    padding: 16px;
+    margin-top: 1em;
+    font-size: 1em;
+    background-color: rgba(0,0,0,.2);
+    color: inherit;
+    border: none;
+    border-radius: 4px;
+
+    &:hover,
+    &:focus {
+        outline: none;
+        background-color: rgba(0,0,0,.3);
+    }
+
+    &::-webkit-outer-spin-button,
+    &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+
     }
 }
