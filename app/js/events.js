@@ -16,7 +16,7 @@ export default {
         * General key press actions
         * @param {Object} e event
         */
-        document.addEventListener('keydown', (e) => {
+        document.addEventListener('keydown', e => {
             if (e.which === 67) { // C: engage tile setting
                 if (role.indexOf('explore') > -1) this.newTile();
             } else if (e.which === 82) { // R: rotate tile counterclockwise

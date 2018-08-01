@@ -7,7 +7,7 @@ import events from './events'
 import pieces from './pieces'
 // import Tile from './tile'
 
-const sketch = (p5) => {
+const sketch = p5 => {
     window.p5 = p5;
     window.tilesImages = [];
 

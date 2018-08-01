@@ -13,7 +13,7 @@ app.get('/', (req, res) => {
 let players = [];
 let adminID = '';
 
-io.sockets.on('connection', (socket) => {
+io.sockets.on('connection', socket => {
     // New player entered room
     players = Object.keys(io.sockets.sockets);
     // Tell everyone
@@ -39,7 +39,7 @@ io.sockets.on('connection', (socket) => {
         }
     });
 
-    socket.on('start', () => {
+    socket.on('start', options => {
         // Make sure the admin started the game
         if (socket.id === adminID) {
 
@@ -67,27 +67,27 @@ io.sockets.on('connection', (socket) => {
             }
 
             // Tell everyone to start game
-            io.emit('start');
+            io.emit('start', options);
         }
     });
 
-    socket.on('hero', (data) => {
+    socket.on('hero', data => {
         socket.broadcast.emit('hero', data);
     });
 
-    socket.on('board', (data) => {
+    socket.on('board', data => {
         socket.broadcast.emit('board', data);
     });
 
-    socket.on('tile', (data) => {
+    socket.on('tile', data => {
         socket.broadcast.emit('tile', data);
     });
 
-    socket.on('invertClock', (data) => {
+    socket.on('invertClock', data => {
         socket.broadcast.emit('invertClock');
     });
 
-    socket.on('used', (data) => {
+    socket.on('used', data => {
         socket.broadcast.emit('used', data);
     });
 });
