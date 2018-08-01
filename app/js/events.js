@@ -279,7 +279,9 @@ export default {
             // Same color exit or scenario 1 (only has purple exit)
             this.toggleHero(hero);
             hero.exit();
-            game.checkForWin();
+            if (game.checkForWin()) {
+                // TODO: WIN
+            }
         }
     }
 }

@@ -72382,7 +72382,9 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
             // Same color exit or scenario 1 (only has purple exit)
             this.toggleHero(hero);
             hero.exit();
-            __WEBPACK_IMPORTED_MODULE_7__game__["a" /* default */].checkForWin();
+            if (__WEBPACK_IMPORTED_MODULE_7__game__["a" /* default */].checkForWin()) {
+                // TODO: WIN
+            }
         }
     }
 });
@@ -72889,6 +72891,8 @@ class Tile {
 
             // Is every hero out?
             if (!piece.hasExited()) return false;
+
+            return true;
         }
     }
 });

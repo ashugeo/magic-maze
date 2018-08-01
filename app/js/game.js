@@ -19,6 +19,8 @@ export default {
 
             // Is every hero out?
             if (!piece.hasExited()) return false;
+
+            return true;
         }
     }
 }
