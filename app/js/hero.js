@@ -78,7 +78,7 @@ export default class Hero {
         // Check for vortex
         if (role.indexOf('vortex') > -1) {
             const item = board.getCell(piece.x, piece.y).item;
-            if (item.type === 'vortex' && item.color === this.color) {
+            if (item && item.type === 'vortex' && item.color === this.color) {
                 const targetItem = board.getCell(target.x, target.y).item;
                 if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
                     path.push({x: piece.x, y: piece.y});

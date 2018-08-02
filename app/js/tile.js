@@ -267,7 +267,8 @@ export default class Tile {
     findItem(key) {
         for (let row in this.data) {
             for (let col in this.data[row]) {
-                if (this.data[row][col].item.type === key) {
+                const item = this.data[row][col].item;
+                if (item && item.type === key) {
                     const pos = {
                         x: row,
                         y: col
@@ -422,7 +423,7 @@ export default class Tile {
         for (let j = 0; j < Object.keys(this.data).length; j += 1) {
             for (let i = 0; i < Object.keys(this.data[j]).length; i += 1) {
                 const cell = board.getCell(this.x + i, this.y + j);
-                if (cell.item.used) {
+                if (cell.item && cell.item.used) {
                     let x = (i + 1 / 3 + [.25, .1, -.1, -.25][i]) * size;
                     let y = (j + 1 / 3 + [.25, .1, -.1, -.25][j]) * size;
 

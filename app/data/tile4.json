@@ -6,9 +6,7 @@
                 "right": false,
                 "bottom": false,
                 "left": true
-            },
-            "item": false,
-            "escalator": false
+            }
         },
         "1": {
             "walls": {
@@ -16,9 +14,7 @@
                 "right": true,
                 "bottom": false,
                 "left": false
-            },
-            "item": false,
-            "escalator": false
+            }
         },
         "2": {
             "walls": {
@@ -26,9 +22,7 @@
                 "right": false,
                 "bottom": false,
                 "left": true
-            },
-            "item": false,
-            "escalator": false
+            }
         },
         "3": {
             "walls": {
@@ -36,9 +30,7 @@
                 "right": true,
                 "bottom": false,
                 "left": false
-            },
-            "item": false,
-            "escalator": false
+            }
         }
     },
     "1": {
@@ -52,8 +44,7 @@
             "item": {
                 "type": "bridge",
                 "color": "orange"
-            },
-            "escalator": false
+            }
         },
         "1": {
             "walls": {
@@ -61,9 +52,7 @@
                 "right": false,
                 "bottom": false,
                 "left": true
-            },
-            "item": false,
-            "escalator": false
+            }
         },
         "2": {
             "walls": {
@@ -71,9 +60,7 @@
                 "right": true,
                 "bottom": true,
                 "left": false
-            },
-            "item": false,
-            "escalator": false
+            }
         },
         "3": {
             "walls": {
@@ -81,9 +68,7 @@
                 "right": true,
                 "bottom": false,
                 "left": true
-            },
-            "item": false,
-            "escalator": false
+            }
         }
     },
     "2": {
@@ -93,9 +78,7 @@
                 "right": true,
                 "bottom": "orange",
                 "left": true
-            },
-            "item": false,
-            "escalator": false
+            }
         },
         "1": {
             "walls": {
@@ -103,9 +86,7 @@
                 "right": false,
                 "bottom": true,
                 "left": true
-            },
-            "item": false,
-            "escalator": false
+            }
         },
         "2": {
             "walls": {
@@ -113,9 +94,7 @@
                 "right": true,
                 "bottom": false,
                 "left": false
-            },
-            "item": false,
-            "escalator": false
+            }
         },
         "3": {
             "walls": {
@@ -127,8 +106,7 @@
             "item": {
                 "type": "bridge",
                 "color": "orange"
-            },
-            "escalator": false
+            }
         }
     },
     "3": {
@@ -138,9 +116,7 @@
                 "right": false,
                 "bottom": true,
                 "left": true
-            },
-            "item": false,
-            "escalator": false
+            }
         },
         "1": {
             "walls": {
@@ -151,8 +127,7 @@
             },
             "item": {
                 "type": "enter"
-            },
-            "escalator": false
+            }
         },
         "2": {
             "walls": {
@@ -160,9 +135,7 @@
                 "right": "orange",
                 "bottom": true,
                 "left": false
-            },
-            "item": false,
-            "escalator": false
+            }
         },
         "3": {
             "walls": {
@@ -170,9 +143,7 @@
                 "right": true,
                 "bottom": true,
                 "left": "orange"
-            },
-            "item": false,
-            "escalator": false
+            }
         }
     }
 }

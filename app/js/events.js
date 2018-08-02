@@ -251,6 +251,8 @@ export default {
         const hero = this.hero;
         const item = board.getCell(cell.x, cell.y).item;
 
+        if (!item) return;
+
         if (item.type === 'time' && !item.used) {
             // Time cell, invert clock
             clock.invert();
