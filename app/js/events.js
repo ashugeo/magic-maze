@@ -267,6 +267,7 @@ export default {
         } else if (item.type === 'article' && item.color === hero.color) {
             // Same color article
             hero.steal();
+            board.get(cell.x, cell.y).setStolen();
         } else if (item.type === 'exit' && hero.hasStolen() && (item.color === hero.color || game.scenario === 1)) {
             // Same color exit or scenario 1 (only has purple exit)
             this.toggleHero(hero);
