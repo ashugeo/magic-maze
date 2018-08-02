@@ -3,6 +3,7 @@ import config from './config';
 export default {
     init() {
         this.$clock = document.getElementById('clock');
+        this.ticker();
         this.interval = setInterval(() => { this.ticker() }, 1000);
     },
 
