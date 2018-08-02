@@ -9,7 +9,7 @@ let tileID = 0;
 export default class Tile {
     constructor(id) {
         this.id = id;
-        this.data = json[id]
+        this.data = json[id];
         this.rotation = 0;
         this.canBeSet = false;
         this.fixed = false;
@@ -30,11 +30,11 @@ export default class Tile {
 
         const o = this.getOrientation();
         const enter = this.getBridge(x, y, o);
-        const target = board.getCell(enter.x, enter.y);
+        const target = board.get(enter.x, enter.y);
 
         // Compute shift
         if (!config.debug && target) {
-            const parentTile = tiles[target.tileCount];
+            const parentTile = tiles[target.tileID];
 
             if (parentTile) {
                 let _x = 0;
@@ -94,18 +94,15 @@ export default class Tile {
         // Check if the tile is covering any fixed tile
         for (let i = 0; i < 4; i += 1) {
             for (let j = 0; j < 4; j += 1) {
-                if (board.getCell(x + i, y + j)) {
-                    if (Object.keys(board.getCell(x + i, y + j)).length > 0) {
-                        return false;
-                    }
-                }
+                const cell = board.get(x + i, y + j);
+                if (!cell.isEmpty()) return false;
             }
         }
 
         // Make sure cell next to enter is a bridge
         const nextToEnter = this.getBridge(x, y, this.getOrientation());
-        const cellNextToEnter = board.getCell(nextToEnter.x, nextToEnter.y);
-        if (Object.keys(cellNextToEnter).length > 0) {
+        const cellNextToEnter = board.get(nextToEnter.x, nextToEnter.y);
+        if (!cellNextToEnter.isEmpty()) {
             if (cellNextToEnter.item.type !== 'bridge') {
                 return false;
             } else {
@@ -235,8 +232,8 @@ export default class Tile {
                 boardCell.walls = boardWalls;
 
                 // Save escalator positions relative to board
-                let esc = Object.assign({}, cell.escalator);
-                if (Object.keys(esc).length > 0) {
+                if (cell.escalator) {
+                    let esc = Object.assign({}, cell.escalator);
                     const _esc = {
                         x: x + [esc.x, - esc.y, - esc.x, esc.y][r] + [0, 3, 3, 0][r],
                         y: y + [esc.y, esc.x, - esc.y, - esc.x][r] + [0, 0, 3, 3][r]
@@ -422,7 +419,7 @@ export default class Tile {
     displayItems() {
         for (let j = 0; j < Object.keys(this.data).length; j += 1) {
             for (let i = 0; i < Object.keys(this.data[j]).length; i += 1) {
-                const cell = board.getCell(this.x + i, this.y + j);
+                const cell = board.get(this.x + i, this.y + j);
                 if (cell.item && cell.item.used) {
                     let x = (i + 1 / 3 + [.25, .1, -.1, -.25][i]) * size;
                     let y = (j + 1 / 3 + [.25, .1, -.1, -.25][j]) * size;

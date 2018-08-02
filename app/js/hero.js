@@ -41,9 +41,9 @@ export default class Hero {
             y: cell.y
         };
 
-        const boardCell = board.getCell(cell.x, cell.y);
+        const boardCell = board.get(cell.x, cell.y);
         const tileCell = boardCell.tileCell;
-        const tileShift = tiles[boardCell.tileCount].shift;
+        const tileShift = tiles[boardCell.tileID].shift;
 
         if (config.debug) {
             this.target = {
@@ -77,9 +77,9 @@ export default class Hero {
 
         // Check for vortex
         if (role.indexOf('vortex') > -1) {
-            const item = board.getCell(piece.x, piece.y).item;
+            const item = board.get(piece.x, piece.y).item;
             if (item && item.type === 'vortex' && item.color === this.color) {
-                const targetItem = board.getCell(target.x, target.y).item;
+                const targetItem = board.get(target.x, target.y).item;
                 if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
                     path.push({x: piece.x, y: piece.y});
                     path.push({x: target.x, y: target.y, reachable: true});
@@ -92,8 +92,8 @@ export default class Hero {
             // Not the same column or row
             // Check for escalator
             if (role.indexOf('escalator') > -1) {
-                const escalator = board.getCell(piece.x, piece.y).escalator;
-                if (escalator.x === target.x && escalator.y === target.y) {
+                const escalator = board.get(piece.x, piece.y).escalator;
+                if (escalator && escalator.x === target.x && escalator.y === target.y) {
                     path.push({x: piece.x, y: piece.y});
                     path.push({x: target.x, y: target.y, reachable: true});
                     return path;
@@ -140,8 +140,8 @@ export default class Hero {
             i = parseInt(i);
             path[i].reachable = true;
 
-            // Out of board
-            if (Object.keys(board.getCell(path[i].x, path[i].y)).length === 0) {
+            // Out of set tiles (empty cell)
+            if (board.get(path[i].x, path[i].y).isEmpty()) {
                 path[i].reachable = false;
                 return;
             }
@@ -180,8 +180,8 @@ export default class Hero {
                 // Check current cell and next cell walls depending on direction
                 const x = path[i - 1].x;
                 const y = path[i - 1].y;
-                const cell = board.getCell(x, y);
-                const next = board.getCell(path[i].x, path[i].y);
+                const cell = board.get(x, y);
+                const next = board.get(path[i].x, path[i].y);
                 if (path[i].x === x) {
                     if (path[i].y > y) {
                         // Going down
@@ -236,6 +236,7 @@ export default class Hero {
 
     steal() {
         this.stolen = true;
+        board.setStolen(this.cell.x, this.cell.y);
     }
 
     hasStolen() {

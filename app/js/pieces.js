@@ -38,7 +38,7 @@ export default {
             p5.push();
             const path = piece.path;
             for (let cell of path) {
-                const boardCell = board.getCell(cell.x, cell.y);
+                const boardCell = board.get(cell.x, cell.y);
                 const tileCell = boardCell.tileCell;
 
                 let x1 = 0;

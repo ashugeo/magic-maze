@@ -158,7 +158,7 @@ export default {
                 tile: tile
             });
 
-            this.bridgeCell.explored = true;
+            this.bridgeCell.setExplored(true);
         }
     },
 
@@ -171,10 +171,10 @@ export default {
         let canAddTile = false;
 
         for (let piece of pieces.all) {
-            const cell = board.getCell(piece.cell.x, piece.cell.y);
+            const cell = board.get(piece.cell.x, piece.cell.y);
             if (cell.item && cell.item.type === 'bridge' && cell.item.color === piece.color) {
                 this.bridgeCell = cell;
-                if (!cell.explored) {
+                if (!cell.isExplored()) {
                     canAddTile = true;
                     break;
                 }
@@ -249,7 +249,7 @@ export default {
 
     checkForEvents(cell) {
         const hero = this.hero;
-        const item = board.getCell(cell.x, cell.y).item;
+        const item = board.get(cell.x, cell.y).item;
 
         if (!item) return;
 
