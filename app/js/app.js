@@ -33,6 +33,7 @@ function start(options) {
     events.init();
     pieces.init();
     clock.init();
+    game.initBots();
 }
 
 const $ui = document.getElementById('ui');

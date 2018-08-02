@@ -6,16 +6,18 @@ import Bot from './bot'
 export default {
 
     scenario: 0,
-    bots: 0,
+    bots: [],
 
     init(options) {
         this.scenario = 1;
-        this.bots = options.bots;
-        if (this.bots > 0) {
-            for (let i = 0; i < this.bots; i += 1) {
-                const bot = new Bot(i, options.botsRoles[i]);
-                bot.init();
-            }
+        for (let i = 0; i < options.bots; i += 1) {
+            this.bots.push(new Bot(i, options.botsRoles[i]));
+        }
+    },
+
+    initBots() {
+        for (let bot of this.bots) {
+            bot.init();
         }
     },
 
