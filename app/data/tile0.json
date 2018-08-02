@@ -128,9 +128,7 @@
                 "bottom": false,
                 "left": false
             },
-            "item": {
-                "type": "enter"
-            },
+            "item": false,
             "escalator": false
         },
         "3": {
