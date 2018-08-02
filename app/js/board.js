@@ -1,4 +1,5 @@
 import config from './config';
+import Tile from './tile';
 
 export default {
     board: [],
@@ -10,6 +11,9 @@ export default {
                 this.board[i][j] = {};
             }
         }
+
+        window.tiles.push(new Tile(0));
+        window.tiles[0].set(config.firstTile.x, config.firstTile.y);
     },
 
     getCell(x, y) {

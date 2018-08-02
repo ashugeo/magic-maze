@@ -27,14 +27,9 @@ function fetchJSON(i) {
 }
 
 function start(options) {
-    game.init(options);
     new p5(sketch);
+    game.init(options);
     board.init();
-
-    window.tiles.push(new Tile(0));
-    window.tiles[0].set(config.firstTile.x, config.firstTile.y);
-
-
     events.init();
     pieces.init();
     clock.init();
