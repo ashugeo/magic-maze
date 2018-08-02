@@ -1,5 +1,5 @@
 export default {
-    debug: false,
+    debug: true,
     grid: true,
     cameraSpeed: 5,
     cameraMouse: false,

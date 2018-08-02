@@ -69,7 +69,7 @@
 
 "use strict";
 /* harmony default export */ __webpack_exports__["a"] = ({
-    debug: false,
+    debug: true,
     grid: true,
     cameraSpeed: 5,
     cameraMouse: false,
@@ -192,14 +192,14 @@
             for (let cell of path) {
                 const boardCell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(cell.x, cell.y);
                 const tileCell = boardCell.tileCell;
-                let tileShift = 0;
 
                 let x1 = 0;
                 let y1 = 0;
                 let l = 1;
                 let h = 1;
+                let tileShift = {x: 0, y: 0};
 
-                if (tileCell) {
+                if (tileCell && !__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].debug) {
                     tileShift = tiles[boardCell.tileCount].shift;
                     const walls = boardCell.walls;
                     const s = .16; // Shift
@@ -414,10 +414,18 @@ class Hero {
         const tileCell = boardCell.tileCell;
         const tileShift = tiles[boardCell.tileCount].shift;
 
-        this.target = {
-            x: cell.x + [.25, .1, -.1, -.25][tileCell.x] + tileShift.x / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size,
-            y: cell.y + [.25, .1, -.1, -.25][tileCell.y] + tileShift.y / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size
+        if (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].debug) {
+            this.target = {
+                x: cell.x ,
+                y: cell.y
+            }
+        } else {
+            this.target = {
+                x: cell.x + [.25, .1, -.1, -.25][tileCell.x] + tileShift.x / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size,
+                y: cell.y + [.25, .1, -.1, -.25][tileCell.y] + tileShift.y / __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size
+            }
         }
+
         this.path = [];
     }
 
@@ -72718,12 +72726,11 @@ class Tile {
             p5.noFill();
             p5.stroke(0);
 
-            // TODO: fix irrelevant tiles coordinates
-            for (let i = 0; i < 4; i += 1) {
-                for (let j = 0; j < 4; j += 1) {
+            for (let j = 0; j < 4; j += 1) {
+                for (let i = 0; i < 4; i += 1) {
                     // For each cell
                     p5.push();
-                    p5.translate(j * size, i * size);
+                    p5.translate(i * size, j * size);
 
                     // Draw basic gid
                     p5.stroke(240);
@@ -72732,36 +72739,37 @@ class Tile {
 
                     // Get cell data
                     if (!this.data) return;
-                    let cell = this.data[i][j];
+                    let cell = this.data[j][i];
 
                     // Add item to cell
                     let item = cell.item;
                     if (item) {
                         if (item.type === 'vortex') {
-                            p5.fill(__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].colors[item.color]);
-                            p5.noStroke();
+                            p5.blendMode('normal');
+                            p5.noFill();
+                            p5.stroke(__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].colors[item.color]);
                             p5.ellipse(size / 2, size / 2, size / 2, size / 2);
-                            p5.stroke(0);
+                            p5.blendMode('multiply');
                         } else if (item.type === 'bridge' || item.type === 'enter') {
                             // Set color (for bridge)
-                            if (item.color) p5.stroke(item.color);
+                            if (item.color) p5.stroke(__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].colors[item.color]);
 
                             // Rotate and draw item depending on cell coordinates
                             p5.push();
-                            if (i === 0) {
+                            if (j === 0) {
                                 // Pointing up
                                 __WEBPACK_IMPORTED_MODULE_2__symbols__["a" /* default */].arrow(item.type);
-                            } else if (i === 3) {
+                            } else if (j === 3) {
                                 // Pointing bottom
                                 p5.translate(size, size);
                                 p5.rotate(p5.PI);
                                 __WEBPACK_IMPORTED_MODULE_2__symbols__["a" /* default */].arrow(item.type);
-                            } else if (j === 0) {
+                            } else if (i === 0) {
                                 // Pointing left
                                 p5.translate(0, size);
                                 p5.rotate(-p5.PI / 2);
                                 __WEBPACK_IMPORTED_MODULE_2__symbols__["a" /* default */].arrow(item.type);
-                            } else if (j === 3) {
+                            } else if (i === 3) {
                                 // Pointing right
                                 p5.translate(size, 0);
                                 p5.rotate(p5.PI / 2);
@@ -72776,8 +72784,8 @@ class Tile {
                         p5.stroke(0,0,255);
                         const x1 = size / 2;
                         const y1 = size / 2;
-                        const x2 = size / 2 + (esc.x - j) * size;
-                        const y2 = size / 2 + (esc.y - i) * size;
+                        const x2 = size / 2 + (esc.x - i) * size;
+                        const y2 = size / 2 + (esc.y - j) * size;
                         p5.line(x1, y1, x2, y2);
                     }
 

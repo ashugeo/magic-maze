@@ -40,14 +40,14 @@ export default {
             for (let cell of path) {
                 const boardCell = board.getCell(cell.x, cell.y);
                 const tileCell = boardCell.tileCell;
-                let tileShift = 0;
 
                 let x1 = 0;
                 let y1 = 0;
                 let l = 1;
                 let h = 1;
+                let tileShift = {x: 0, y: 0};
 
-                if (tileCell) {
+                if (tileCell && !config.debug) {
                     tileShift = tiles[boardCell.tileCount].shift;
                     const walls = boardCell.walls;
                     const s = .16; // Shift

@@ -45,10 +45,18 @@ export default class Hero {
         const tileCell = boardCell.tileCell;
         const tileShift = tiles[boardCell.tileCount].shift;
 
-        this.target = {
-            x: cell.x + [.25, .1, -.1, -.25][tileCell.x] + tileShift.x / config.size,
-            y: cell.y + [.25, .1, -.1, -.25][tileCell.y] + tileShift.y / config.size
+        if (config.debug) {
+            this.target = {
+                x: cell.x ,
+                y: cell.y
+            }
+        } else {
+            this.target = {
+                x: cell.x + [.25, .1, -.1, -.25][tileCell.x] + tileShift.x / config.size,
+                y: cell.y + [.25, .1, -.1, -.25][tileCell.y] + tileShift.y / config.size
+            }
         }
+
         this.path = [];
     }
 
