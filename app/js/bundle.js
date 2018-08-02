@@ -70,7 +70,7 @@
 "use strict";
 /* harmony default export */ __webpack_exports__["a"] = ({
     debug: false,
-    grid: false,
+    grid: true,
     cameraSpeed: 5,
     cameraMouse: false,
     zoomMax: 4,
@@ -92,7 +92,8 @@
         x: 10,
         y: 10
     },
-    timer: 180
+    timer: 180,
+    botsInterval: 1000
 });
 
 
@@ -102,6 +103,8 @@
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tile__ = __webpack_require__(8);
+
 
 
 /* harmony default export */ __webpack_exports__["a"] = ({
@@ -114,6 +117,9 @@
                 this.board[i][j] = {};
             }
         }
+
+        window.tiles.push(new __WEBPACK_IMPORTED_MODULE_1__tile__["a" /* default */](0));
+        window.tiles[0].set(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].firstTile.x, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].firstTile.y);
     },
 
     getCell(x, y) {
@@ -127,6 +133,10 @@
 
     setUsed(x, y) {
         this.board[x][y].item.used = true;
+    },
+
+    setOpened(x, y) {
+        this.board[x][y].item.opened = true;
     }
 });
 
@@ -375,7 +385,7 @@ class Hero {
 
     /**
     * Move hero to cell
-    * @param {Object} cell cell x and y coordinates
+    * @param {Object} cell cell X and Y coordinates
     */
     move(force = false) {
         if (force) {
@@ -392,7 +402,7 @@ class Hero {
 
     /**
     * Set hero on cell
-    * @param {Object} cell cell x and y coordinates
+    * @param {Object} cell cell X and Y coordinates
     */
     set(cell) {
         this.cell = {
@@ -72123,9 +72133,9 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
             if (e.which === 67) { // C: engage tile setting
                 if (role.indexOf('explore') > -1) this.newTile();
             } else if (e.which === 82) { // R: rotate tile counterclockwise
-                this.rotateNewTile(-1);
+                this.rotateTile(-1);
             } else if (e.which === 84) { // T: rotate tile clockwise
-                this.rotateNewTile(1);
+                this.rotateTile(1);
             } else if (e.which === 27) { // Esc: cancel current action
                 this.cancel();
             }
@@ -72152,7 +72162,7 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
         });
 
         window.oncontextmenu = () => {
-            this.rotateNewTile(1);
+            this.rotateTile(1);
             return false;
         }
     },
@@ -72246,22 +72256,18 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
     */
     setTile(cell) {
         // Select tile being set
-        const tile = tiles[tiles.length-1];
+        const tile = tiles[tiles.length - 1];
         const o = tile.getOrientation();
 
         if (tile.canBeSet && !tile.fixed) {
             this.action = '';
 
-            let _x = [-2, -3, -1, 0][o];
-            let _y = [0, -2, -3, -1][o];
-
-            let x = cell.x + _x;
-            let y = cell.y + _y;
-
-            tile.set(x, y);
+            // Set tile at origin
+            const origin = tile.getOrigin(cell.x, cell.y, o);
+            tile.set(origin.x, origin.y);
             socket.emit('tile', {
-                x: x,
-                y: y,
+                x: origin.x,
+                y: origin.y,
                 tile: tile
             });
 
@@ -72306,19 +72312,13 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
     * Rotate tile being set
     * @param  {int} dir direction (1 for clockwise, -1 for counterclockwise)
     */
-    rotateNewTile(dir) {
+    rotateTile(dir) {
         // Select tile being set
         const tile = tiles[tiles.length-1];
 
         // Make sure tile is not fixed
         if (!tile.fixed) {
-            if (dir === 1) {
-                // Rotate clockwise
-                tile.rotate < 3 ? tile.rotate += dir : tile.rotate = 0;
-            } else if (dir === -1) {
-                // Rotate counterclockwise
-                tile.rotate > 0 ? tile.rotate += dir : tile.rotate = 3;
-            }
+            tile.rotate(dir);
         }
     },
 
@@ -72411,7 +72411,7 @@ class Tile {
     constructor(id) {
         this.id = id;
         this.data = json[id]
-        this.rotate = 0;
+        this.rotation = 0;
         this.canBeSet = false;
         this.fixed = false;
         this.shift = {
@@ -72430,7 +72430,7 @@ class Tile {
         }
 
         const o = this.getOrientation();
-        const enter = this.getEnter(x, y, o);
+        const enter = this.getBridge(x, y, o);
         const target = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].getCell(enter.x, enter.y);
 
         // Compute shift
@@ -72477,6 +72477,14 @@ class Tile {
     }
 
     /**
+    * Rotate tile
+    * @param  {int} turns 90° rotation (positive = clockwise, negative = counterclockwise)
+    */
+    rotate(turns) {
+        this.rotation = (this.rotation + turns + 4) % 4;
+    }
+
+    /**
     * Check if tile can be set at these coordinates
     * @param  {int} x column
     * @param  {int} y row
@@ -72496,7 +72504,7 @@ class Tile {
         }
 
         // Make sure cell next to enter is a bridge
-        const nextToEnter = this.getEnter(x, y, this.getOrientation());
+        const nextToEnter = this.getBridge(x, y, this.getOrientation());
         const cellNextToEnter = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].getCell(nextToEnter.x, nextToEnter.y);
         if (Object.keys(cellNextToEnter).length > 0) {
             if (cellNextToEnter.item.type !== 'bridge') {
@@ -72524,7 +72532,7 @@ class Tile {
     getOrientation() {
         let i;
 
-        // Find x coordinate of enter
+        // Find X coordinate of enter
         if (this.findItem('enter')) {
             i = this.findItem('enter').x;
         } else {
@@ -72533,24 +72541,52 @@ class Tile {
 
         // Determine rotation
         let r = [0, 3, 1, 2][i];
-        r += this.rotate;
+        r += this.rotation;
         r %= 4;
 
         return r;
     }
 
     /**
-    * Get tile entrance coordinates (cell out of tile)
+    * Get tile bridge coordinates (cell out of tile)
     * @param  {int}   x mouse X coordinate
     * @param  {int}   y mouse Y coordinate
     * @param  {int}   o tile orientation
-    * @return {Objet}   {x, y}
+    * @return {Object}   {x, y}
     */
-    getEnter(x, y, o) {
+    getBridge(x, y, o) {
         x += [2, 4, 1, -1][o];
         y += [-1, 2, 4, 1][o];
 
-        return {x: x, y: y}
+        return {x: x, y: y};
+    }
+
+    /**
+    * Get tile enter coordinates (cell inside tile)
+    * @param  {int}   x mouse X coordinate
+    * @param  {int}   y mouse Y coordinate
+    * @param  {int}   b bridge X coordinate
+    * @return {Object}   {x, y}
+    */
+    getEnter(x, y, b) {
+        x += [-1, 0, 0, 1][b];
+        y += [0, 1, -1, 0][b];
+
+        return {x: x, y: y};
+    }
+
+    /**
+    * Get tile origin coordinates (top left cell)
+    * @param  {int}   x mouse X coordinate
+    * @param  {int}   y mouse Y coordinate
+    * @param  {int}   b bridge X coordinate
+    * @return {Object}   {x, y}
+    */
+    getOrigin(x, y, o) {
+        x += [-2, -3, -1, 0][o];
+        y += [0, -2, -3, -1][o];
+
+        return {x: x, y: y};
     }
 
     set(x, y) {
@@ -72560,7 +72596,7 @@ class Tile {
     }
 
     saveToBoard(x, y) {
-        const r = this.rotate;
+        const r = this.rotation;
 
         for (let i = 0; i < 4; i += 1) {
             for (let j = 0; j < 4; j += 1) {
@@ -72646,10 +72682,10 @@ class Tile {
     display() {
         p5.push();
         // Rotate and translate tile
-        p5.rotate(this.rotate * p5.PI/2);
+        p5.rotate(this.rotation * p5.PI/2);
         const x = this.x;
         const y = this.y;
-        const r = this.rotate;
+        const r = this.rotation;
         let _x = [x, y, - x - 4, - y - 4][r] * size;
         let _y = [y, - x - 4, - y - 4, x][r] * size;
         if (__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].debug) {
@@ -72815,6 +72851,7 @@ class Tile {
 /* harmony default export */ __webpack_exports__["a"] = ({
     init() {
         this.$clock = document.getElementById('clock');
+        this.ticker();
         this.interval = setInterval(() => { this.ticker() }, 1000);
     },
 
@@ -72870,6 +72907,8 @@ class Tile {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__pieces__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__board__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__bot__ = __webpack_require__(14);
+
 
 
 
@@ -72882,6 +72921,12 @@ class Tile {
     init(options) {
         this.scenario = 1;
         this.bots = options.bots;
+        if (this.bots > 0) {
+            for (let i = 0; i < this.bots; i += 1) {
+                const bot = new __WEBPACK_IMPORTED_MODULE_3__bot__["a" /* default */](i, options.botsRoles[i]);
+                bot.init();
+            }
+        }
     },
 
     checkForWin() {
@@ -72944,14 +72989,9 @@ function fetchJSON(i) {
 }
 
 function start(options) {
-    __WEBPACK_IMPORTED_MODULE_9__game__["a" /* default */].init(options);
     new __WEBPACK_IMPORTED_MODULE_0_p5___default.a(__WEBPACK_IMPORTED_MODULE_1__sketch__["a" /* default */]);
+    __WEBPACK_IMPORTED_MODULE_9__game__["a" /* default */].init(options);
     __WEBPACK_IMPORTED_MODULE_3__board__["a" /* default */].init();
-
-    window.tiles.push(new __WEBPACK_IMPORTED_MODULE_4__tile__["a" /* default */](0));
-    window.tiles[0].set(__WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].firstTile.x, __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].firstTile.y);
-
-
     __WEBPACK_IMPORTED_MODULE_7__events__["a" /* default */].init();
     __WEBPACK_IMPORTED_MODULE_6__pieces__["a" /* default */].init();
     __WEBPACK_IMPORTED_MODULE_8__clock__["a" /* default */].init();
@@ -72970,7 +73010,7 @@ socket.on('admin', () => {
     setTimeout(() => {
         $ui.innerHTML += `<div id="admin">
         <p>Vous êtes administrateur de la partie.</p>
-        <input type="number" id="bots" value="0" /> bot(s)
+        <input type="number" id="bots" value="1" /> bot(s)
         <button id="start">Commencer la partie !</button>
         </div>`;
 
@@ -73013,7 +73053,7 @@ socket.on('board', data => {
 
 socket.on('tile', data => {
     const tile = new __WEBPACK_IMPORTED_MODULE_4__tile__["a" /* default */](data.tile.id);
-    tile.rotate = data.tile.rotate;
+    tile.rotation = data.tile.rotation;
     window.tiles.push(tile);
     tile.set(data.x, data.y);
 });
@@ -73130,9 +73170,8 @@ function displayTiles() {
             const o = tile.getOrientation();
 
             // Place cursor on enter cell depending on orientation
-            let x = cell.x + [-2, -3, -1, 0][o];
-            let y = cell.y + [0, -2, -3, -1][o];
-            tile.move(x, y);
+            const origin = tile.getOrigin(cell.x, cell.y, o);
+            tile.move(origin.x, origin.y);
         }
 
         // Display tile
@@ -73141,6 +73180,91 @@ function displayTiles() {
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (sketch);
+
+
+/***/ }),
+/* 14 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__pieces__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(8);
+
+
+
+
+
+class Bot {
+
+    constructor(id, roles) {
+        this.id = id;
+        this.roles = roles;
+    }
+
+    init() {
+        this.interval = setInterval(() => { this.solve() }, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].botsInterval);
+    }
+
+    solve() {
+        for (let piece of __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].all) {
+            const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(piece.cell.x, piece.cell.y);
+
+            // console.log(piece.cell.x, piece.cell.y, cell.item);
+
+            if (this.roles.indexOf('explore') > -1) {
+                if (cell.item && cell.item.type === 'bridge' && cell.item.color === piece.color && !cell.item.opened) {
+                    this.newTile(piece.cell.x, piece.cell.y);
+                }
+            }
+        }
+    }
+
+    /**
+    * Create and set a new tile
+    * @param  {int} x bridge X coordinate
+    * @param  {int} y bridge Y coordinate
+    */
+    newTile(x, y) {
+        // Create and save new tile
+        const tile = new __WEBPACK_IMPORTED_MODULE_3__tile__["a" /* default */]((tiles.length - 1) % (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].tiles - 1) + 1);
+        tiles.push(tile);
+
+        // Get cell and enter coordinates
+        const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(x, y);
+        const enter = tile.getEnter(x, y, cell.tileCell.x);
+
+        if (Object.keys(__WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(enter.x, enter.y)).length > 0) {
+            // Already a tile there, cancel
+            tiles.pop();
+            return;
+        }
+
+
+        // Compute new orientation relative to bridge X coordinate
+        let o = tile.getOrientation();
+        let _o = [1, 0, 2, 3][cell.tileCell.x];
+
+        // Rotate tile by difference
+        tile.rotate(_o - o);
+
+        // Set tile at origin
+        const origin = tile.getOrigin(enter.x, enter.y, _o);
+
+        tile.set(origin.x, origin.y);
+        socket.emit('tile', {
+            x: origin.x,
+            y: origin.y,
+            tile: tile
+        });
+
+        // Mark bridge as opened
+        __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].setOpened(x, y);
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Bot;
+
 
 
 /***/ })

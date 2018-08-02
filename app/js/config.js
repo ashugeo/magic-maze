@@ -1,6 +1,6 @@
 export default {
     debug: false,
-    grid: false,
+    grid: true,
     cameraSpeed: 5,
     cameraMouse: false,
     zoomMax: 4,
@@ -22,5 +22,6 @@ export default {
         x: 10,
         y: 10
     },
-    timer: 180
+    timer: 180,
+    botsInterval: 1000
 }

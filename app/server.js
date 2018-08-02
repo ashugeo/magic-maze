@@ -42,16 +42,23 @@ io.sockets.on('connection', socket => {
     socket.on('start', options => {
         // Make sure the admin started the game
         if (socket.id === adminID) {
+            let allPlayers = players.length
+
+            // Add bots to players
+            if (options.bots > 0) {
+                allPlayers += options.bots;
+                options.botsRoles = [];
+            }
 
             // Get all actions for that number of players
             let roles = [];
             for (let i in actions) {
-                if (actions[i].players.indexOf(players.length) > -1) {
+                if (actions[i].players.indexOf(allPlayers) > -1) {
                     roles.push(actions[i].roles);
                 }
             }
 
-            if (players.length === 1) {
+            if (allPlayers === 1) {
                 // Only one player, merge roles together
                 let allRoles = [].concat(...roles);
                 io.to(players[0]).emit('role', allRoles);
@@ -61,8 +68,13 @@ io.sockets.on('connection', socket => {
                 for (let i in roles) {
                     i = parseInt(i);
 
-                    // Tell this player his role(s)
-                    io.to(players[i]).emit('role', roles[i])
+                    if (players[i]) {
+                        // Tell this player his role(s)
+                        io.to(players[i]).emit('role', roles[i]);
+                    } else if (options.bots > 0) {
+                        // Not a player but a bot, save in options
+                        options.botsRoles.push(roles[i]);
+                    }
                 }
             }
 

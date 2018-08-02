@@ -27,5 +27,9 @@ export default {
 
     setUsed(x, y) {
         this.board[x][y].item.used = true;
+    },
+
+    setOpened(x, y) {
+        this.board[x][y].item.opened = true;
     }
 }

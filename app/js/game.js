@@ -1,6 +1,7 @@
 import config from './config';
 import pieces from './pieces';
 import board from './board';
+import Bot from './bot'
 
 export default {
 
@@ -10,6 +11,12 @@ export default {
     init(options) {
         this.scenario = 1;
         this.bots = options.bots;
+        if (this.bots > 0) {
+            for (let i = 0; i < this.bots; i += 1) {
+                const bot = new Bot(i, options.botsRoles[i]);
+                bot.init();
+            }
+        }
     },
 
     checkForWin() {
