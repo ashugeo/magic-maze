@@ -48,7 +48,7 @@ export default {
                 let tileShift = {x: 0, y: 0};
 
                 if (tileCell && !config.debug) {
-                    tileShift = tiles[boardCell.tileCount].shift;
+                    tileShift = tiles[boardCell.tileID].shift;
                     const walls = boardCell.walls;
                     const s = .16; // Shift
 

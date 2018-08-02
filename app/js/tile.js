@@ -4,7 +4,7 @@ import symbols from './symbols';
 import pieces from './pieces';
 
 const size = config.size;
-let tileCount = 0;
+let tileID = 0;
 
 export default class Tile {
     constructor(id) {
@@ -225,7 +225,7 @@ export default class Tile {
                 // Copy data
                 let boardCell = Object.assign({}, cell);
                 // boardCell.tileID = this.id;
-                boardCell.tileCount = tileCount;
+                boardCell.tileID = tileID;
                 boardCell.tileCell = {
                     x: i,
                     y: j
@@ -256,7 +256,7 @@ export default class Tile {
             }
         }
 
-        tileCount++;
+        tileID++;
     }
 
     /**
