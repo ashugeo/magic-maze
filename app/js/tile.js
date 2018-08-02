@@ -420,7 +420,7 @@ export default class Tile {
         for (let j = 0; j < Object.keys(this.data).length; j += 1) {
             for (let i = 0; i < Object.keys(this.data[j]).length; i += 1) {
                 const cell = board.get(this.x + i, this.y + j);
-                if (cell.item && cell.item.used) {
+                if (cell.isUsed()) {
                     let x = (i + 1 / 3 + [.25, .1, -.1, -.25][i]) * size;
                     let y = (j + 1 / 3 + [.25, .1, -.1, -.25][j]) * size;
 

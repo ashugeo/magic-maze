@@ -20,27 +20,27 @@ export default class Cell {
         return this.empty;
     }
 
-    setUsed(x, y) {
+    setUsed() {
         this.item.used = true;
     }
 
-    isUsed(x, y) {
+    isUsed() {
         return this.item.used;
     }
 
-    setExplored(x, y) {
+    setExplored() {
         this.item.explored = true;
     }
 
-    isExplored(x, y) {
+    isExplored() {
         return this.item.explored;
     }
 
-    setStolen(x, y) {
+    setStolen() {
         this.item.stolen = true;
     }
 
-    isStolen(x, y) {
+    isStolen() {
         return this.item.stolen;
     }
 }
