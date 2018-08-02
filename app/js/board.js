@@ -2,13 +2,13 @@ import config from './config';
 import Tile from './tile';
 
 export default {
-    board: [],
+    layout: [],
 
     init() {
         for (let i = 0; i < config.boardCols; i += 1) {
-            this.board[i] = {};
+            this.layout[i] = {};
             for (let j = 0; j < config.boardRows; j += 1) {
-                this.board[i][j] = {};
+                this.layout[i][j] = {};
             }
         }
 
@@ -17,19 +17,19 @@ export default {
     },
 
     getCell(x, y) {
-        if (!this.board[x]) return false;
-        return this.board[x][y];
+        if (!this.layout[x]) return false;
+        return this.layout[x][y];
     },
 
     save(x, y, cell) {
-        this.board[x][y] = cell;
+        this.layout[x][y] = cell;
     },
 
     setUsed(x, y) {
-        this.board[x][y].item.used = true;
+        this.layout[x][y].item.used = true;
     },
 
-    setOpened(x, y) {
-        this.board[x][y].item.opened = true;
+    setExplored(x, y) {
+        this.layout[x][y].item.explored = true;
     }
 }

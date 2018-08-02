@@ -158,7 +158,7 @@ export default {
                 tile: tile
             });
 
-            this.bridgeCell.opened = true;
+            this.bridgeCell.explored = true;
         }
     },
 
@@ -174,7 +174,7 @@ export default {
             const cell = board.getCell(piece.cell.x, piece.cell.y);
             if (cell.item && cell.item.type === 'bridge' && cell.item.color === piece.color) {
                 this.bridgeCell = cell;
-                if (!cell.opened) {
+                if (!cell.explored) {
                     canAddTile = true;
                     break;
                 }
