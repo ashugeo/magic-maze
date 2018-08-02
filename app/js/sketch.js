@@ -61,9 +61,8 @@ function displayTiles() {
             const o = tile.getOrientation();
 
             // Place cursor on enter cell depending on orientation
-            let x = cell.x + [-2, -3, -1, 0][o];
-            let y = cell.y + [0, -2, -3, -1][o];
-            tile.move(x, y);
+            const origin = tile.getOrigin(cell.x, cell.y, o);
+            tile.move(origin.x, origin.y);
         }
 
         // Display tile

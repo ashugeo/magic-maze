@@ -20,9 +20,9 @@ export default {
             if (e.which === 67) { // C: engage tile setting
                 if (role.indexOf('explore') > -1) this.newTile();
             } else if (e.which === 82) { // R: rotate tile counterclockwise
-                this.rotateNewTile(-1);
+                this.rotateTile(-1);
             } else if (e.which === 84) { // T: rotate tile clockwise
-                this.rotateNewTile(1);
+                this.rotateTile(1);
             } else if (e.which === 27) { // Esc: cancel current action
                 this.cancel();
             }
@@ -49,7 +49,7 @@ export default {
         });
 
         window.oncontextmenu = () => {
-            this.rotateNewTile(1);
+            this.rotateTile(1);
             return false;
         }
     },
@@ -143,22 +143,18 @@ export default {
     */
     setTile(cell) {
         // Select tile being set
-        const tile = tiles[tiles.length-1];
+        const tile = tiles[tiles.length - 1];
         const o = tile.getOrientation();
 
         if (tile.canBeSet && !tile.fixed) {
             this.action = '';
 
-            let _x = [-2, -3, -1, 0][o];
-            let _y = [0, -2, -3, -1][o];
-
-            let x = cell.x + _x;
-            let y = cell.y + _y;
-
-            tile.set(x, y);
+            // Set tile at origin
+            const origin = tile.getOrigin(cell.x, cell.y, o);
+            tile.set(origin.x, origin.y);
             socket.emit('tile', {
-                x: x,
-                y: y,
+                x: origin.x,
+                y: origin.y,
                 tile: tile
             });
 
@@ -203,19 +199,13 @@ export default {
     * Rotate tile being set
     * @param  {int} dir direction (1 for clockwise, -1 for counterclockwise)
     */
-    rotateNewTile(dir) {
+    rotateTile(dir) {
         // Select tile being set
         const tile = tiles[tiles.length-1];
 
         // Make sure tile is not fixed
         if (!tile.fixed) {
-            if (dir === 1) {
-                // Rotate clockwise
-                tile.rotate < 3 ? tile.rotate += dir : tile.rotate = 0;
-            } else if (dir === -1) {
-                // Rotate counterclockwise
-                tile.rotate > 0 ? tile.rotate += dir : tile.rotate = 3;
-            }
+            tile.rotate(dir);
         }
     },
 

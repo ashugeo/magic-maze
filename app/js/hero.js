@@ -16,7 +16,7 @@ export default class Hero {
 
     /**
     * Move hero to cell
-    * @param {Object} cell cell x and y coordinates
+    * @param {Object} cell cell X and Y coordinates
     */
     move(force = false) {
         if (force) {
@@ -33,7 +33,7 @@ export default class Hero {
 
     /**
     * Set hero on cell
-    * @param {Object} cell cell x and y coordinates
+    * @param {Object} cell cell X and Y coordinates
     */
     set(cell) {
         this.cell = {

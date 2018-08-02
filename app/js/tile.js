@@ -10,7 +10,7 @@ export default class Tile {
     constructor(id) {
         this.id = id;
         this.data = json[id]
-        this.rotate = 0;
+        this.rotation = 0;
         this.canBeSet = false;
         this.fixed = false;
         this.shift = {
@@ -29,7 +29,7 @@ export default class Tile {
         }
 
         const o = this.getOrientation();
-        const enter = this.getEnter(x, y, o);
+        const enter = this.getBridge(x, y, o);
         const target = board.getCell(enter.x, enter.y);
 
         // Compute shift
@@ -76,6 +76,14 @@ export default class Tile {
     }
 
     /**
+    * Rotate tile
+    * @param  {int} turns 90° rotation (positive = clockwise, negative = counterclockwise)
+    */
+    rotate(turns) {
+        this.rotation = (this.rotation + turns + 4) % 4;
+    }
+
+    /**
     * Check if tile can be set at these coordinates
     * @param  {int} x column
     * @param  {int} y row
@@ -95,7 +103,7 @@ export default class Tile {
         }
 
         // Make sure cell next to enter is a bridge
-        const nextToEnter = this.getEnter(x, y, this.getOrientation());
+        const nextToEnter = this.getBridge(x, y, this.getOrientation());
         const cellNextToEnter = board.getCell(nextToEnter.x, nextToEnter.y);
         if (Object.keys(cellNextToEnter).length > 0) {
             if (cellNextToEnter.item.type !== 'bridge') {
@@ -123,7 +131,7 @@ export default class Tile {
     getOrientation() {
         let i;
 
-        // Find x coordinate of enter
+        // Find X coordinate of enter
         if (this.findItem('enter')) {
             i = this.findItem('enter').x;
         } else {
@@ -132,24 +140,52 @@ export default class Tile {
 
         // Determine rotation
         let r = [0, 3, 1, 2][i];
-        r += this.rotate;
+        r += this.rotation;
         r %= 4;
 
         return r;
     }
 
     /**
-    * Get tile entrance coordinates (cell out of tile)
+    * Get tile bridge coordinates (cell out of tile)
     * @param  {int}   x mouse X coordinate
     * @param  {int}   y mouse Y coordinate
     * @param  {int}   o tile orientation
-    * @return {Objet}   {x, y}
+    * @return {Object}   {x, y}
     */
-    getEnter(x, y, o) {
+    getBridge(x, y, o) {
         x += [2, 4, 1, -1][o];
         y += [-1, 2, 4, 1][o];
 
-        return {x: x, y: y}
+        return {x: x, y: y};
+    }
+
+    /**
+    * Get tile enter coordinates (cell inside tile)
+    * @param  {int}   x mouse X coordinate
+    * @param  {int}   y mouse Y coordinate
+    * @param  {int}   b bridge X coordinate
+    * @return {Object}   {x, y}
+    */
+    getEnter(x, y, b) {
+        x += [-1, 0, 0, 1][b];
+        y += [0, 1, -1, 0][b];
+
+        return {x: x, y: y};
+    }
+
+    /**
+    * Get tile origin coordinates (top left cell)
+    * @param  {int}   x mouse X coordinate
+    * @param  {int}   y mouse Y coordinate
+    * @param  {int}   b bridge X coordinate
+    * @return {Object}   {x, y}
+    */
+    getOrigin(x, y, o) {
+        x += [-2, -3, -1, 0][o];
+        y += [0, -2, -3, -1][o];
+
+        return {x: x, y: y};
     }
 
     set(x, y) {
@@ -159,7 +195,7 @@ export default class Tile {
     }
 
     saveToBoard(x, y) {
-        const r = this.rotate;
+        const r = this.rotation;
 
         for (let i = 0; i < 4; i += 1) {
             for (let j = 0; j < 4; j += 1) {
@@ -245,10 +281,10 @@ export default class Tile {
     display() {
         p5.push();
         // Rotate and translate tile
-        p5.rotate(this.rotate * p5.PI/2);
+        p5.rotate(this.rotation * p5.PI/2);
         const x = this.x;
         const y = this.y;
-        const r = this.rotate;
+        const r = this.rotation;
         let _x = [x, y, - x - 4, - y - 4][r] * size;
         let _y = [y, - x - 4, - y - 4, x][r] * size;
         if (config.debug) {

@@ -91,7 +91,7 @@ socket.on('board', data => {
 
 socket.on('tile', data => {
     const tile = new Tile(data.tile.id);
-    tile.rotate = data.tile.rotate;
+    tile.rotation = data.tile.rotation;
     window.tiles.push(tile);
     tile.set(data.x, data.y);
 });
