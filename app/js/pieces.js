@@ -19,6 +19,12 @@ export default {
         }
     },
 
+    getPieceByColor(color) {
+        for (let piece of this.all) {
+            if (piece.color === color) return piece;
+        }
+    },
+
     display() {
         p5.noStroke();
         for (let piece of this.all) {

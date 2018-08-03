@@ -69,7 +69,7 @@
 
 "use strict";
 /* harmony default export */ __webpack_exports__["a"] = ({
-    debug: true,
+    debug: false,
     grid: true,
     cameraSpeed: 5,
     cameraMouse: false,
@@ -103,40 +103,34 @@
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tile__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__cell__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile__ = __webpack_require__(3);
+
 
 
 
 /* harmony default export */ __webpack_exports__["a"] = ({
-    board: [],
+    layout: [],
 
     init() {
         for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardCols; i += 1) {
-            this.board[i] = {};
+            this.layout[i] = {};
             for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardRows; j += 1) {
-                this.board[i][j] = {};
+                this.layout[i][j] = new __WEBPACK_IMPORTED_MODULE_1__cell__["a" /* default */](i, j);
             }
         }
 
-        window.tiles.push(new __WEBPACK_IMPORTED_MODULE_1__tile__["a" /* default */](0));
+        window.tiles.push(new __WEBPACK_IMPORTED_MODULE_2__tile__["a" /* default */](0));
         window.tiles[0].set(__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].firstTile.x, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].firstTile.y);
     },
 
-    getCell(x, y) {
-        if (!this.board[x]) return false;
-        return this.board[x][y];
+    get(x, y) {
+        if (!this.layout[x]) return false;
+        return this.layout[x][y];
     },
 
-    save(x, y, cell) {
-        this.board[x][y] = cell;
-    },
-
-    setUsed(x, y) {
-        this.board[x][y].item.used = true;
-    },
-
-    setOpened(x, y) {
-        this.board[x][y].item.opened = true;
+    save(x, y, data) {
+        this.layout[x][y].save(data);
     }
 });
 
@@ -148,8 +142,8 @@
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__hero__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__camera__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__hero__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__camera__ = __webpack_require__(4);
 
 
 
@@ -168,6 +162,12 @@
             });
             this.all[i].pos = this.all[i].target;
             this.all[i].status = 'set';
+        }
+    },
+
+    getPieceByColor(color) {
+        for (let piece of this.all) {
+            if (piece.color === color) return piece;
         }
     },
 
@@ -190,7 +190,7 @@
             p5.push();
             const path = piece.path;
             for (let cell of path) {
-                const boardCell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(cell.x, cell.y);
+                const boardCell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(cell.x, cell.y);
                 const tileCell = boardCell.tileCell;
 
                 let x1 = 0;
@@ -200,7 +200,7 @@
                 let tileShift = {x: 0, y: 0};
 
                 if (tileCell && !__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].debug) {
-                    tileShift = tiles[boardCell.tileCount].shift;
+                    tileShift = tiles[boardCell.tileID].shift;
                     const walls = boardCell.walls;
                     const s = .16; // Shift
 
@@ -276,6 +276,454 @@
 
 /***/ }),
 /* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__symbols__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__pieces__ = __webpack_require__(2);
+
+
+
+
+
+const size = __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size;
+let tileID = 0;
+
+class Tile {
+    constructor(id) {
+        this.id = id;
+        this.data = json[id];
+        this.rotation = 0;
+        this.canBeSet = false;
+        this.fixed = false;
+        this.shift = {
+            x: 0,
+            y: 0
+        }
+    }
+
+    move(x, y) {
+        // Position hasn't changed
+        if (x === this.x && y === this.y) return;
+
+        // Prevent board overflow
+        if (x < 0 || y < 0 || x > __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardRows - 4 || y > __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardCols - 4) {
+            return;
+        }
+
+        const o = this.getOrientation();
+        const enter = this.getBridge(x, y, o);
+        const target = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].get(enter.x, enter.y);
+
+        // Compute shift
+        if (!__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].debug && target) {
+            const parentTile = tiles[target.tileID];
+
+            if (parentTile) {
+                let _x = 0;
+                let _y = 0;
+
+                const s = 4.6; // Shift in pixels
+
+                // Shift depends on position and orientation
+                if (target.tileCell.x === 0 && o === 1) {
+                    _y += [2*s, s, 0, -s][target.tileCell.y];
+                } else if (target.tileCell.x === 3 && o === 3) {
+                    _y += [s, 0, -s, 2*s][target.tileCell.y];
+                }
+
+                if (target.tileCell.y === 3 && o === 0) {
+                    _x += [2*s, s, 0, 0][target.tileCell.x];
+                } else if (target.tileCell.y === 0 && o === 2) {
+                    _x += [0, 0, -s, -2*s][target.tileCell.x];
+                }
+
+                // Add parent tile shift
+                _x += parentTile.shift.x;
+                _y += parentTile.shift.y;
+
+                // Save shift
+                this.shift = {
+                    x: _x,
+                    y: _y
+                }
+            }
+        }
+
+        // Update coordinates
+        this.x = x;
+        this.y = y;
+
+        // Check if tile can be set here
+        if (target) this.canBeSet = this.checkCanBeSet(x, y);
+    }
+
+    /**
+    * Rotate tile
+    * @param  {int} turns 90° rotation (positive = clockwise, negative = counterclockwise)
+    */
+    rotate(turns) {
+        this.rotation = (this.rotation + turns + 4) % 4;
+    }
+
+    /**
+    * Check if tile can be set at these coordinates
+    * @param  {int} x column
+    * @param  {int} y row
+    */
+    checkCanBeSet(x, y) {
+        if (this.id === 0) return false;
+
+        // Check if the tile is covering any fixed tile
+        for (let i = 0; i < 4; i += 1) {
+            for (let j = 0; j < 4; j += 1) {
+                const cell = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].get(x + i, y + j);
+                if (!cell.isEmpty()) return false;
+            }
+        }
+
+        // Make sure cell next to enter is a bridge
+        const nextToEnter = this.getBridge(x, y, this.getOrientation());
+        const cellNextToEnter = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].get(nextToEnter.x, nextToEnter.y);
+        if (!cellNextToEnter.isEmpty()) {
+            if (cellNextToEnter.item.type !== 'bridge') {
+                return false;
+            } else {
+                // There is a bridge, make sure it has a hero on it with the same color
+                for (let piece of __WEBPACK_IMPORTED_MODULE_3__pieces__["a" /* default */].all) {
+                    if (piece.cell.x === nextToEnter.x && piece.cell.y === nextToEnter.y) {
+                        if (piece.color === cellNextToEnter.item.color) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        } else {
+            // No item in this cell
+            return false;
+        }
+    }
+
+    /**
+    * Get orientation of tile depending on enter position (top, right, bottom, left)
+    * @return {int} base rotation of tile
+    */
+    getOrientation() {
+        let i;
+
+        // Find X coordinate of enter
+        if (this.findItem('enter')) {
+            i = this.findItem('enter').x;
+        } else {
+            i = 0;
+        }
+
+        // Determine rotation
+        let r = [0, 3, 1, 2][i];
+        r += this.rotation;
+        r %= 4;
+
+        return r;
+    }
+
+    /**
+    * Get tile bridge coordinates (cell out of tile)
+    * @param  {int}   x mouse X coordinate
+    * @param  {int}   y mouse Y coordinate
+    * @param  {int}   o tile orientation
+    * @return {Object}   {x, y}
+    */
+    getBridge(x, y, o) {
+        x += [2, 4, 1, -1][o];
+        y += [-1, 2, 4, 1][o];
+
+        return {x: x, y: y};
+    }
+
+    /**
+    * Get tile enter coordinates (cell inside tile)
+    * @param  {int}   x mouse X coordinate
+    * @param  {int}   y mouse Y coordinate
+    * @param  {int}   b bridge X coordinate
+    * @return {Object}   {x, y}
+    */
+    getEnter(x, y, b) {
+        x += [-1, 0, 0, 1][b];
+        y += [0, 1, -1, 0][b];
+
+        return {x: x, y: y};
+    }
+
+    /**
+    * Get tile origin coordinates (top left cell)
+    * @param  {int}   x mouse X coordinate
+    * @param  {int}   y mouse Y coordinate
+    * @param  {int}   b bridge X coordinate
+    * @return {Object}   {x, y}
+    */
+    getOrigin(x, y, o) {
+        x += [-2, -3, -1, 0][o];
+        y += [0, -2, -3, -1][o];
+
+        return {x: x, y: y};
+    }
+
+    set(x, y) {
+        this.move(x, y);
+        this.fixed = true;
+        this.saveToBoard(x, y);
+    }
+
+    saveToBoard(x, y) {
+        const r = this.rotation;
+
+        for (let i = 0; i < 4; i += 1) {
+            for (let j = 0; j < 4; j += 1) {
+                let cell;
+
+                // Save cells depending on rotation
+                if (r === 0) {
+                    cell = this.data[j][i];
+                } else if (r === 1) {
+                    cell = this.data[3 - i][j];
+                } else if (r === 2) {
+                    cell = this.data[3 - j][3 - i];
+                } else if (r === 3) {
+                    cell = this.data[i][3 - j];
+                }
+
+                // Rotate walls according to tile rotation
+                // (ex.: top wall becomes left wall after rotation)
+                let walls = ['top', 'right', 'bottom', 'left'];
+                const boardWalls = {
+                    top:    cell.walls[walls[(4 - r) % 4]],
+                    right:  cell.walls[walls[(5 - r) % 4]],
+                    bottom: cell.walls[walls[(6 - r) % 4]],
+                    left:   cell.walls[walls[(3 - r) % 4]]
+                }
+
+                // Copy data
+                let boardCell = Object.assign({}, cell);
+                // boardCell.tileID = this.id;
+                boardCell.tileID = tileID;
+                boardCell.tileCell = {
+                    x: i,
+                    y: j
+                }
+
+                // Save rotated walls
+                boardCell.walls = boardWalls;
+
+                // Save escalator positions relative to board
+                if (cell.escalator) {
+                    let esc = Object.assign({}, cell.escalator);
+                    const _esc = {
+                        x: x + [esc.x, - esc.y, - esc.x, esc.y][r] + [0, 3, 3, 0][r],
+                        y: y + [esc.y, esc.x, - esc.y, - esc.x][r] + [0, 0, 3, 3][r]
+                    }
+                    esc.x = _esc.x;
+                    esc.y = _esc.y;
+                    boardCell.escalator = Object.assign({}, esc);
+                }
+
+                // Save data
+                __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].save(x + i, y + j, boardCell);
+                socket.emit('board', {
+                    x: x + i,
+                    y: y + j,
+                    cell: boardCell
+                });
+            }
+        }
+
+        tileID++;
+    }
+
+    /**
+    * Find an item by key
+    * @param  {string} key  string to look for
+    * @return {Object}      cell coordinates of item
+    */
+    findItem(key) {
+        for (let row in this.data) {
+            for (let col in this.data[row]) {
+                const item = this.data[row][col].item;
+                if (item && item.type === key) {
+                    const pos = {
+                        x: row,
+                        y: col
+                    }
+                    return pos;
+                }
+            }
+        }
+    }
+
+    display() {
+        p5.push();
+        // Rotate and translate tile
+        p5.rotate(this.rotation * p5.PI/2);
+        const x = this.x;
+        const y = this.y;
+        const r = this.rotation;
+        let _x = [x, y, - x - 4, - y - 4][r] * size;
+        let _y = [y, - x - 4, - y - 4, x][r] * size;
+        if (__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].debug) {
+            // Pixel adjustment for schemas
+            _x -= [0, 0, 1, 1][r];
+            _y -= [0, 1, 1, 0][r];
+        } else {
+            // Shift adjustment for images
+            const shift = this.shift;
+            _x += [shift.x, shift.y, -shift.x, -shift.y][r];
+            _y += [shift.y, -shift.x, -shift.y, shift.x][r];
+        }
+        p5.translate(_x, _y);
+
+        if (__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].debug) { // Display schema of cell
+            p5.blendMode(p5.MULTIPLY);
+
+            // Background color depending on status
+            if (this.fixed) {
+                p5.fill('#f0f2ff');
+            } else if (this.canBeSet) {
+                p5.fill('#e0ffe4');
+            } else {
+                p5.fill('#ffe2e4');
+            }
+
+            p5.noStroke();
+            p5.rect(0, 0, size * 4, size * 4);
+
+            p5.noFill();
+            p5.stroke(0);
+
+            for (let j = 0; j < 4; j += 1) {
+                for (let i = 0; i < 4; i += 1) {
+                    // For each cell
+                    p5.push();
+                    p5.translate(i * size, j * size);
+
+                    // Draw basic gid
+                    p5.stroke(240);
+                    p5.rect(0, 0, size, size);
+                    p5.stroke(0);
+
+                    // Get cell data
+                    if (!this.data) return;
+                    let cell = this.data[j][i];
+
+                    // Add item to cell
+                    let item = cell.item;
+                    if (item) {
+                        if (item.type === 'vortex') {
+                            p5.blendMode('normal');
+                            p5.noFill();
+                            p5.stroke(__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].colors[item.color]);
+                            p5.ellipse(size / 2, size / 2, size / 2, size / 2);
+                            p5.blendMode('multiply');
+                        } else if (item.type === 'bridge' || item.type === 'enter') {
+                            // Set color (for bridge)
+                            if (item.color) p5.stroke(__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].colors[item.color]);
+
+                            // Rotate and draw item depending on cell coordinates
+                            p5.push();
+                            if (j === 0) {
+                                // Pointing up
+                                __WEBPACK_IMPORTED_MODULE_2__symbols__["a" /* default */].arrow(item.type);
+                            } else if (j === 3) {
+                                // Pointing bottom
+                                p5.translate(size, size);
+                                p5.rotate(p5.PI);
+                                __WEBPACK_IMPORTED_MODULE_2__symbols__["a" /* default */].arrow(item.type);
+                            } else if (i === 0) {
+                                // Pointing left
+                                p5.translate(0, size);
+                                p5.rotate(-p5.PI / 2);
+                                __WEBPACK_IMPORTED_MODULE_2__symbols__["a" /* default */].arrow(item.type);
+                            } else if (i === 3) {
+                                // Pointing right
+                                p5.translate(size, 0);
+                                p5.rotate(p5.PI / 2);
+                                __WEBPACK_IMPORTED_MODULE_2__symbols__["a" /* default */].arrow(item.type);
+                            }
+                            p5.pop();
+                        }
+                    }
+
+                    let esc = cell.escalator;
+                    if (esc) {
+                        p5.stroke(0,0,255);
+                        const x1 = size / 2;
+                        const y1 = size / 2;
+                        const x2 = size / 2 + (esc.x - i) * size;
+                        const y2 = size / 2 + (esc.y - j) * size;
+                        p5.line(x1, y1, x2, y2);
+                    }
+
+                    // Draw walls
+                    p5.blendMode(p5.MULTIPLY);
+                    p5.stroke(0);
+                    if (cell.walls.top) {
+                        p5.line(0, 0, size, 0);
+                    }
+                    if (cell.walls.right) {
+                        p5.line(size, 0, size, size);
+                    }
+                    if (cell.walls.bottom) {
+                        p5.line(0, size, size, size);
+                    }
+                    if (cell.walls.left) {
+                        p5.line(0, 0, 0, size);
+                    }
+
+                    p5.pop();
+                }
+            }
+        } else { // Display image of cell
+            p5.image(tilesImages[this.id], 0, 0, 4 * size, 4 * size);
+
+            // Colored overlay depending on status
+            p5.noStroke();
+            if (this.canBeSet && !this.fixed) {
+                p5.fill(240, 255, 250, 100);
+                p5.rect(0, 0, 4 * size, 4 * size);
+            } else if (!this.canBeSet && !this.fixed) {
+                p5.fill(255, 240, 245, 180);
+                p5.rect(0, 0, 4 * size, 4 * size);
+            }
+        }
+
+        if (this.fixed) this.displayItems();
+
+        p5.pop();
+    }
+
+    displayItems() {
+        for (let j = 0; j < Object.keys(this.data).length; j += 1) {
+            for (let i = 0; i < Object.keys(this.data[j]).length; i += 1) {
+                const cell = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].get(this.x + i, this.y + j);
+                if (cell.isUsed()) {
+                    let x = (i + 1 / 3 + [.25, .1, -.1, -.25][i]) * size;
+                    let y = (j + 1 / 3 + [.25, .1, -.1, -.25][j]) * size;
+
+                    p5.push();
+                    p5.translate(x, y);
+                    p5.image(usedImage, 0, 0, size / 3, size / 3);
+                    p5.pop();
+                }
+            }
+        }
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Tile;
+
+
+
+/***/ }),
+/* 4 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -360,7 +808,7 @@
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -410,9 +858,9 @@ class Hero {
             y: cell.y
         };
 
-        const boardCell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(cell.x, cell.y);
+        const boardCell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(cell.x, cell.y);
         const tileCell = boardCell.tileCell;
-        const tileShift = tiles[boardCell.tileCount].shift;
+        const tileShift = tiles[boardCell.tileID].shift;
 
         if (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].debug) {
             this.target = {
@@ -446,9 +894,9 @@ class Hero {
 
         // Check for vortex
         if (role.indexOf('vortex') > -1) {
-            const item = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(piece.x, piece.y).item;
-            if (item.type === 'vortex' && item.color === this.color) {
-                const targetItem = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(target.x, target.y).item;
+            const item = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(piece.x, piece.y).item;
+            if (item && item.type === 'vortex' && item.color === this.color) {
+                const targetItem = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(target.x, target.y).item;
                 if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
                     path.push({x: piece.x, y: piece.y});
                     path.push({x: target.x, y: target.y, reachable: true});
@@ -461,8 +909,8 @@ class Hero {
             // Not the same column or row
             // Check for escalator
             if (role.indexOf('escalator') > -1) {
-                const escalator = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(piece.x, piece.y).escalator;
-                if (escalator.x === target.x && escalator.y === target.y) {
+                const escalator = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(piece.x, piece.y).escalator;
+                if (escalator && escalator.x === target.x && escalator.y === target.y) {
                     path.push({x: piece.x, y: piece.y});
                     path.push({x: target.x, y: target.y, reachable: true});
                     return path;
@@ -497,10 +945,14 @@ class Hero {
     /**
     * Check path legality
     * @param  {Object} target Target cell
+    * @param  {array}  role   Roles (for bots)
     */
-    checkPath(target) {
+    checkPath(target, role) {
         // No specified target, check for self position (current cell)
         if (!target) target = this.cell;
+
+        // No specified role, use player role
+        if (!role) role = window.role;
 
         const path = this.getPath(target);
         if (!path) return;
@@ -509,8 +961,8 @@ class Hero {
             i = parseInt(i);
             path[i].reachable = true;
 
-            // Out of board
-            if (Object.keys(__WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(path[i].x, path[i].y)).length === 0) {
+            // Out of set tiles (empty cell)
+            if (__WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(path[i].x, path[i].y).isEmpty()) {
                 path[i].reachable = false;
                 return;
             }
@@ -549,8 +1001,8 @@ class Hero {
                 // Check current cell and next cell walls depending on direction
                 const x = path[i - 1].x;
                 const y = path[i - 1].y;
-                const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(x, y);
-                const next = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(path[i].x, path[i].y);
+                const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(x, y);
+                const next = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(path[i].x, path[i].y);
                 if (path[i].x === x) {
                     if (path[i].y > y) {
                         // Going down
@@ -625,7 +1077,7 @@ class Hero {
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {var require;var require;/*! p5.js v0.5.16 October 11, 2017 */
@@ -72037,7 +72489,7 @@ module.exports = p5;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -72107,16 +72559,16 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pieces__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__clock__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__game__ = __webpack_require__(10);
 
@@ -72279,7 +72731,7 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
                 tile: tile
             });
 
-            this.bridgeCell.opened = true;
+            this.bridgeCell.setExplored(true);
         }
     },
 
@@ -72292,10 +72744,10 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
         let canAddTile = false;
 
         for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].all) {
-            const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(piece.cell.x, piece.cell.y);
+            const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(piece.cell.x, piece.cell.y);
             if (cell.item && cell.item.type === 'bridge' && cell.item.color === piece.color) {
                 this.bridgeCell = cell;
-                if (!cell.opened) {
+                if (!cell.isExplored()) {
                     canAddTile = true;
                     break;
                 }
@@ -72370,7 +72822,9 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
 
     checkForEvents(cell) {
         const hero = this.hero;
-        const item = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(cell.x, cell.y).item;
+        const item = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(cell.x, cell.y).item;
+
+        if (!item) return;
 
         if (item.type === 'time' && !item.used) {
             // Time cell, invert clock
@@ -72386,6 +72840,7 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
         } else if (item.type === 'article' && item.color === hero.color) {
             // Same color article
             hero.steal();
+            __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(cell.x, cell.y).setStolen();
         } else if (item.type === 'exit' && hero.hasStolen() && (item.color === hero.color || __WEBPACK_IMPORTED_MODULE_7__game__["a" /* default */].scenario === 1)) {
             // Same color exit or scenario 1 (only has purple exit)
             this.toggleHero(hero);
@@ -72396,456 +72851,6 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
         }
     }
 });
-
-
-/***/ }),
-/* 8 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__symbols__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__pieces__ = __webpack_require__(2);
-
-
-
-
-
-const size = __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].size;
-let tileCount = 0;
-
-class Tile {
-    constructor(id) {
-        this.id = id;
-        this.data = json[id]
-        this.rotation = 0;
-        this.canBeSet = false;
-        this.fixed = false;
-        this.shift = {
-            x: 0,
-            y: 0
-        }
-    }
-
-    move(x, y) {
-        // Position hasn't changed
-        if (x === this.x && y === this.y) return;
-
-        // Prevent board overflow
-        if (x < 0 || y < 0 || x > __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardRows - 4 || y > __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardCols - 4) {
-            return;
-        }
-
-        const o = this.getOrientation();
-        const enter = this.getBridge(x, y, o);
-        const target = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].getCell(enter.x, enter.y);
-
-        // Compute shift
-        if (!__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].debug && target) {
-            const parentTile = tiles[target.tileCount];
-
-            if (parentTile) {
-                let _x = 0;
-                let _y = 0;
-
-                const s = 4.6; // Shift in pixels
-
-                // Shift depends on position and orientation
-                if (target.tileCell.x === 0 && o === 1) {
-                    _y += [2*s, s, 0, -s][target.tileCell.y];
-                } else if (target.tileCell.x === 3 && o === 3) {
-                    _y += [s, 0, -s, 2*s][target.tileCell.y];
-                }
-
-                if (target.tileCell.y === 3 && o === 0) {
-                    _x += [2*s, s, 0, 0][target.tileCell.x];
-                } else if (target.tileCell.y === 0 && o === 2) {
-                    _x += [0, 0, -s, -2*s][target.tileCell.x];
-                }
-
-                // Add parent tile shift
-                _x += parentTile.shift.x;
-                _y += parentTile.shift.y;
-
-                // Save shift
-                this.shift = {
-                    x: _x,
-                    y: _y
-                }
-            }
-        }
-
-        // Update coordinates
-        this.x = x;
-        this.y = y;
-
-        // Check if tile can be set here
-        if (target) this.canBeSet = this.checkCanBeSet(x, y);
-    }
-
-    /**
-    * Rotate tile
-    * @param  {int} turns 90° rotation (positive = clockwise, negative = counterclockwise)
-    */
-    rotate(turns) {
-        this.rotation = (this.rotation + turns + 4) % 4;
-    }
-
-    /**
-    * Check if tile can be set at these coordinates
-    * @param  {int} x column
-    * @param  {int} y row
-    */
-    checkCanBeSet(x, y) {
-        if (this.id === 0) return false;
-
-        // Check if the tile is covering any fixed tile
-        for (let i = 0; i < 4; i += 1) {
-            for (let j = 0; j < 4; j += 1) {
-                if (__WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].getCell(x + i, y + j)) {
-                    if (Object.keys(__WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].getCell(x + i, y + j)).length > 0) {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        // Make sure cell next to enter is a bridge
-        const nextToEnter = this.getBridge(x, y, this.getOrientation());
-        const cellNextToEnter = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].getCell(nextToEnter.x, nextToEnter.y);
-        if (Object.keys(cellNextToEnter).length > 0) {
-            if (cellNextToEnter.item.type !== 'bridge') {
-                return false;
-            } else {
-                // There is a bridge, make sure it has a hero on it with the same color
-                for (let piece of __WEBPACK_IMPORTED_MODULE_3__pieces__["a" /* default */].all) {
-                    if (piece.cell.x === nextToEnter.x && piece.cell.y === nextToEnter.y) {
-                        if (piece.color === cellNextToEnter.item.color) {
-                            return true;
-                        }
-                    }
-                }
-            }
-        } else {
-            // No item in this cell
-            return false;
-        }
-    }
-
-    /**
-    * Get orientation of tile depending on enter position (top, right, bottom, left)
-    * @return {int} base rotation of tile
-    */
-    getOrientation() {
-        let i;
-
-        // Find X coordinate of enter
-        if (this.findItem('enter')) {
-            i = this.findItem('enter').x;
-        } else {
-            i = 0;
-        }
-
-        // Determine rotation
-        let r = [0, 3, 1, 2][i];
-        r += this.rotation;
-        r %= 4;
-
-        return r;
-    }
-
-    /**
-    * Get tile bridge coordinates (cell out of tile)
-    * @param  {int}   x mouse X coordinate
-    * @param  {int}   y mouse Y coordinate
-    * @param  {int}   o tile orientation
-    * @return {Object}   {x, y}
-    */
-    getBridge(x, y, o) {
-        x += [2, 4, 1, -1][o];
-        y += [-1, 2, 4, 1][o];
-
-        return {x: x, y: y};
-    }
-
-    /**
-    * Get tile enter coordinates (cell inside tile)
-    * @param  {int}   x mouse X coordinate
-    * @param  {int}   y mouse Y coordinate
-    * @param  {int}   b bridge X coordinate
-    * @return {Object}   {x, y}
-    */
-    getEnter(x, y, b) {
-        x += [-1, 0, 0, 1][b];
-        y += [0, 1, -1, 0][b];
-
-        return {x: x, y: y};
-    }
-
-    /**
-    * Get tile origin coordinates (top left cell)
-    * @param  {int}   x mouse X coordinate
-    * @param  {int}   y mouse Y coordinate
-    * @param  {int}   b bridge X coordinate
-    * @return {Object}   {x, y}
-    */
-    getOrigin(x, y, o) {
-        x += [-2, -3, -1, 0][o];
-        y += [0, -2, -3, -1][o];
-
-        return {x: x, y: y};
-    }
-
-    set(x, y) {
-        this.move(x, y);
-        this.fixed = true;
-        this.saveToBoard(x, y);
-    }
-
-    saveToBoard(x, y) {
-        const r = this.rotation;
-
-        for (let i = 0; i < 4; i += 1) {
-            for (let j = 0; j < 4; j += 1) {
-                let cell;
-
-                // Save cells depending on rotation
-                if (r === 0) {
-                    cell = this.data[j][i];
-                } else if (r === 1) {
-                    cell = this.data[3 - i][j];
-                } else if (r === 2) {
-                    cell = this.data[3 - j][3 - i];
-                } else if (r === 3) {
-                    cell = this.data[i][3 - j];
-                }
-
-                // Rotate walls according to tile rotation
-                // (ex.: top wall becomes left wall after rotation)
-                let walls = ['top', 'right', 'bottom', 'left'];
-                const boardWalls = {
-                    top:    cell.walls[walls[(4 - r) % 4]],
-                    right:  cell.walls[walls[(5 - r) % 4]],
-                    bottom: cell.walls[walls[(6 - r) % 4]],
-                    left:   cell.walls[walls[(3 - r) % 4]]
-                }
-
-                // Copy data
-                let boardCell = Object.assign({}, cell);
-                // boardCell.tileID = this.id;
-                boardCell.tileCount = tileCount;
-                boardCell.tileCell = {
-                    x: i,
-                    y: j
-                }
-
-                // Save rotated walls
-                boardCell.walls = boardWalls;
-
-                // Save escalator positions relative to board
-                let esc = Object.assign({}, cell.escalator);
-                if (Object.keys(esc).length > 0) {
-                    const _esc = {
-                        x: x + [esc.x, - esc.y, - esc.x, esc.y][r] + [0, 3, 3, 0][r],
-                        y: y + [esc.y, esc.x, - esc.y, - esc.x][r] + [0, 0, 3, 3][r]
-                    }
-                    esc.x = _esc.x;
-                    esc.y = _esc.y;
-                    boardCell.escalator = Object.assign({}, esc);
-                }
-
-                // Save data
-                __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].save(x + i, y + j, boardCell);
-                socket.emit('board', {
-                    x: x + i,
-                    y: y + j,
-                    cell: boardCell
-                });
-            }
-        }
-
-        tileCount++;
-    }
-
-    /**
-    * Find an item by key
-    * @param  {string} key  string to look for
-    * @return {Object}      cell coordinates of item
-    */
-    findItem(key) {
-        for (let row in this.data) {
-            for (let col in this.data[row]) {
-                if (this.data[row][col].item.type === key) {
-                    const pos = {
-                        x: row,
-                        y: col
-                    }
-                    return pos;
-                }
-            }
-        }
-    }
-
-    display() {
-        p5.push();
-        // Rotate and translate tile
-        p5.rotate(this.rotation * p5.PI/2);
-        const x = this.x;
-        const y = this.y;
-        const r = this.rotation;
-        let _x = [x, y, - x - 4, - y - 4][r] * size;
-        let _y = [y, - x - 4, - y - 4, x][r] * size;
-        if (__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].debug) {
-            // Pixel adjustment for schemas
-            _x -= [0, 0, 1, 1][r];
-            _y -= [0, 1, 1, 0][r];
-        } else {
-            // Shift adjustment for images
-            const shift = this.shift;
-            _x += [shift.x, shift.y, -shift.x, -shift.y][r];
-            _y += [shift.y, -shift.x, -shift.y, shift.x][r];
-        }
-        p5.translate(_x, _y);
-
-        if (__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].debug) { // Display schema of cell
-            p5.blendMode(p5.MULTIPLY);
-
-            // Background color depending on status
-            if (this.fixed) {
-                p5.fill('#f0f2ff');
-            } else if (this.canBeSet) {
-                p5.fill('#e0ffe4');
-            } else {
-                p5.fill('#ffe2e4');
-            }
-
-            p5.noStroke();
-            p5.rect(0, 0, size * 4, size * 4);
-
-            p5.noFill();
-            p5.stroke(0);
-
-            for (let j = 0; j < 4; j += 1) {
-                for (let i = 0; i < 4; i += 1) {
-                    // For each cell
-                    p5.push();
-                    p5.translate(i * size, j * size);
-
-                    // Draw basic gid
-                    p5.stroke(240);
-                    p5.rect(0, 0, size, size);
-                    p5.stroke(0);
-
-                    // Get cell data
-                    if (!this.data) return;
-                    let cell = this.data[j][i];
-
-                    // Add item to cell
-                    let item = cell.item;
-                    if (item) {
-                        if (item.type === 'vortex') {
-                            p5.blendMode('normal');
-                            p5.noFill();
-                            p5.stroke(__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].colors[item.color]);
-                            p5.ellipse(size / 2, size / 2, size / 2, size / 2);
-                            p5.blendMode('multiply');
-                        } else if (item.type === 'bridge' || item.type === 'enter') {
-                            // Set color (for bridge)
-                            if (item.color) p5.stroke(__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].colors[item.color]);
-
-                            // Rotate and draw item depending on cell coordinates
-                            p5.push();
-                            if (j === 0) {
-                                // Pointing up
-                                __WEBPACK_IMPORTED_MODULE_2__symbols__["a" /* default */].arrow(item.type);
-                            } else if (j === 3) {
-                                // Pointing bottom
-                                p5.translate(size, size);
-                                p5.rotate(p5.PI);
-                                __WEBPACK_IMPORTED_MODULE_2__symbols__["a" /* default */].arrow(item.type);
-                            } else if (i === 0) {
-                                // Pointing left
-                                p5.translate(0, size);
-                                p5.rotate(-p5.PI / 2);
-                                __WEBPACK_IMPORTED_MODULE_2__symbols__["a" /* default */].arrow(item.type);
-                            } else if (i === 3) {
-                                // Pointing right
-                                p5.translate(size, 0);
-                                p5.rotate(p5.PI / 2);
-                                __WEBPACK_IMPORTED_MODULE_2__symbols__["a" /* default */].arrow(item.type);
-                            }
-                            p5.pop();
-                        }
-                    }
-
-                    let esc = cell.escalator;
-                    if (esc) {
-                        p5.stroke(0,0,255);
-                        const x1 = size / 2;
-                        const y1 = size / 2;
-                        const x2 = size / 2 + (esc.x - i) * size;
-                        const y2 = size / 2 + (esc.y - j) * size;
-                        p5.line(x1, y1, x2, y2);
-                    }
-
-                    // Draw walls
-                    p5.blendMode(p5.MULTIPLY);
-                    p5.stroke(0);
-                    if (cell.walls.top) {
-                        p5.line(0, 0, size, 0);
-                    }
-                    if (cell.walls.right) {
-                        p5.line(size, 0, size, size);
-                    }
-                    if (cell.walls.bottom) {
-                        p5.line(0, size, size, size);
-                    }
-                    if (cell.walls.left) {
-                        p5.line(0, 0, 0, size);
-                    }
-
-                    p5.pop();
-                }
-            }
-        } else { // Display image of cell
-            p5.image(tilesImages[this.id], 0, 0, 4 * size, 4 * size);
-
-            // Colored overlay depending on status
-            p5.noStroke();
-            if (this.canBeSet && !this.fixed) {
-                p5.fill(240, 255, 250, 100);
-                p5.rect(0, 0, 4 * size, 4 * size);
-            } else if (!this.canBeSet && !this.fixed) {
-                p5.fill(255, 240, 245, 180);
-                p5.rect(0, 0, 4 * size, 4 * size);
-            }
-        }
-
-        if (this.fixed) this.displayItems();
-
-        p5.pop();
-    }
-
-    displayItems() {
-        for (let j = 0; j < Object.keys(this.data).length; j += 1) {
-            for (let i = 0; i < Object.keys(this.data[j]).length; i += 1) {
-                const cell = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].getCell(this.x + i, this.y + j);
-                if (cell.item.used) {
-                    let x = (i + 1 / 3 + [.25, .1, -.1, -.25][i]) * size;
-                    let y = (j + 1 / 3 + [.25, .1, -.1, -.25][j]) * size;
-
-                    p5.push();
-                    p5.translate(x, y);
-                    p5.image(usedImage, 0, 0, size / 3, size / 3);
-                    p5.pop();
-                }
-            }
-        }
-    }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = Tile;
-
 
 
 /***/ }),
@@ -72924,16 +72929,18 @@ class Tile {
 /* harmony default export */ __webpack_exports__["a"] = ({
 
     scenario: 0,
-    bots: 0,
+    bots: [],
 
     init(options) {
         this.scenario = 1;
-        this.bots = options.bots;
-        if (this.bots > 0) {
-            for (let i = 0; i < this.bots; i += 1) {
-                const bot = new __WEBPACK_IMPORTED_MODULE_3__bot__["a" /* default */](i, options.botsRoles[i]);
-                bot.init();
-            }
+        for (let i = 0; i < options.bots; i += 1) {
+            this.bots.push(new __WEBPACK_IMPORTED_MODULE_3__bot__["a" /* default */](i, options.botsRoles[i]));
+        }
+    },
+
+    initBots() {
+        for (let bot of this.bots) {
+            bot.init();
         }
     },
 
@@ -72957,15 +72964,15 @@ class Tile {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__sketch__ = __webpack_require__(13);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__tile__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__tile__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pieces__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__events__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__events__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__clock__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__game__ = __webpack_require__(10);
 
@@ -73003,6 +73010,7 @@ function start(options) {
     __WEBPACK_IMPORTED_MODULE_7__events__["a" /* default */].init();
     __WEBPACK_IMPORTED_MODULE_6__pieces__["a" /* default */].init();
     __WEBPACK_IMPORTED_MODULE_8__clock__["a" /* default */].init();
+    __WEBPACK_IMPORTED_MODULE_9__game__["a" /* default */].initBots();
 }
 
 const $ui = document.getElementById('ui');
@@ -73107,13 +73115,13 @@ module.exports = g;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__symbols__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__events__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__symbols__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__events__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pieces__ = __webpack_require__(2);
 
 
@@ -73198,31 +73206,71 @@ function displayTiles() {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__pieces__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(3);
 
 
 
 
 
 class Bot {
-
     constructor(id, roles) {
         this.id = id;
         this.roles = roles;
     }
 
     init() {
-        this.interval = setInterval(() => { this.solve() }, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].botsInterval);
+        this.solve();
+        // this.interval = setInterval(() => { this.solve() }, config.botsInterval);
     }
 
     solve() {
+        // Find targets
+        let targets = [];
+        for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardCols; j += 1) {
+            for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardRows; i += 1) {
+                const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(i, j);
+                const item = cell.item;
+
+                // Ignore empty cells
+                if (cell.isEmpty()) continue;
+
+                // Find unexplored bridges
+                if (item.type === 'bridge' && !cell.isExplored()) {
+                    targets.push(cell);
+                }
+
+                // Find articles to steal
+                if (item.type === 'article' && !cell.isStolen()) {
+                    targets.push(cell);
+                }
+
+                // Find exits
+            }
+        }
+        // console.log(targets);
+
+        for (let target of targets) {
+            let piece;
+            if (target.item && (target.item.type === 'bridge' || target.item === 'article')) {
+                piece = __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].getPieceByColor(target.item.color);
+                let path = piece.getPath(target.coord);
+                let check = piece.checkPath(target.coord, this.roles);
+                let legal = piece.canGo(target.coord);
+                if (path && legal) {
+                    piece.set(target.coord);
+                }
+            }
+        }
+
+        // Check for explore
         for (let piece of __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].all) {
-            const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(piece.cell.x, piece.cell.y);
+            const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(piece.cell.x, piece.cell.y);
+            const item = cell.item;
 
             // console.log(piece.cell.x, piece.cell.y, cell.item);
 
             if (this.roles.indexOf('explore') > -1) {
-                if (cell.item && cell.item.type === 'bridge' && cell.item.color === piece.color && !cell.item.opened) {
+                if (cell.item && item.type === 'bridge' && item.color === piece.color && !cell.isExplored()) {
                     this.newTile(piece.cell.x, piece.cell.y);
                 }
             }
@@ -73240,10 +73288,10 @@ class Bot {
         tiles.push(tile);
 
         // Get cell and enter coordinates
-        const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(x, y);
+        const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(x, y);
         const enter = tile.getEnter(x, y, cell.tileCell.x);
 
-        if (Object.keys(__WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].getCell(enter.x, enter.y)).length > 0) {
+        if (!__WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(enter.x, enter.y).isEmpty()) {
             // Already a tile there, cancel
             tiles.pop();
             return;
@@ -73267,11 +73315,66 @@ class Bot {
             tile: tile
         });
 
-        // Mark bridge as opened
-        __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].setOpened(x, y);
+        // Mark bridge as explored
+        cell.setExplored(x, y);
     }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Bot;
+
+
+
+/***/ }),
+/* 15 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class Cell {
+    constructor(x, y) {
+        this.coord = {
+            x: x,
+            y: y
+        };
+        this.empty = true;
+    }
+
+    save(data) {
+        this.empty = false;
+        this.tileCell = data.tileCell;
+        this.tileID = data.tileID;
+        this.walls = data.walls;
+        this.item = data.item ? data.item : false;
+        this.escalator = data.escalator ? data.escalator : false;
+    }
+
+    isEmpty() {
+        return this.empty;
+    }
+
+    setUsed() {
+        this.item.used = true;
+    }
+
+    isUsed() {
+        return this.item.used;
+    }
+
+    setExplored() {
+        this.item.explored = true;
+    }
+
+    isExplored() {
+        return this.item.explored;
+    }
+
+    setStolen() {
+        this.item.stolen = true;
+    }
+
+    isStolen() {
+        return this.item.stolen;
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Cell;
 
 
 

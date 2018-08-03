@@ -4,24 +4,64 @@ import pieces from './pieces';
 import Tile from './tile';
 
 export default class Bot {
-
     constructor(id, roles) {
         this.id = id;
         this.roles = roles;
     }
 
     init() {
-        this.interval = setInterval(() => { this.solve() }, config.botsInterval);
+        this.solve();
+        // this.interval = setInterval(() => { this.solve() }, config.botsInterval);
     }
 
     solve() {
+        // Find targets
+        let targets = [];
+        for (let j = 0; j < config.boardCols; j += 1) {
+            for (let i = 0; i < config.boardRows; i += 1) {
+                const cell = board.get(i, j);
+                const item = cell.item;
+
+                // Ignore empty cells
+                if (cell.isEmpty()) continue;
+
+                // Find unexplored bridges
+                if (item.type === 'bridge' && !cell.isExplored()) {
+                    targets.push(cell);
+                }
+
+                // Find articles to steal
+                if (item.type === 'article' && !cell.isStolen()) {
+                    targets.push(cell);
+                }
+
+                // Find exits
+            }
+        }
+        // console.log(targets);
+
+        for (let target of targets) {
+            let piece;
+            if (target.item && (target.item.type === 'bridge' || target.item === 'article')) {
+                piece = pieces.getPieceByColor(target.item.color);
+                let path = piece.getPath(target.coord);
+                let check = piece.checkPath(target.coord, this.roles);
+                let legal = piece.canGo(target.coord);
+                if (path && legal) {
+                    piece.set(target.coord);
+                }
+            }
+        }
+
+        // Check for explore
         for (let piece of pieces.all) {
-            const cell = board.getCell(piece.cell.x, piece.cell.y);
+            const cell = board.get(piece.cell.x, piece.cell.y);
+            const item = cell.item;
 
             // console.log(piece.cell.x, piece.cell.y, cell.item);
 
             if (this.roles.indexOf('explore') > -1) {
-                if (cell.item && cell.item.type === 'bridge' && cell.item.color === piece.color && !cell.item.opened) {
+                if (cell.item && item.type === 'bridge' && item.color === piece.color && !cell.isExplored()) {
                     this.newTile(piece.cell.x, piece.cell.y);
                 }
             }
@@ -39,10 +79,10 @@ export default class Bot {
         tiles.push(tile);
 
         // Get cell and enter coordinates
-        const cell = board.getCell(x, y);
+        const cell = board.get(x, y);
         const enter = tile.getEnter(x, y, cell.tileCell.x);
 
-        if (Object.keys(board.getCell(enter.x, enter.y)).length > 0) {
+        if (!board.get(enter.x, enter.y).isEmpty()) {
             // Already a tile there, cancel
             tiles.pop();
             return;
@@ -66,7 +106,7 @@ export default class Bot {
             tile: tile
         });
 
-        // Mark bridge as opened
-        board.setOpened(x, y);
+        // Mark bridge as explored
+        cell.setExplored(x, y);
     }
 }
