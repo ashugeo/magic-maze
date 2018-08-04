@@ -11,6 +11,7 @@ export default class Bot {
 
     init() {
         this.solve();
+        // TODO: bots should solve after a user action
         // this.interval = setInterval(() => { this.solve() }, config.botsInterval);
     }
 
@@ -36,36 +37,170 @@ export default class Bot {
                 }
 
                 // Find exits
+                // TODO
             }
         }
-        // console.log(targets);
 
         for (let target of targets) {
-            let piece;
-            if (target.item && (target.item.type === 'bridge' || target.item === 'article')) {
-                piece = pieces.getPieceByColor(target.item.color);
-                let path = piece.getPath(target.coord);
-                let check = piece.checkPath(target.coord, this.roles);
-                let legal = piece.canGo(target.coord);
-                if (path && legal) {
-                    piece.set(target.coord);
-                }
-            }
+            // Find piece for each target
+            const piece = pieces.getPieceByColor(target.item.color);
+
+            // Find path
+            const path = this.findPath(target.coord, piece.cell);
+            console.log(path);
+
+            // TODO: move if possible
         }
 
-        // Check for explore
+        // Check for possible explorations
         for (let piece of pieces.all) {
             const cell = board.get(piece.cell.x, piece.cell.y);
             const item = cell.item;
 
-            // console.log(piece.cell.x, piece.cell.y, cell.item);
-
+            // If hero can explore
             if (this.roles.indexOf('explore') > -1) {
+                // If hero sits on an unexplored bridge with same color
                 if (cell.item && item.type === 'bridge' && item.color === piece.color && !cell.isExplored()) {
+                    // Place new tile
                     this.newTile(piece.cell.x, piece.cell.y);
                 }
             }
         }
+    }
+
+    /**
+    * Pathfinder function
+    * @param  {Object} target {x: y:}
+    * @param  {Object} piece  {x: y:}
+    * @return {Object/bool}   path (or false if none)
+    */
+    findPath(target, piece) {
+        let end;
+
+        // Set of nodes to be evaluated
+        let open = this.getNeighbors(piece);
+
+        // Set of nodes already evaluated
+        let closed = [piece];
+
+        // Compute cost of each neighbor
+        for (let neighbor of open) {
+            neighbor.parent = piece;
+            neighbor.cost = this.getCost(neighbor, piece, target);
+        }
+
+        while (open.length > 0) {
+            // Find cell with lowest cost
+            let current = open.reduce((min, o) => o.cost < min.cost ? o : min, open[0]);
+
+            // Remove current from open, add to closed
+            open = open.filter(n => { return !(n.x === current.x && n.y === current.y); });
+            closed.push(current);
+
+            // If current is the target, path has been found
+            if (current.x === target.x && current.y === target.y) {
+                end = current;
+                break;
+            }
+
+            let neighbors = this.getNeighbors(current);
+            for (let neighbor of neighbors) {
+                // Make sure neighbor has not already been evaluated
+                if (this.isInArray(neighbor, closed)) continue;
+
+                // Compute new cost
+                let newCost = this.getCost(neighbor, piece, target);
+
+                // If new cost is lower, or neighbor hasn't been evaluated
+                if (newCost < neighbor.cost || !this.isInArray(neighbor, open)) {
+                    neighbor.cost = newCost;
+                    neighbor.parent = current;
+                    if (!this.isInArray(neighbor, open)) {
+                        open.push(neighbor);
+                    }
+                }
+            }
+        }
+
+        // No path found
+        if (!end) return false;
+
+        // Find parent for each cell in path
+        let path = [];
+        path.push(end);
+        while (end.parent) {
+            path.push(end.parent)
+            end = end.parent;
+        }
+
+        // Revert path
+        path = path.reverse();
+
+        return path;
+    }
+
+    /**
+    * Checks if cell is in array
+    * @param  {Object}  cell  {x: y:}
+    * @param  {array}   array array to check in
+    * @return {bool}
+    */
+    isInArray(cell, array) {
+        return array.some(a => { return (a.x === cell.x && a.y === cell.y)});
+    }
+
+    /**
+    * Find accessible neighbors (no walls blocking the way)
+    * @param  {Object} cell  {x: y:}
+    * @return {array}        neighbors
+    */
+    getNeighbors(cell) {
+        let neighbors = [];
+        cell = board.get(cell.x, cell.y);
+
+        // TODO: enable vortex and elevators
+
+        for (let i = 0; i < 4; i += 1) {
+            // 0: up
+            // 1: right
+            // 2: bottom
+            // 3: left
+            const neighbor = board.get(
+                cell.coord.x + [0, 1, 0, -1][i],
+                cell.coord.y + [-1, 0, 1, 0][i]
+            );
+
+            // Make sure neighbor isn't empty
+            if (neighbor.isEmpty()) continue;
+
+            // Make sure no wall is blocking the way
+            if (
+                (i === 0 && !cell.walls.top && !neighbor.walls.bottom) ||
+                (i === 1 && !cell.walls.right && !neighbor.walls.left) ||
+                (i === 2 && !cell.walls.bottom && !neighbor.walls.top) ||
+                (i === 3 && !cell.walls.left && !neighbor.walls.right)
+            ) {
+                neighbors.push({x: neighbor.coord.x, y: neighbor.coord.y});
+            }
+        }
+        return neighbors;
+    }
+
+    /**
+    * Compute cost for a cell
+    * @param  {Object} cell   {x: y:}
+    * @param  {Object} piece  {x: y:}
+    * @param  {Object} target {x: y:}
+    * @return {int}           cost
+    */
+    getCost(cell, piece, target) {
+        // Distance between this cell and starting cell
+        let distStart = Math.abs(piece.x - cell.x) + Math.abs(piece.y - cell.y);
+
+        // Distance between this cell and target cell
+        let distTarget = Math.abs(target.x - cell.x) + Math.abs(target.y - cell.y);
+
+        return distStart + distTarget;
     }
 
     /**
