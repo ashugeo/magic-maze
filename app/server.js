@@ -16,12 +16,14 @@ let adminID = '';
 io.sockets.on('connection', socket => {
     // New player entered room
     players = Object.keys(io.sockets.sockets);
+
     // Tell everyone
     io.emit('players', players.length);
 
     // First player, make him admin
     if (players.length === 1) {
         adminID = socket.id;
+        players.splice(players.indexOf(adminID), 1);
         socket.emit('admin');
     }
 
@@ -42,13 +44,15 @@ io.sockets.on('connection', socket => {
     socket.on('start', options => {
         // Make sure the admin started the game
         if (socket.id === adminID) {
-            let allPlayers = players.length
+            let allPlayers = players.length;
 
             // Add bots to players
             if (options.bots > 0) {
                 allPlayers += options.bots;
                 options.botsRoles = [];
             }
+
+            console.log(allPlayers);
 
             // Get all actions for that number of players
             let roles = [];
@@ -58,25 +62,29 @@ io.sockets.on('connection', socket => {
                 }
             }
 
-            if (allPlayers === 1) {
-                // Only one player, merge roles together
-                let allRoles = [].concat(...roles);
-                io.to(players[0]).emit('role', allRoles);
-            } else {
-                // Give actions to players randomly
-                shuffleArray(roles);
-                for (let i in roles) {
-                    i = parseInt(i);
+            let allRoles = [].concat(...roles);
+            console.log(allRoles);
+            options.botsRoles.push(allRoles);
 
-                    if (players[i]) {
-                        // Tell this player his role(s)
-                        io.to(players[i]).emit('role', roles[i]);
-                    } else if (options.bots > 0) {
-                        // Not a player but a bot, save in options
-                        options.botsRoles.push(roles[i]);
-                    }
-                }
-            }
+            // if (allPlayers === 1) {
+            //     // Only one player, merge roles together
+            //     let allRoles = [].concat(...roles);
+            //     io.to(players[0]).emit('role', allRoles);
+            // } else {
+            //     // Give actions to players randomly
+            //     shuffleArray(roles);
+            //     for (let i in roles) {
+            //         i = parseInt(i);
+            //
+            //         if (players[i]) {
+            //             // Tell this player his role(s)
+            //             io.to(players[i]).emit('role', roles[i]);
+            //         } else if (options.bots > 0) {
+            //             // Not a player but a bot, save in options
+            //             options.botsRoles.push(roles[i]);
+            //         }
+            //     }
+            // }
 
             // Tell everyone to start game
             io.emit('start', options);

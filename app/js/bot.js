@@ -6,6 +6,7 @@ import game from './game';
 
 export default class Bot {
     constructor(id, roles) {
+        console.log(roles);
         this.id = id;
         this.roles = roles;
         this.actions = [];
@@ -13,6 +14,8 @@ export default class Bot {
     }
 
     solve() {
+        console.clear();
+        console.log('solve');
         // Check for possible explorations
         for (let piece of pieces.all) {
             const cell = board.get(piece.cell.x, piece.cell.y);
@@ -36,6 +39,7 @@ export default class Bot {
 
         // TODO: prioritize closest target for each piece
         // TODO: blocked bridges (goes into wall) are not targets
+        // TODO: unexplored bridges with a tile ahead should count as explored
         // TODO: move a piece that's blocking another (good luck for this one)
 
         // Find targets
@@ -58,25 +62,35 @@ export default class Bot {
                     targets.push(cell);
                 }
 
-                // Find exits
-                // TODO
+                // Find exits (if hero has stolen article)
+                if (item.type === 'exit') {
+                    for (let piece of pieces.all) {
+                        if (piece.hasStolen()) targets.push(cell);
+                    }
+                }
             }
         }
+
+        console.log('targets:', targets);
 
         for (let target of targets) {
             // Find piece for each target
             const piece = pieces.getPieceByColor(target.item.color);
 
+            console.log('piece.color:', piece.color);
+
             // Find path
-            const path = this.findPath(target.coord, piece.cell);
+            const path = this.findPath(target.coord, piece);
             if (path) this.processPath(piece, path);
         }
+
 
         // console.log(JSON.stringify(this.actions, null, 4));
         this.act();
     }
 
     act() {
+        console.log('act', new Date().getSeconds());
         if (this.actions.length > 0) {
             if (!this.canAct) return;
             this.canAct = false;
@@ -84,11 +98,14 @@ export default class Bot {
 
             if (action.type === 'tile') {
                 this.newTile(action.cell.x, action.cell.y);
+                this.actions.shift();
             } else if (action.type === 'move') {
-                action.piece.set(action.target);
+                if (action.piece.status === 'set' && action.piece.selectable) {
+                    action.piece.set(action.target);
+                    this.actions.shift();
+                }
             }
 
-            this.actions.shift();
             setTimeout(() => {
                 this.canAct = true;
                 this.act();
@@ -103,18 +120,25 @@ export default class Bot {
     * @return {Object/bool}   path (or false if none)
     */
     findPath(target, piece) {
+        console.log('findPath');
+        // FIXME: illegal diagonal moves
+        // FIXME: bots before they should when there are more than one :'(
+
+        const start = piece.cell;
         let end;
 
+        console.log('start:', start);
+
         // Set of nodes to be evaluated
-        let open = this.getNeighbors(piece);
+        let open = this.getNeighbors(start, piece.color);
 
         // Set of nodes already evaluated
-        let closed = [piece];
+        let closed = [start];
 
         // Compute cost of each neighbor
         for (let neighbor of open) {
-            neighbor.parent = piece;
-            neighbor.cost = this.getCost(neighbor, piece, target);
+            neighbor.parent = start;
+            neighbor.cost = this.getCost(neighbor, start, target);
         }
 
         while (open.length > 0) {
@@ -131,13 +155,13 @@ export default class Bot {
                 break;
             }
 
-            let neighbors = this.getNeighbors(current);
+            let neighbors = this.getNeighbors(current, piece.color);
             for (let neighbor of neighbors) {
                 // Make sure neighbor has not already been evaluated
                 if (this.isInArray(neighbor, closed)) continue;
 
                 // Compute new cost
-                let newCost = this.getCost(neighbor, piece, target);
+                let newCost = this.getCost(neighbor, start, target);
 
                 // If new cost is lower, or neighbor hasn't been evaluated
                 if (newCost < neighbor.cost || !this.isInArray(neighbor, open)) {
@@ -164,6 +188,7 @@ export default class Bot {
         // Revert path
         path = path.reverse();
 
+        console.log(path);
         return path;
     }
 
@@ -181,17 +206,22 @@ export default class Bot {
             const next = path[i + 1];
             let _dir;
 
-            if (next.y > current.y) {
-                _dir = 'down';
-            } else if (next.y < current.y) {
-                _dir = 'up';
+            if (current.x !== next.x && current.y !== next.y) {
+                // Vortex or escalator
+            } else {
+                if (next.y > current.y) {
+                    _dir = 'down';
+                } else if (next.y < current.y) {
+                    _dir = 'up';
+                }
+
+                if (next.x > current.x) {
+                    _dir = 'right';
+                } else if (next.x < current.x) {
+                    _dir = 'left';
+                }
             }
 
-            if (next.x > current.x) {
-                _dir = 'right';
-            } else if (next.x < current.x) {
-                _dir = 'left';
-            }
 
             if (direction && _dir !== direction)  {
                 target = current;
@@ -226,14 +256,45 @@ export default class Bot {
 
     /**
     * Find accessible neighbors (no walls blocking the way)
-    * @param  {Object} cell  {x: y:}
-    * @return {array}        neighbors
+    * @param  {Object} origin {x: y:}
+    * @param  {Object} color  color of piece
+    * @return {array}         neighbors
     */
-    getNeighbors(cell) {
+    getNeighbors(origin, color) {
+        console.log('getNeighbors');
         let neighbors = [];
-        cell = board.get(cell.x, cell.y);
+        origin = board.get(origin.x, origin.y);
 
-        // TODO: enable vortex and elevators
+        if (origin.escalator) {
+            neighbors.push({x: origin.escalator.x, y: origin.escalator.y, escalator: origin.escalator});
+        }
+
+        // console.log('origin:', origin);
+
+        if (origin.item && origin.item.type === 'vortex') {
+            for (let j = 0; j < config.boardCols; j += 1) {
+                for (let i = 0; i < config.boardRows; i += 1) {
+                    const cell = board.get(i, j);
+                    if (cell.isEmpty()) continue;
+                    if (cell.item &&
+                        cell.item.type === 'vortex' &&
+                        cell.item.color === color &&
+                        !(cell.coord.x === origin.coord.x && cell.coord.y === origin.coord.y)
+                    ) {
+                        neighbors.push({
+                            x: cell.coord.x,
+                            y: cell.coord.y,
+                            item: {
+                                type: 'vortex',
+                                color: color
+                            }
+                        });
+                    }
+                }
+            }
+        }
+
+        // TODO: enable elevators
 
         for (let i = 0; i < 4; i += 1) {
             // 0: up
@@ -241,8 +302,8 @@ export default class Bot {
             // 2: bottom
             // 3: left
             const neighbor = board.get(
-                cell.coord.x + [0, 1, 0, -1][i],
-                cell.coord.y + [-1, 0, 1, 0][i]
+                origin.coord.x + [0, 1, 0, -1][i],
+                origin.coord.y + [-1, 0, 1, 0][i]
             );
 
             let canGo = true;
@@ -262,20 +323,20 @@ export default class Bot {
             // Make sure no wall is blocking the way
             if (
                 (i === 0 &&
-                    (!cell.walls.top && !neighbor.walls.bottom) ||
-                    (cell.walls.top === 'orange' && neighbor.walls.bottom === 'orange')
+                    (!origin.walls.top && !neighbor.walls.bottom) ||
+                    (origin.walls.top === 'orange' && neighbor.walls.bottom === 'orange')
                 ) ||
                 (i === 1 &&
-                    (!cell.walls.right && !neighbor.walls.left) ||
-                    (cell.walls.right === 'orange' && neighbor.walls.left === 'orange')
+                    (!origin.walls.right && !neighbor.walls.left) ||
+                    (origin.walls.right === 'orange' && neighbor.walls.left === 'orange')
                 ) ||
                 (i === 2 &&
-                    (!cell.walls.bottom && !neighbor.walls.top) ||
-                    (cell.walls.bottom === 'orange' && neighbor.walls.top === 'orange')
+                    (!origin.walls.bottom && !neighbor.walls.top) ||
+                    (origin.walls.bottom === 'orange' && neighbor.walls.top === 'orange')
                 ) ||
                 (i === 3 &&
-                    (!cell.walls.left && !neighbor.walls.right) ||
-                    (cell.walls.left === 'orange' && neighbor.walls.right === 'orange')
+                    (!origin.walls.left && !neighbor.walls.right) ||
+                    (origin.walls.left === 'orange' && neighbor.walls.right === 'orange')
                 )
             ) {
                 neighbors.push({x: neighbor.coord.x, y: neighbor.coord.y});
