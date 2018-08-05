@@ -15,9 +15,9 @@ export default {
         }
     },
 
-    initBots() {
+    runBots() {
         for (let bot of this.bots) {
-            bot.init();
+            bot.solve();
         }
     },
 

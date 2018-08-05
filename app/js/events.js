@@ -158,7 +158,11 @@ export default {
                 tile: tile
             });
 
+            // Mark cell as explored
             this.bridgeCell.setExplored(true);
+
+            // Run bots
+            game.runBots();
         }
     },
 

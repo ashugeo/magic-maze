@@ -33,7 +33,8 @@ function start(options) {
     events.init();
     pieces.init();
     clock.init();
-    game.initBots();
+    setTimeout(() => game.runBots(), config.botsInterval);
+
 }
 
 const $ui = document.getElementById('ui');

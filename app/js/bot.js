@@ -2,20 +2,42 @@ import config from './config';
 import board from './board';
 import pieces from './pieces';
 import Tile from './tile';
+import game from './game';
 
 export default class Bot {
     constructor(id, roles) {
         this.id = id;
         this.roles = roles;
-    }
-
-    init() {
-        this.solve();
-        // TODO: bots should solve after a user action
-        // this.interval = setInterval(() => { this.solve() }, config.botsInterval);
+        this.actions = [];
+        this.canAct = true;
     }
 
     solve() {
+        // Check for possible explorations
+        for (let piece of pieces.all) {
+            const cell = board.get(piece.cell.x, piece.cell.y);
+            const item = cell.item;
+
+            // If hero can explore
+            if (this.roles.indexOf('explore') > -1) {
+                // If hero sits on an unexplored bridge with same color
+                if (cell.item && item.type === 'bridge' && item.color === piece.color && !cell.isExplored()) {
+                    // Place new tile
+                    this.actions.push({
+                        type: 'tile',
+                        cell: {
+                            x: piece.cell.x,
+                            y: piece.cell.y
+                        }
+                    });
+                }
+            }
+        }
+
+        // TODO: prioritize closest target for each piece
+        // TODO: blocked bridges (goes into wall) are not targets
+        // TODO: move a piece that's blocking another (good luck for this one)
+
         // Find targets
         let targets = [];
         for (let j = 0; j < config.boardCols; j += 1) {
@@ -47,24 +69,30 @@ export default class Bot {
 
             // Find path
             const path = this.findPath(target.coord, piece.cell);
-            console.log(path);
-
-            // TODO: move if possible
+            if (path) this.processPath(piece, path);
         }
 
-        // Check for possible explorations
-        for (let piece of pieces.all) {
-            const cell = board.get(piece.cell.x, piece.cell.y);
-            const item = cell.item;
+        // console.log(JSON.stringify(this.actions, null, 4));
+        this.act();
+    }
 
-            // If hero can explore
-            if (this.roles.indexOf('explore') > -1) {
-                // If hero sits on an unexplored bridge with same color
-                if (cell.item && item.type === 'bridge' && item.color === piece.color && !cell.isExplored()) {
-                    // Place new tile
-                    this.newTile(piece.cell.x, piece.cell.y);
-                }
+    act() {
+        if (this.actions.length > 0) {
+            if (!this.canAct) return;
+            this.canAct = false;
+            const action = this.actions[0];
+
+            if (action.type === 'tile') {
+                this.newTile(action.cell.x, action.cell.y);
+            } else if (action.type === 'move') {
+                action.piece.set(action.target);
             }
+
+            this.actions.shift();
+            setTimeout(() => {
+                this.canAct = true;
+                this.act();
+            }, config.botsInterval);
         }
     }
 
@@ -140,6 +168,53 @@ export default class Bot {
     }
 
     /**
+    * Move given piece to the furthest cell on a path depending on roles
+    * @param  {Object} piece piece to move
+    * @param  {Object} path  path to target
+    */
+    processPath(piece, path) {
+        let target;
+        let direction;
+
+        for (let i = 0; i < path.length - 1; i += 1) {
+            const current = path[i];
+            const next = path[i + 1];
+            let _dir;
+
+            if (next.y > current.y) {
+                _dir = 'down';
+            } else if (next.y < current.y) {
+                _dir = 'up';
+            }
+
+            if (next.x > current.x) {
+                _dir = 'right';
+            } else if (next.x < current.x) {
+                _dir = 'left';
+            }
+
+            if (direction && _dir !== direction)  {
+                target = current;
+                break;
+            } else if (i === path.length - 2) {
+                direction = _dir;
+                target = next;
+                break;
+            }
+
+            direction = _dir;
+        }
+
+        if (this.roles.indexOf(direction) > -1) {
+            this.actions.push({
+                type: 'move',
+                piece: piece,
+                target: target
+            });
+        }
+    }
+
+    /**
     * Checks if cell is in array
     * @param  {Object}  cell  {x: y:}
     * @param  {array}   array array to check in
@@ -170,10 +245,22 @@ export default class Bot {
                 cell.coord.y + [-1, 0, 1, 0][i]
             );
 
+            let canGo = true;
+
             // Make sure neighbor isn't empty
-            if (neighbor.isEmpty()) continue;
+            if (neighbor.isEmpty()) canGo = false;
+
+            // Make sure neighbor doesn't hold another piece
+            for (let piece of pieces.all) {
+                if (piece.cell.x === neighbor.coord.x && piece.cell.y === neighbor.coord.y) {
+                    canGo = false;
+                }
+            }
+
+            if (!canGo) continue;
 
             // Make sure no wall is blocking the way
+            // TODO: allow orange through orange walls
             if (
                 (i === 0 && !cell.walls.top && !neighbor.walls.bottom) ||
                 (i === 1 && !cell.walls.right && !neighbor.walls.left) ||
@@ -243,5 +330,8 @@ export default class Bot {
 
         // Mark bridge as explored
         cell.setExplored(x, y);
+
+        // Run again
+        // game.runBots();
     }
 }

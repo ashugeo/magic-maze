@@ -1,6 +1,7 @@
 import config from './config';
 import board from './board';
 import pieces from './pieces'
+import game from './game'
 
 export default class Hero {
     constructor(id) {
@@ -11,7 +12,8 @@ export default class Hero {
             y: 0
         },
         this.status = '',
-        this.path = []
+        this.path = [];
+        this.selectable = true;
     }
 
     /**
@@ -21,6 +23,7 @@ export default class Hero {
     move(force = false) {
         if (force) {
             this.pos = {x: this.target.x, y: this.target.y};
+            game.runBots();
         } else {
             let deltaX = this.target.x - this.pos.x;
             let deltaY = this.target.y - this.pos.y;

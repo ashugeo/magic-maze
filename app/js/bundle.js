@@ -815,6 +815,8 @@ class Tile {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__pieces__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__game__ = __webpack_require__(10);
+
 
 
 
@@ -828,7 +830,8 @@ class Hero {
             y: 0
         },
         this.status = '',
-        this.path = []
+        this.path = [];
+        this.selectable = true;
     }
 
     /**
@@ -838,6 +841,7 @@ class Hero {
     move(force = false) {
         if (force) {
             this.pos = {x: this.target.x, y: this.target.y};
+            __WEBPACK_IMPORTED_MODULE_3__game__["a" /* default */].runBots();
         } else {
             let deltaX = this.target.x - this.pos.x;
             let deltaY = this.target.y - this.pos.y;
@@ -72731,7 +72735,11 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
                 tile: tile
             });
 
+            // Mark cell as explored
             this.bridgeCell.setExplored(true);
+
+            // Run bots
+            __WEBPACK_IMPORTED_MODULE_7__game__["a" /* default */].runBots();
         }
     },
 
@@ -72938,9 +72946,9 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
         }
     },
 
-    initBots() {
+    runBots() {
         for (let bot of this.bots) {
-            bot.init();
+            bot.solve();
         }
     },
 
@@ -73010,7 +73018,8 @@ function start(options) {
     __WEBPACK_IMPORTED_MODULE_7__events__["a" /* default */].init();
     __WEBPACK_IMPORTED_MODULE_6__pieces__["a" /* default */].init();
     __WEBPACK_IMPORTED_MODULE_8__clock__["a" /* default */].init();
-    __WEBPACK_IMPORTED_MODULE_9__game__["a" /* default */].initBots();
+    setTimeout(() => __WEBPACK_IMPORTED_MODULE_9__game__["a" /* default */].runBots(), __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].botsInterval);
+
 }
 
 const $ui = document.getElementById('ui');
@@ -73262,6 +73271,8 @@ class Cell {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__pieces__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__game__ = __webpack_require__(10);
+
 
 
 
@@ -73271,15 +73282,36 @@ class Bot {
     constructor(id, roles) {
         this.id = id;
         this.roles = roles;
-    }
-
-    init() {
-        this.solve();
-        // TODO: bots should solve after a user action
-        // this.interval = setInterval(() => { this.solve() }, config.botsInterval);
+        this.actions = [];
+        this.canAct = true;
     }
 
     solve() {
+        // Check for possible explorations
+        for (let piece of __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].all) {
+            const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(piece.cell.x, piece.cell.y);
+            const item = cell.item;
+
+            // If hero can explore
+            if (this.roles.indexOf('explore') > -1) {
+                // If hero sits on an unexplored bridge with same color
+                if (cell.item && item.type === 'bridge' && item.color === piece.color && !cell.isExplored()) {
+                    // Place new tile
+                    this.actions.push({
+                        type: 'tile',
+                        cell: {
+                            x: piece.cell.x,
+                            y: piece.cell.y
+                        }
+                    });
+                }
+            }
+        }
+
+        // TODO: prioritize closest target for each piece
+        // TODO: blocked bridges (goes into wall) are not targets
+        // TODO: move a piece that's blocking another (good luck for this one)
+
         // Find targets
         let targets = [];
         for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardCols; j += 1) {
@@ -73311,24 +73343,30 @@ class Bot {
 
             // Find path
             const path = this.findPath(target.coord, piece.cell);
-            console.log(path);
-
-            // TODO: move if possible
+            if (path) this.processPath(piece, path);
         }
 
-        // Check for possible explorations
-        for (let piece of __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].all) {
-            const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(piece.cell.x, piece.cell.y);
-            const item = cell.item;
+        // console.log(JSON.stringify(this.actions, null, 4));
+        this.act();
+    }
 
-            // If hero can explore
-            if (this.roles.indexOf('explore') > -1) {
-                // If hero sits on an unexplored bridge with same color
-                if (cell.item && item.type === 'bridge' && item.color === piece.color && !cell.isExplored()) {
-                    // Place new tile
-                    this.newTile(piece.cell.x, piece.cell.y);
-                }
+    act() {
+        if (this.actions.length > 0) {
+            if (!this.canAct) return;
+            this.canAct = false;
+            const action = this.actions[0];
+
+            if (action.type === 'tile') {
+                this.newTile(action.cell.x, action.cell.y);
+            } else if (action.type === 'move') {
+                action.piece.set(action.target);
             }
+
+            this.actions.shift();
+            setTimeout(() => {
+                this.canAct = true;
+                this.act();
+            }, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].botsInterval);
         }
     }
 
@@ -73404,6 +73442,53 @@ class Bot {
     }
 
     /**
+    * Move given piece to the furthest cell on a path depending on roles
+    * @param  {Object} piece piece to move
+    * @param  {Object} path  path to target
+    */
+    processPath(piece, path) {
+        let target;
+        let direction;
+
+        for (let i = 0; i < path.length - 1; i += 1) {
+            const current = path[i];
+            const next = path[i + 1];
+            let _dir;
+
+            if (next.y > current.y) {
+                _dir = 'down';
+            } else if (next.y < current.y) {
+                _dir = 'up';
+            }
+
+            if (next.x > current.x) {
+                _dir = 'right';
+            } else if (next.x < current.x) {
+                _dir = 'left';
+            }
+
+            if (direction && _dir !== direction)  {
+                target = current;
+                break;
+            } else if (i === path.length - 2) {
+                direction = _dir;
+                target = next;
+                break;
+            }
+
+            direction = _dir;
+        }
+
+        if (this.roles.indexOf(direction) > -1) {
+            this.actions.push({
+                type: 'move',
+                piece: piece,
+                target: target
+            });
+        }
+    }
+
+    /**
     * Checks if cell is in array
     * @param  {Object}  cell  {x: y:}
     * @param  {array}   array array to check in
@@ -73434,10 +73519,22 @@ class Bot {
                 cell.coord.y + [-1, 0, 1, 0][i]
             );
 
+            let canGo = true;
+
             // Make sure neighbor isn't empty
-            if (neighbor.isEmpty()) continue;
+            if (neighbor.isEmpty()) canGo = false;
+
+            // Make sure neighbor doesn't hold another piece
+            for (let piece of __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].all) {
+                if (piece.cell.x === neighbor.coord.x && piece.cell.y === neighbor.coord.y) {
+                    canGo = false;
+                }
+            }
+
+            if (!canGo) continue;
 
             // Make sure no wall is blocking the way
+            // TODO: allow orange through orange walls
             if (
                 (i === 0 && !cell.walls.top && !neighbor.walls.bottom) ||
                 (i === 1 && !cell.walls.right && !neighbor.walls.left) ||
@@ -73507,6 +73604,9 @@ class Bot {
 
         // Mark bridge as explored
         cell.setExplored(x, y);
+
+        // Run again
+        // game.runBots();
     }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Bot;
