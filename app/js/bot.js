@@ -260,12 +260,23 @@ export default class Bot {
             if (!canGo) continue;
 
             // Make sure no wall is blocking the way
-            // TODO: allow orange through orange walls
             if (
-                (i === 0 && !cell.walls.top && !neighbor.walls.bottom) ||
-                (i === 1 && !cell.walls.right && !neighbor.walls.left) ||
-                (i === 2 && !cell.walls.bottom && !neighbor.walls.top) ||
-                (i === 3 && !cell.walls.left && !neighbor.walls.right)
+                (i === 0 &&
+                    (!cell.walls.top && !neighbor.walls.bottom) ||
+                    (cell.walls.top === 'orange' && neighbor.walls.bottom === 'orange')
+                ) ||
+                (i === 1 &&
+                    (!cell.walls.right && !neighbor.walls.left) ||
+                    (cell.walls.right === 'orange' && neighbor.walls.left === 'orange')
+                ) ||
+                (i === 2 &&
+                    (!cell.walls.bottom && !neighbor.walls.top) ||
+                    (cell.walls.bottom === 'orange' && neighbor.walls.top === 'orange')
+                ) ||
+                (i === 3 &&
+                    (!cell.walls.left && !neighbor.walls.right) ||
+                    (cell.walls.left === 'orange' && neighbor.walls.right === 'orange')
+                )
             ) {
                 neighbors.push({x: neighbor.coord.x, y: neighbor.coord.y});
             }
