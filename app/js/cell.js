@@ -1,3 +1,5 @@
+import board from './board';
+
 export default class Cell {
     constructor(x, y) {
         this.coord = {
@@ -14,6 +16,15 @@ export default class Cell {
         this.walls = data.walls;
         this.item = data.item ? data.item : false;
         this.escalator = data.escalator ? data.escalator : false;
+
+        // If bridge goes into set tile, is can be considered as explored
+        if (data.item && data.item.type === 'bridge') {
+            let _x = [-1, 0, 0, 1][data.tileCell.x];
+            let _y = [0, 1, -1, 0][data.tileCell.x];
+
+            let cell = board.get(this.coord.x + _x, this.coord.y + _y);
+            if (!cell.isEmpty()) this.setExplored();
+        }
     }
 
     isEmpty() {
