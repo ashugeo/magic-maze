@@ -33,7 +33,7 @@ function start(options) {
     events.init();
     pieces.init();
     clock.init();
-    setTimeout(() => game.runBots(), config.botsInterval);
+    game.runBots();
 
 }
 

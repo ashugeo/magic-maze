@@ -16,9 +16,11 @@ export default {
     },
 
     runBots() {
-        for (let bot of this.bots) {
-            bot.solve();
-        }
+        setTimeout(() => {
+            for (let bot of this.bots) {
+                bot.solve();
+            }
+        }, config.botsInterval);
     },
 
     checkForWin() {
