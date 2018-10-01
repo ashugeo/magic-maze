@@ -29,7 +29,7 @@ export default {
                     this.pausedRun = false;
                     this.run();
                 }
-            }, config.botsInterval)
+            }, config.botsInterval);
         } else {
             this.pausedRun = true;
         }
@@ -57,7 +57,8 @@ export default {
                     cell: {
                         x: piece.cell.x,
                         y: piece.cell.y
-                    }
+                    },
+                    cost: 0
                 });
             }
         }
@@ -76,7 +77,24 @@ export default {
             // Find target
             const move = this.findMove(path);
 
-            actions.push({type: 'move', role: move.role, target: move.target, piece: piece});
+            // Prioritize lowest cost action for each piece
+            // TODO: disable two explorations at once
+            // TODO: disable exploration + move from bridge at once
+            let lower = false;
+
+            for (let i in actions) {
+                if (actions[i].piece && actions[i].piece.color === piece.color) {
+                    if (actions[i].cost <= path.length) {
+                        lower = true;
+                    } else {
+                        actions.splice(i, 1);
+                    }
+                }
+            }
+
+            if (!lower) {
+                actions.push({type: 'move', role: move.role, target: move.target, cost: path.length, piece: piece});
+            }
         }
 
         this.playRandomAction(actions);
@@ -377,8 +395,6 @@ export default {
         if (actions.length === 0) return;
         const id = Math.floor(Math.random() * actions.length);
         const action = actions[id];
-
-        // console.log(action);
 
         // Run bot with corresponding role
         for (let bot of this.bots) {

@@ -135,6 +135,10 @@
 
     setUsed(x, y) {
         this.layout[x][y].setUsed();
+    },
+
+    setStolen(x, y) {
+        this.layout[x][y].setStolen();
     }
 });
 
@@ -345,7 +349,7 @@
                     this.pausedRun = false;
                     this.run();
                 }
-            }, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].botsInterval)
+            }, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].botsInterval);
         } else {
             this.pausedRun = true;
         }
@@ -373,7 +377,8 @@
                     cell: {
                         x: piece.cell.x,
                         y: piece.cell.y
-                    }
+                    },
+                    cost: 0
                 });
             }
         }
@@ -392,7 +397,24 @@
             // Find target
             const move = this.findMove(path);
 
-            actions.push({type: 'move', role: move.role, target: move.target, piece: piece});
+            // Prioritize lowest cost action for each piece
+            // TODO: disable two explorations at once
+            // TODO: disable exploration + move from bridge at once
+            let lower = false;
+
+            for (let i in actions) {
+                if (actions[i].piece && actions[i].piece.color === piece.color) {
+                    if (actions[i].cost <= path.length) {
+                        lower = true;
+                    } else {
+                        actions.splice(i, 1);
+                    }
+                }
+            }
+
+            if (!lower) {
+                actions.push({type: 'move', role: move.role, target: move.target, cost: path.length, piece: piece});
+            }
         }
 
         this.playRandomAction(actions);
@@ -693,8 +715,6 @@
         if (actions.length === 0) return;
         const id = Math.floor(Math.random() * actions.length);
         const action = actions[id];
-
-        // console.log(action);
 
         // Run bot with corresponding role
         for (let bot of this.bots) {
@@ -73279,8 +73299,7 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
         }
     },
 
-    checkForEvents(cell) {
-        const hero = this.hero;
+    checkForEvents(cell, hero = this.hero) {
         const item = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(cell.x, cell.y).item;
 
         if (!item) return;
@@ -73441,7 +73460,7 @@ socket.on('admin', () => {
     setTimeout(() => {
         $ui.innerHTML += `<div id="admin">
         <p>Vous êtes administrateur de la partie.</p>
-        <input type="number" id="bots" value="1" /> bot(s)
+        <input type="number" id="bots" value="1" min="0" max="7" /> bot(s)
         <button id="start">Commencer la partie !</button>
         </div>`;
 
@@ -73694,7 +73713,9 @@ class Cell {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__pieces__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__game__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__ai__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__events__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__ai__ = __webpack_require__(4);
+
 
 
 
@@ -73719,6 +73740,7 @@ class Bot {
             // Make sure piece is movable
             if (action.piece.status === 'set' && action.piece.selectable) {
                 action.piece.set(action.target);
+                __WEBPACK_IMPORTED_MODULE_5__events__["a" /* default */].checkForEvents(action.target, action.piece);
             }
         }
     }
@@ -73764,7 +73786,7 @@ class Bot {
         cell.setExplored(x, y);
 
         // Run AI again
-        __WEBPACK_IMPORTED_MODULE_5__ai__["a" /* default */].run();
+        __WEBPACK_IMPORTED_MODULE_6__ai__["a" /* default */].run();
     }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Bot;
