@@ -24,5 +24,9 @@ export default {
 
     save(x, y, data) {
         this.layout[x][y].save(data);
+    },
+
+    setUsed(x, y) {
+        this.layout[x][y].setUsed();
     }
 }
