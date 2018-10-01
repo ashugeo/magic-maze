@@ -15,7 +15,6 @@ export default {
         }
     },
 
-    // TODO: solving comes too soon after player play (reset timeout?)
     run() {
         // Only the admin runs the bots
         if (!game.admin) return;
@@ -23,8 +22,8 @@ export default {
         // Prevent more than one call per second (let the bots time to think!)
         if (this.canSolve) {
             this.canSolve = false;
-            this.solve();
             setTimeout(() => {
+                this.solve();
                 this.canSolve = true;
                 if (this.pausedRun) {
                     this.pausedRun = false;
