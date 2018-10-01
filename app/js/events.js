@@ -1,12 +1,12 @@
-import config from './config';
+import ai from './ai';
 import board from './board';
 import camera from './camera';
-import Tile from './tile';
-import heroes from './heroes'
-import Hero from './hero';
 import clock from './clock';
+import config from './config';
 import game from './game';
-import ai from './ai';
+import Hero from './hero';
+import heroes from './heroes'
+import Tile from './tile';
 
 export default {
 

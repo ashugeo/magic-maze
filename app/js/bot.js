@@ -1,10 +1,10 @@
-import config from './config';
+import ai from './ai';
 import board from './board';
+import config from './config';
+import events from './events';
+import game from './game';
 import heroes from './heroes';
 import Tile from './tile';
-import game from './game';
-import events from './events';
-import ai from './ai';
 
 export default class Bot {
     constructor(id, roles) {

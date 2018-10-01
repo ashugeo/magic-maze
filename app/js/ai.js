@@ -1,8 +1,8 @@
-import config from './config';
 import board from './board';
-import heroes from './heroes';
-import game from './game';
 import Bot from './bot';
+import config from './config';
+import game from './game';
+import heroes from './heroes';
 
 export default {
     canSolve: true,

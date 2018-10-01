@@ -1,11 +1,10 @@
 import p5 from 'p5';
-import config from './config';
-import camera from './camera';
 import board from './board';
-import symbols from './symbols'
-import events from './events'
-import heroes from './heroes'
-// import Tile from './tile'
+import camera from './camera';
+import config from './config';
+import events from './events';
+import heroes from './heroes';
+import symbols from './symbols';
 
 const sketch = p5 => {
     window.p5 = p5;

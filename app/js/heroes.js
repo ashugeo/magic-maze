@@ -1,7 +1,7 @@
-import config from './config';
 import board from './board';
-import Hero from './hero';
 import camera from './camera'
+import config from './config';
+import Hero from './hero';
 
 export default {
 

@@ -1,5 +1,5 @@
-import config from './config';
 import ai from './ai';
+import config from './config';
 
 export default {
 

@@ -1,5 +1,5 @@
-import config from './config';
 import Cell from './cell';
+import config from './config';
 import Tile from './tile';
 
 export default {

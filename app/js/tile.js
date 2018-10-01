@@ -1,7 +1,7 @@
 import board from './board';
 import config from './config';
-import symbols from './symbols';
 import heroes from './heroes';
+import symbols from './symbols';
 
 const size = config.size;
 let tileID = 0;

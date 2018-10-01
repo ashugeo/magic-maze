@@ -1,8 +1,8 @@
-import config from './config';
-import board from './board';
-import heroes from './heroes';
-import game from './game';
 import ai from './ai';
+import board from './board';
+import config from './config';
+import game from './game';
+import heroes from './heroes';
 
 export default class Hero {
     constructor(id) {

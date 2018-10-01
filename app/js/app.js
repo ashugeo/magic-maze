@@ -1,14 +1,14 @@
-import p5 from 'p5';
-import sketch from './sketch';
-import config from './config';
+import ai from './ai';
 import board from './board';
-import Tile from './tile';
+import clock from './clock';
+import config from './config';
+import events from './events';
+import game from './game';
 import Hero from './hero';
 import heroes from './heroes';
-import events from './events';
-import clock from './clock';
-import game from './game';
-import ai from './ai';
+import p5 from 'p5';
+import sketch from './sketch';
+import Tile from './tile';
 
 window.tiles = [];
 window.json = [];
