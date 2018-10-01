@@ -525,20 +525,20 @@
 
             if (!neighbor) continue;
 
-            let canGo = true;
+            let canGoTo = true;
 
             // Make sure neighbor isn't empty
-            if (neighbor.isEmpty()) canGo = false;
+            if (neighbor.isEmpty()) canGoTo = false;
 
             // Make sure neighbor doesn't hold another hero
             // TODO: move a hero that's blocking another (good luck for this one)
             for (let hero of __WEBPACK_IMPORTED_MODULE_4__heroes__["a" /* default */].all) {
                 if (hero.cell.x === neighbor.coord.x && hero.cell.y === neighbor.coord.y) {
-                    canGo = false;
+                    canGoTo = false;
                 }
             }
 
-            if (!canGo) continue;
+            if (!canGoTo) continue;
 
             // Make sure no wall is blocking the way
             if (
@@ -1389,7 +1389,7 @@ class Hero {
     * @param  {Object} target Target cell
     * @return {bool}
     */
-    canGo(target) {
+    canGoTo(target) {
         const path = this.path;
 
         // No path, no go
@@ -1525,7 +1525,7 @@ class Hero {
         if (!hero) return;
 
         if (!(cell.x === this.oldHeroCell.x && cell.y === this.oldHeroCell.y)) {
-            if (this.action === 'hero' && hero.canGo(cell)) {
+            if (this.action === 'hero' && hero.canGoTo(cell)) {
                 // FIXME: hero will sometimes go to a cell it shouldn't if spammed/timed correctly
                 hero.set(cell);
                 socket.emit('hero', {

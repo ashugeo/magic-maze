@@ -343,20 +343,20 @@ export default {
 
             if (!neighbor) continue;
 
-            let canGo = true;
+            let canGoTo = true;
 
             // Make sure neighbor isn't empty
-            if (neighbor.isEmpty()) canGo = false;
+            if (neighbor.isEmpty()) canGoTo = false;
 
             // Make sure neighbor doesn't hold another hero
             // TODO: move a hero that's blocking another (good luck for this one)
             for (let hero of heroes.all) {
                 if (hero.cell.x === neighbor.coord.x && hero.cell.y === neighbor.coord.y) {
-                    canGo = false;
+                    canGoTo = false;
                 }
             }
 
-            if (!canGo) continue;
+            if (!canGoTo) continue;
 
             // Make sure no wall is blocking the way
             if (

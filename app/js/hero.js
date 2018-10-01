@@ -224,7 +224,7 @@ export default class Hero {
     * @param  {Object} target Target cell
     * @return {bool}
     */
-    canGo(target) {
+    canGoTo(target) {
         const path = this.path;
 
         // No path, no go
