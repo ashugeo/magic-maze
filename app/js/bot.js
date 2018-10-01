@@ -21,7 +21,7 @@ export default class Bot {
             this.newTile(action.cell.x, action.cell.y);
         } else if (action.type === 'move') {
             // Make sure piece is movable
-            if (action.piece.status === 'set' && action.piece.selectable) {
+            if (action.piece.status === 'set') {
                 action.piece.set(action.target);
                 events.checkForEvents(action.target, action.piece);
             }

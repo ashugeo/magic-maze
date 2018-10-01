@@ -225,7 +225,7 @@ export default {
         for (let piece of pieces.all) {
             if (piece.cell.x === cell.x && piece.cell.y === cell.y) {
                 // TODO: make sure a piece can't be set underneath a selected piece that couldn't go elsewhere (and check purple exit end)
-                if (!piece.selectable) return false;
+                if (piece.status !== 'set') return false;
                 return piece;
             }
         }

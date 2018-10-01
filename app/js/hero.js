@@ -12,10 +12,8 @@ export default class Hero {
             x: 0,
             y: 0
         },
-        // TODO: rework piece status ('set', 'selected', .selectable…)
-        this.status = '',
+        this.status = 'set', // set, selected, moving, exited
         this.path = [];
-        this.selectable = true;
     }
 
     /**
@@ -252,11 +250,11 @@ export default class Hero {
     }
 
     exit(cell) {
-        this.exited = true;
+        this.status = 'exited';
         // this.set({x: 0, y: 0});
     }
 
     hasExited() {
-        return this.exited;
+        return this.status === 'exited';
     }
 }
