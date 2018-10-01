@@ -23,10 +23,6 @@ io.sockets.on('connection', socket => {
     // First player, make him admin
     if (players.length === 1) {
         adminID = socket.id;
-
-        // TODO: remove this
-        // players.splice(players.indexOf(adminID), 1);
-
         socket.emit('admin');
     }
 
@@ -64,11 +60,6 @@ io.sockets.on('connection', socket => {
             }
         }
 
-        // TODO: remove this
-        // let allRoles = [].concat(...roles);
-        // options.botsRoles.push(allRoles);
-
-        // TODO: uncomment this
         if (allPlayers === 1) {
             // Only one player, merge roles together
             let allRoles = [].concat(...roles);
