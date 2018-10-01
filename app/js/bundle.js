@@ -187,10 +187,10 @@
             let deltaY = piece.target.y - piece.pos.y;
             let delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
             if (delta > 1 / 20) {
-                piece.status = 'moving';
+                piece.selectable = false;
                 piece.move();
-            } else if (piece.status === 'moving') {
-                piece.status = 'set';
+            } else if (!piece.selectable) {
+                piece.selectable = true;
                 piece.move(true);
             }
 
@@ -335,7 +335,6 @@
         }
     },
 
-    // TODO: solving comes too soon after player play (reset timeout?)
     run() {
         // Only the admin runs the bots
         if (!__WEBPACK_IMPORTED_MODULE_3__game__["a" /* default */].admin) return;
@@ -343,8 +342,8 @@
         // Prevent more than one call per second (let the bots time to think!)
         if (this.canSolve) {
             this.canSolve = false;
-            this.solve();
             setTimeout(() => {
+                this.solve();
                 this.canSolve = true;
                 if (this.pausedRun) {
                     this.pausedRun = false;
@@ -357,21 +356,27 @@
     },
 
     solve() {
-        console.log('Solving at', new Date().getSeconds());
+        // console.log('Solving at', new Date().getSeconds());
         let actions = [];
 
-        // Check for possible explorations
         for (let piece of __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].all) {
+            // Piece has already exited board
+            if (piece.hasExited()) continue;
+
+            // Check for possible explorations
             const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(piece.cell.x, piece.cell.y);
             const item = cell.item;
 
+            // Prevent two explorations at once
+            let canExplore = true;
+            for (let i in actions) {
+                if (actions[i].role === 'explore') {
+                    canExplore = false;
+                }
+            }
+
             // If hero sits on an unexplored bridge with same color
-            if (
-                cell.item &&
-                item.type === 'bridge' &&
-                item.color === piece.color &&
-                !cell.isExplored()
-            ) {
+            if (cell.item && item.type === 'bridge' && item.color === piece.color && !cell.isExplored() && canExplore) {
                 // Place new tile
                 actions.push({
                     role: 'explore',
@@ -379,7 +384,8 @@
                         x: piece.cell.x,
                         y: piece.cell.y
                     },
-                    cost: 0
+                    cost: 0,
+                    piece: piece
                 });
             }
         }
@@ -387,9 +393,20 @@
         // Find objectives
         const objectives = this.findObjectives();
 
+        // Find piece for each objective
         for (let objective of objectives) {
-            // Find piece for each objective
-            const piece = __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].findPieceByColor(objective.item.color);
+            let piece;
+            if (objective.item.type === 'exit' && __WEBPACK_IMPORTED_MODULE_3__game__["a" /* default */].scenario === 1) {
+                // All heroes exit through the purple exit
+                for (let hero of __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].all) {
+                    if (hero.hasStolen()) piece = hero;
+                }
+            } else {
+                piece = __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].findPieceByColor(objective.item.color);
+            }
+
+            // Piece has already exited board
+            if (piece.hasExited()) continue;
 
             // Find path
             const path = this.findPath(objective.coord, piece);
@@ -398,22 +415,24 @@
             // Find target
             const move = this.findMove(path);
 
-            // Prioritize lowest cost action for each piece
-            // TODO: disable two explorations at once
-            // TODO: disable exploration + move from bridge at once
-            let lower = false;
-
+            let canMove = true;
             for (let i in actions) {
-                if (actions[i].piece && actions[i].piece.color === piece.color) {
+                if (actions[i].piece && actions[i].piece.id === piece.id) {
+                    // Prevent exploration + move from bridge at once
+                    if (actions[i].role === 'explore' && actions[i].piece.id === piece.id) {
+                        canMove = false;
+                    }
+
+                    // Prioritize lowest cost action for each piece
                     if (actions[i].cost <= path.length) {
-                        lower = true;
+                        canMove = false;
                     } else {
                         actions.splice(i, 1);
                     }
                 }
             }
 
-            if (!lower) {
+            if (canMove) {
                 actions.push({type: 'move', role: move.role, target: move.target, cost: path.length, piece: piece});
             }
         }
@@ -643,6 +662,8 @@
                 origin.coord.x + [0, 1, 0, -1][i],
                 origin.coord.y + [-1, 0, 1, 0][i]
             );
+
+            if (!neighbor) continue;
 
             let canGo = true;
 
@@ -1296,7 +1317,8 @@ class Hero {
             x: 0,
             y: 0
         },
-        this.status = 'set', // set, selected, moving, exited
+        this.status = 'set', // set, selected, exited
+        this.selectable = true,
         this.path = [];
     }
 
@@ -1533,7 +1555,7 @@ class Hero {
         return this.stolen;
     }
 
-    exit(cell) {
+    exit() {
         this.status = 'exited';
         // this.set({x: 0, y: 0});
     }
@@ -1793,7 +1815,7 @@ class Hero {
         for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].all) {
             if (piece.cell.x === cell.x && piece.cell.y === cell.y) {
                 // TODO: make sure a piece can't be set underneath a selected piece that couldn't go elsewhere (and check purple exit end)
-                if (piece.status !== 'set') return false;
+                if (!piece.selectable) return false;
                 return piece;
             }
         }
@@ -1847,10 +1869,10 @@ class Hero {
             __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(cell.x, cell.y).setStolen();
         } else if (item.type === 'exit' && hero.hasStolen() && (item.color === hero.color || __WEBPACK_IMPORTED_MODULE_7__game__["a" /* default */].scenario === 1)) {
             // Same color exit or scenario 1 (only has purple exit)
-            this.toggleHero(hero);
             hero.exit();
-            if (__WEBPACK_IMPORTED_MODULE_7__game__["a" /* default */].checkForWin()) {
+            if (__WEBPACK_IMPORTED_MODULE_8__ai__["a" /* default */].checkForWin()) {
                 // TODO: WIN
+                console.log('game won!');
             }
         }
     }
@@ -73458,6 +73480,7 @@ function start(options) {
 const $ui = document.getElementById('ui');
 const $players = document.getElementById('players');
 
+// FIXME: why is this not reliable?
 socket.on('players', players => {
     $players.innerHTML = players;
     $players.innerHTML += players > 1 ? ' joueurs connectés.' : ' joueur connecté.';
@@ -73674,6 +73697,7 @@ class Cell {
             const _x = [-1, 0, 0, 1][data.tileCell.x];
             const _y = [0, 1, -1, 0][data.tileCell.x];
             const cell = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].get(this.coord.x + _x, this.coord.y + _y);
+            if (!cell) return;
             if (!cell.isEmpty()) this.setExplored();
 
             // Bridge goes into unexplored bridge, set it as explored as well
@@ -73749,8 +73773,8 @@ class Bot {
         if (action.role === 'explore') {
             this.newTile(action.cell.x, action.cell.y);
         } else if (action.type === 'move') {
-            // Make sure piece is movable
-            if (action.piece.status === 'set') {
+            // Make sure piece is selectable
+            if (action.piece.selectable) {
                 action.piece.set(action.target);
                 socket.emit('hero', {
                     id: action.piece.id,

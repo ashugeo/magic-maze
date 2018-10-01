@@ -36,21 +36,27 @@ export default {
     },
 
     solve() {
-        console.log('Solving at', new Date().getSeconds());
+        // console.log('Solving at', new Date().getSeconds());
         let actions = [];
 
-        // Check for possible explorations
         for (let piece of pieces.all) {
+            // Piece has already exited board
+            if (piece.hasExited()) continue;
+
+            // Check for possible explorations
             const cell = board.get(piece.cell.x, piece.cell.y);
             const item = cell.item;
 
+            // Prevent two explorations at once
+            let canExplore = true;
+            for (let i in actions) {
+                if (actions[i].role === 'explore') {
+                    canExplore = false;
+                }
+            }
+
             // If hero sits on an unexplored bridge with same color
-            if (
-                cell.item &&
-                item.type === 'bridge' &&
-                item.color === piece.color &&
-                !cell.isExplored()
-            ) {
+            if (cell.item && item.type === 'bridge' && item.color === piece.color && !cell.isExplored() && canExplore) {
                 // Place new tile
                 actions.push({
                     role: 'explore',
@@ -58,7 +64,8 @@ export default {
                         x: piece.cell.x,
                         y: piece.cell.y
                     },
-                    cost: 0
+                    cost: 0,
+                    piece: piece
                 });
             }
         }
@@ -88,22 +95,24 @@ export default {
             // Find target
             const move = this.findMove(path);
 
-            // Prioritize lowest cost action for each piece
-            // TODO: disable two explorations at once
-            // TODO: disable exploration + move from bridge at once
-            let lower = false;
-
+            let canMove = true;
             for (let i in actions) {
-                if (actions[i].piece && actions[i].piece.color === piece.color) {
+                if (actions[i].piece && actions[i].piece.id === piece.id) {
+                    // Prevent exploration + move from bridge at once
+                    if (actions[i].role === 'explore' && actions[i].piece.id === piece.id) {
+                        canMove = false;
+                    }
+
+                    // Prioritize lowest cost action for each piece
                     if (actions[i].cost <= path.length) {
-                        lower = true;
+                        canMove = false;
                     } else {
                         actions.splice(i, 1);
                     }
                 }
             }
 
-            if (!lower) {
+            if (canMove) {
                 actions.push({type: 'move', role: move.role, target: move.target, cost: path.length, piece: piece});
             }
         }
