@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
-const actions = require('../app/data/actions.json');
+const actions = require('./data/actions.json');
 
 app.use(express.static(__dirname + '/'));
 
@@ -23,7 +23,10 @@ io.sockets.on('connection', socket => {
     // First player, make him admin
     if (players.length === 1) {
         adminID = socket.id;
-        players.splice(players.indexOf(adminID), 1);
+
+        // TODO: remove this
+        // players.splice(players.indexOf(adminID), 1);
+
         socket.emit('admin');
     }
 
@@ -43,52 +46,58 @@ io.sockets.on('connection', socket => {
 
     socket.on('start', options => {
         // Make sure the admin started the game
-        if (socket.id === adminID) {
-            let allPlayers = players.length;
+        if (socket.id !== adminID) return;
 
-            // Add bots to players
-            if (options.bots > 0) {
-                allPlayers += options.bots;
-                options.botsRoles = [];
+        let allPlayers = players.length;
+
+        // Add bots to players
+        if (options.bots > 0) {
+            allPlayers += options.bots;
+            options.botsRoles = [];
+        }
+
+        // Get all actions for that number of players
+        let roles = [];
+        for (let i in actions) {
+            if (actions[i].players.indexOf(allPlayers) > -1) {
+                roles.push(actions[i].roles);
             }
+        }
 
-            console.log(allPlayers);
+        // TODO: remove this
+        // let allRoles = [].concat(...roles);
+        // options.botsRoles.push(allRoles);
 
-            // Get all actions for that number of players
-            let roles = [];
-            for (let i in actions) {
-                if (actions[i].players.indexOf(allPlayers) > -1) {
-                    roles.push(actions[i].roles);
+        // TODO: uncomment this
+        if (allPlayers === 1) {
+            // Only one player, merge roles together
+            let allRoles = [].concat(...roles);
+            io.to(players[0]).emit('role', allRoles);
+        } else {
+            // Give actions to players randomly
+            shuffleArray(roles);
+            for (let i in roles) {
+                i = parseInt(i);
+
+                if (players[i]) {
+                    // Tell this player his role(s)
+                    io.to(players[i]).emit('role', roles[i]);
+                } else if (options.bots > 0) {
+                    // Not a player but a bot, save in options
+                    options.botsRoles.push(roles[i]);
                 }
             }
-
-            let allRoles = [].concat(...roles);
-            console.log(allRoles);
-            options.botsRoles.push(allRoles);
-
-            // if (allPlayers === 1) {
-            //     // Only one player, merge roles together
-            //     let allRoles = [].concat(...roles);
-            //     io.to(players[0]).emit('role', allRoles);
-            // } else {
-            //     // Give actions to players randomly
-            //     shuffleArray(roles);
-            //     for (let i in roles) {
-            //         i = parseInt(i);
-            //
-            //         if (players[i]) {
-            //             // Tell this player his role(s)
-            //             io.to(players[i]).emit('role', roles[i]);
-            //         } else if (options.bots > 0) {
-            //             // Not a player but a bot, save in options
-            //             options.botsRoles.push(roles[i]);
-            //         }
-            //     }
-            // }
-
-            // Tell everyone to start game
-            io.emit('start', options);
         }
+
+        // Tell everyone to start game
+        for (let player of players) {
+            if (player === adminID) {
+                io.to(player).emit('start', options);
+            } else {
+                io.to(player).emit('start');
+            }
+        }
+
     });
 
     socket.on('hero', data => {
@@ -115,10 +124,9 @@ io.sockets.on('connection', socket => {
 http.listen(3000);
 
 function shuffleArray(a) {
-    var j, x, i;
-    for (i = a.length - 1; i > 0; i--) {
-        j = Math.floor(Math.random() * (i + 1));
-        x = a[i];
+    for (let i = a.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        let x = a[i];
         a[i] = a[j];
         a[j] = x;
     }
