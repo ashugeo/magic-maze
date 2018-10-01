@@ -40,6 +40,7 @@ function start(options) {
 const $ui = document.getElementById('ui');
 const $players = document.getElementById('players');
 
+// FIXME: why is this not reliable?
 socket.on('players', players => {
     $players.innerHTML = players;
     $players.innerHTML += players > 1 ? ' joueurs connectés.' : ' joueur connecté.';

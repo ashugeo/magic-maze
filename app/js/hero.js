@@ -250,7 +250,7 @@ export default class Hero {
         return this.stolen;
     }
 
-    exit(cell) {
+    exit() {
         this.status = 'exited';
         // this.set({x: 0, y: 0});
     }

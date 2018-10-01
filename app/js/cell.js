@@ -22,6 +22,7 @@ export default class Cell {
             const _x = [-1, 0, 0, 1][data.tileCell.x];
             const _y = [0, 1, -1, 0][data.tileCell.x];
             const cell = board.get(this.coord.x + _x, this.coord.y + _y);
+            if (!cell) return;
             if (!cell.isEmpty()) this.setExplored();
 
             // Bridge goes into unexplored bridge, set it as explored as well

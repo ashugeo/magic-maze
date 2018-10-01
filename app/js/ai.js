@@ -324,6 +324,8 @@ export default {
                 origin.coord.y + [-1, 0, 1, 0][i]
             );
 
+            if (!neighbor) continue;
+
             let canGo = true;
 
             // Make sure neighbor isn't empty

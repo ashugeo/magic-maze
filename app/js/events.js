@@ -285,10 +285,10 @@ export default {
             board.get(cell.x, cell.y).setStolen();
         } else if (item.type === 'exit' && hero.hasStolen() && (item.color === hero.color || game.scenario === 1)) {
             // Same color exit or scenario 1 (only has purple exit)
-            this.toggleHero(hero);
             hero.exit();
-            if (game.checkForWin()) {
+            if (ai.checkForWin()) {
                 // TODO: WIN
+                console.log('game won!');
             }
         }
     }
