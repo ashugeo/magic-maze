@@ -12,7 +12,8 @@ export default class Hero {
             x: 0,
             y: 0
         },
-        this.status = 'set', // set, selected, moving, exited
+        this.status = 'set', // set, selected, exited
+        this.selectable = true,
         this.path = [];
     }
 

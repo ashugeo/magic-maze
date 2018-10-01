@@ -33,10 +33,10 @@ export default {
             let deltaY = piece.target.y - piece.pos.y;
             let delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
             if (delta > 1 / 20) {
-                piece.status = 'moving';
+                piece.selectable = false;
                 piece.move();
-            } else if (piece.status === 'moving') {
-                piece.status = 'set';
+            } else if (!piece.selectable) {
+                piece.selectable = true;
                 piece.move(true);
             }
 

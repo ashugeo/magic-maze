@@ -20,8 +20,8 @@ export default class Bot {
         if (action.role === 'explore') {
             this.newTile(action.cell.x, action.cell.y);
         } else if (action.type === 'move') {
-            // Make sure piece is movable
-            if (action.piece.status === 'set') {
+            // Make sure piece is selectable
+            if (action.piece.selectable) {
                 action.piece.set(action.target);
                 socket.emit('hero', {
                     id: action.piece.id,
