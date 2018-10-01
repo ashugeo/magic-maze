@@ -67,9 +67,20 @@ export default {
         // Find objectives
         const objectives = this.findObjectives();
 
+        // Find piece for each objective
         for (let objective of objectives) {
-            // Find piece for each objective
-            const piece = pieces.findPieceByColor(objective.item.color);
+            let piece;
+            if (objective.item.type === 'exit' && game.scenario === 1) {
+                // All heroes exit through the purple exit
+                for (let hero of pieces.all) {
+                    if (hero.hasStolen()) piece = hero;
+                }
+            } else {
+                piece = pieces.findPieceByColor(objective.item.color);
+            }
+
+            // Piece has already exited board
+            if (piece.hasExited()) continue;
 
             // Find path
             const path = this.findPath(objective.coord, piece);
