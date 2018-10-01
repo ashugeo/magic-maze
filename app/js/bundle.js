@@ -187,10 +187,10 @@
             let deltaY = piece.target.y - piece.pos.y;
             let delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
             if (delta > 1 / 20) {
-                piece.selectable = false;
+                piece.status = 'moving';
                 piece.move();
-            } else if (!piece.selectable) {
-                piece.selectable = true;
+            } else if (piece.status === 'moving') {
+                piece.status = 'set';
                 piece.move(true);
             }
 
@@ -335,6 +335,7 @@
         }
     },
 
+    // TODO: solving comes too soon after player play (reset timeout?)
     run() {
         // Only the admin runs the bots
         if (!__WEBPACK_IMPORTED_MODULE_3__game__["a" /* default */].admin) return;
@@ -426,6 +427,8 @@
             for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardRows; i += 1) {
                 const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(i, j);
                 const item = cell.item;
+
+                // TODO: add time cells as objectives when remaining time is low
 
                 // Ignore empty cells
                 if (cell.isEmpty()) continue;
@@ -706,9 +709,8 @@
 
             // Is every hero out?
             if (!piece.hasExited()) return false;
-
-            return true;
         }
+        return true;
     },
 
     playRandomAction(actions) {
@@ -744,7 +746,7 @@
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__symbols__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__symbols__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__pieces__ = __webpack_require__(2);
 
 
@@ -1294,10 +1296,8 @@ class Hero {
             x: 0,
             y: 0
         },
-        // TODO: rework piece status ('set', 'selected', .selectable…)
-        this.status = '',
+        this.status = 'set', // set, selected, moving, exited
         this.path = [];
-        this.selectable = true;
     }
 
     /**
@@ -1534,12 +1534,12 @@ class Hero {
     }
 
     exit(cell) {
-        this.exited = true;
+        this.status = 'exited';
         // this.set({x: 0, y: 0});
     }
 
     hasExited() {
-        return this.exited;
+        return this.status === 'exited';
     }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Hero;
@@ -1548,6 +1548,317 @@ class Hero {
 
 /***/ }),
 /* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pieces__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__clock__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__game__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__ai__ = __webpack_require__(4);
+
+
+
+
+
+
+
+
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+
+    action: '',
+
+    init() {
+        /**
+        * General key press actions
+        * @param {Object} e event
+        */
+        document.addEventListener('keydown', e => {
+            if (e.which === 67) { // C: engage tile setting
+                if (role.indexOf('explore') > -1) this.newTile();
+            } else if (e.which === 82) { // R: rotate tile counterclockwise
+                this.rotateTile(-1);
+            } else if (e.which === 84) { // T: rotate tile clockwise
+                this.rotateTile(1);
+            } else if (e.which === 27) { // Esc: cancel current action
+                this.cancel();
+            } else if (e.which === 66) { // B: run bots
+                __WEBPACK_IMPORTED_MODULE_8__ai__["a" /* default */].run();
+            }
+        });
+
+        document.addEventListener('mousedown', () => {
+            this.mouseDown();
+        });
+
+        document.addEventListener('mouseup', () => {
+            this.mouseUp();
+        });
+
+        document.addEventListener('mousemove', () => {
+            this.mouseMove();
+        });
+
+        document.getElementById('canvas-wrap').addEventListener('mouseleave', () => {
+            __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].mouseIn = false;
+        });
+
+        document.getElementById('canvas-wrap').addEventListener('mouseenter', () => {
+            __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].mouseIn = true;
+        });
+
+        window.oncontextmenu = () => {
+            this.rotateTile(1);
+            return false;
+        }
+    },
+
+    mouseDown() {
+        const cell = this.getHoveredCell();
+
+        if (this.action === 'setting') {
+            this.setTile(cell);
+        }
+
+        const isHero = this.checkForHero(cell);
+        if (isHero) {
+            this.toggleHero(isHero);
+            this.oldHeroCell = cell;
+        }
+    },
+
+    oldHeroCell: {},
+
+    mouseUp() {
+        const cell = this.getHoveredCell();
+        const hero = this.hero;
+
+        if (!hero) return;
+
+        if (!(cell.x === this.oldHeroCell.x && cell.y === this.oldHeroCell.y)) {
+            if (this.action === 'hero' && hero.canGo(cell)) {
+                // FIXME: hero will sometimes go to a cell it shouldn't if spammed/timed correctly
+                hero.set(cell);
+                socket.emit('hero', {
+                    id: hero.id,
+                    cell: cell
+                });
+                this.checkForEvents(cell);
+            } else {
+                // Released hero (illegal move), tell admin to rerun AI
+                socket.emit('ai');
+            }
+        } else {
+            // Released hero (same cell), tell admin to rerun AI
+            socket.emit('ai');
+        }
+
+        this.action = '';
+        hero.path = [];
+        this.toggleHero(hero);
+        this.hero = false;
+    },
+
+    oldMouseCell: {},
+
+    /**
+    * Mouse movements events
+    */
+    mouseMove() {
+        const cell = this.getHoveredCell();
+
+        if (this.action === 'hero') {
+            const hero = this.hero;
+            if (cell.x !== this.oldMouseCell.x || cell.y !== this.oldMouseCell.y) {
+                this.oldMouseCell = cell;
+                hero.checkPath(cell);
+            }
+        }
+    },
+
+    /**
+    * Get hovered cell coordinates
+    * @return {Object} position {'x': ,'y': }
+    */
+    getHoveredCell() {
+        const x = p5.floor((p5.mouseX - p5.width/2 - (__WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].x * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue));
+        const y = p5.floor((p5.mouseY - p5.height/2 - (__WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].y * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue));
+
+        const cell = {
+            'x': x,
+            'y': y
+        }
+
+        return cell;
+    },
+
+    /**
+    * Cancel current action
+    */
+    cancel() {
+        if (this.action === 'setting') {
+            tiles.pop();
+        }
+        this.action = '';
+    },
+
+    /**
+    * Set tile being placed
+    * @param {Object} cell cell to set tile onto
+    */
+    setTile(cell) {
+        // Select tile being set
+        const tile = tiles[tiles.length - 1];
+        const o = tile.getOrientation();
+
+        if (tile.canBeSet && !tile.fixed) {
+            this.action = '';
+
+            // Set tile at origin
+            const origin = tile.getOrigin(cell.x, cell.y, o);
+            tile.set(origin.x, origin.y);
+            socket.emit('tile', {
+                x: origin.x,
+                y: origin.y,
+                tile: tile
+            });
+
+            // Mark cell as explored
+            this.bridgeCell.setExplored();
+
+            // Run AI
+            __WEBPACK_IMPORTED_MODULE_8__ai__["a" /* default */].run();
+        }
+    },
+
+    bridgeCell: {},
+
+    /**
+    * Push new tile to tiles array
+    */
+    newTile() {
+        let canAddTile = false;
+
+        for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].all) {
+            const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(piece.cell.x, piece.cell.y);
+            if (cell.item && cell.item.type === 'bridge' && cell.item.color === piece.color) {
+                this.bridgeCell = cell;
+                if (!cell.isExplored()) {
+                    canAddTile = true;
+                    break;
+                }
+            }
+        }
+
+        if (canAddTile) {
+            this.action = 'setting';
+
+            // Select tile being set
+            const tile = tiles[tiles.length-1];
+
+            // Make sure last tile is fixed to prevent multiple tiles setting
+            if (tile.fixed) {
+                // tiles.push(new Tile(1)); // TODO: remove this
+                tiles.push(new __WEBPACK_IMPORTED_MODULE_3__tile__["a" /* default */]((tiles.length - 1) % (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].tiles - 1) + 1));
+            }
+        }
+    },
+
+    /**
+    * Rotate tile being set
+    * @param  {int} dir direction (1 for clockwise, -1 for counterclockwise)
+    */
+    rotateTile(dir) {
+        // Select tile being set
+        const tile = tiles[tiles.length-1];
+
+        // Make sure tile is not fixed
+        if (!tile.fixed) {
+            tile.rotate(dir);
+        }
+    },
+
+    /**
+    * Check if there's a hero in this cell
+    * @param  {Object} cell cell to check
+    * @return {bool}
+    */
+    checkForHero(cell) {
+        for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].all) {
+            if (piece.cell.x === cell.x && piece.cell.y === cell.y) {
+                // TODO: make sure a piece can't be set underneath a selected piece that couldn't go elsewhere (and check purple exit end)
+                if (piece.status !== 'set') return false;
+                return piece;
+            }
+        }
+        return false;
+    },
+
+    /**
+    * Select or deselect hero
+    * @param  {Object} hero hero to select
+    */
+    toggleHero(hero) {
+        for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].all) {
+            // Prevent selection of multiple pieces
+            if (piece.status === 'selected' && piece.id !== hero.id) return;
+        }
+
+        // Prevent selection of exited hero
+        if (hero.exited) return;
+
+        if (hero.status !== 'selected') {
+            hero.status = 'selected';
+            this.action = 'hero';
+            this.hero = hero;
+            hero.checkPath();
+        } else {
+            hero.status = 'set';
+        }
+    },
+
+    checkForEvents(cell, hero = this.hero) {
+        const item = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(cell.x, cell.y).item;
+
+        if (!item) return;
+
+        if (item.type === 'time' && !item.used) {
+            // Time cell, invert clock
+            __WEBPACK_IMPORTED_MODULE_6__clock__["a" /* default */].invert();
+            socket.emit('invertClock');
+
+            // Time cell is now used
+            __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].setUsed(cell.x, cell.y);
+            socket.emit('used', {
+                x: cell.x,
+                y: cell.y
+            });
+        } else if (item.type === 'article' && item.color === hero.color) {
+            // Same color article
+            hero.steal();
+
+            // Article is now stolen
+            __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(cell.x, cell.y).setStolen();
+        } else if (item.type === 'exit' && hero.hasStolen() && (item.color === hero.color || __WEBPACK_IMPORTED_MODULE_7__game__["a" /* default */].scenario === 1)) {
+            // Same color exit or scenario 1 (only has purple exit)
+            this.toggleHero(hero);
+            hero.exit();
+            if (__WEBPACK_IMPORTED_MODULE_7__game__["a" /* default */].checkForWin()) {
+                // TODO: WIN
+            }
+        }
+    }
+});
+
+
+/***/ }),
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {var require;var require;/*! p5.js v0.5.16 October 11, 2017 */
@@ -72959,7 +73270,7 @@ module.exports = p5;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13)))
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -73023,309 +73334,6 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
             // Draw horizontal lines
             p5.stroke(0, 0, 255, 80);
             p5.line(0, i * size, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardCols * size, i * size);
-        }
-    }
-});
-
-
-/***/ }),
-/* 10 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pieces__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__clock__ = __webpack_require__(11);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__game__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__ai__ = __webpack_require__(4);
-
-
-
-
-
-
-
-
-
-
-/* harmony default export */ __webpack_exports__["a"] = ({
-
-    action: '',
-
-    init() {
-        /**
-        * General key press actions
-        * @param {Object} e event
-        */
-        document.addEventListener('keydown', e => {
-            if (e.which === 67) { // C: engage tile setting
-                if (role.indexOf('explore') > -1) this.newTile();
-            } else if (e.which === 82) { // R: rotate tile counterclockwise
-                this.rotateTile(-1);
-            } else if (e.which === 84) { // T: rotate tile clockwise
-                this.rotateTile(1);
-            } else if (e.which === 27) { // Esc: cancel current action
-                this.cancel();
-            } else if (e.which === 66) { // B: run bots
-                __WEBPACK_IMPORTED_MODULE_8__ai__["a" /* default */].run();
-            }
-        });
-
-        document.addEventListener('mousedown', () => {
-            this.mouseDown();
-        });
-
-        document.addEventListener('mouseup', () => {
-            this.mouseUp();
-        });
-
-        document.addEventListener('mousemove', () => {
-            this.mouseMove();
-        });
-
-        document.getElementById('canvas-wrap').addEventListener('mouseleave', () => {
-            __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].mouseIn = false;
-        });
-
-        document.getElementById('canvas-wrap').addEventListener('mouseenter', () => {
-            __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].mouseIn = true;
-        });
-
-        window.oncontextmenu = () => {
-            this.rotateTile(1);
-            return false;
-        }
-    },
-
-    mouseDown() {
-        const cell = this.getHoveredCell();
-
-        if (this.action === 'setting') {
-            this.setTile(cell);
-        }
-
-        const isHero = this.checkForHero(cell);
-        if (isHero) {
-            this.toggleHero(isHero);
-            this.oldHeroCell = cell;
-        }
-    },
-
-    oldHeroCell: {},
-
-    mouseUp() {
-        const cell = this.getHoveredCell();
-        const hero = this.hero;
-
-        if (!hero) return;
-
-        if (!(cell.x === this.oldHeroCell.x && cell.y === this.oldHeroCell.y) && this.action === 'hero') {
-            if (hero.canGo(cell)) {
-                // FIXME: hero will sometimes go to a cell it shouldn't if spammed/timed correctly
-                hero.set(cell);
-                socket.emit('hero', {
-                    id: hero.id,
-                    cell: cell
-                });
-                this.checkForEvents(cell);
-            }
-        }
-
-        this.action = '';
-        hero.path = [];
-        this.toggleHero(hero);
-        this.hero = false;
-    },
-
-    oldMouseCell: {},
-
-    /**
-    * Mouse movements events
-    */
-    mouseMove() {
-        const cell = this.getHoveredCell();
-
-        if (this.action === 'hero') {
-            const hero = this.hero;
-            if (cell.x !== this.oldMouseCell.x || cell.y !== this.oldMouseCell.y) {
-                this.oldMouseCell = cell;
-                hero.checkPath(cell);
-            }
-        }
-    },
-
-    /**
-    * Get hovered cell coordinates
-    * @return {Object} position {'x': ,'y': }
-    */
-    getHoveredCell() {
-        const x = p5.floor((p5.mouseX - p5.width/2 - (__WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].x * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue));
-        const y = p5.floor((p5.mouseY - p5.height/2 - (__WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].y * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue));
-
-        const cell = {
-            'x': x,
-            'y': y
-        }
-
-        return cell;
-    },
-
-    /**
-    * Cancel current action
-    */
-    cancel() {
-        if (this.action === 'setting') {
-            tiles.pop();
-        }
-        this.action = '';
-    },
-
-    /**
-    * Set tile being placed
-    * @param {Object} cell cell to set tile onto
-    */
-    setTile(cell) {
-        // Select tile being set
-        const tile = tiles[tiles.length - 1];
-        const o = tile.getOrientation();
-
-        if (tile.canBeSet && !tile.fixed) {
-            this.action = '';
-
-            // Set tile at origin
-            const origin = tile.getOrigin(cell.x, cell.y, o);
-            tile.set(origin.x, origin.y);
-            socket.emit('tile', {
-                x: origin.x,
-                y: origin.y,
-                tile: tile
-            });
-
-            // Mark cell as explored
-            this.bridgeCell.setExplored();
-
-            // Run AI
-            __WEBPACK_IMPORTED_MODULE_8__ai__["a" /* default */].run();
-        }
-    },
-
-    bridgeCell: {},
-
-    /**
-    * Push new tile to tiles array
-    */
-    newTile() {
-        let canAddTile = false;
-
-        for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].all) {
-            const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(piece.cell.x, piece.cell.y);
-            if (cell.item && cell.item.type === 'bridge' && cell.item.color === piece.color) {
-                this.bridgeCell = cell;
-                if (!cell.isExplored()) {
-                    canAddTile = true;
-                    break;
-                }
-            }
-        }
-
-        if (canAddTile) {
-            this.action = 'setting';
-
-            // Select tile being set
-            const tile = tiles[tiles.length-1];
-
-            // Make sure last tile is fixed to prevent multiple tiles setting
-            if (tile.fixed) {
-                // tiles.push(new Tile(1)); // TODO: remove this
-                tiles.push(new __WEBPACK_IMPORTED_MODULE_3__tile__["a" /* default */]((tiles.length - 1) % (__WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].tiles - 1) + 1));
-            }
-        }
-    },
-
-    /**
-    * Rotate tile being set
-    * @param  {int} dir direction (1 for clockwise, -1 for counterclockwise)
-    */
-    rotateTile(dir) {
-        // Select tile being set
-        const tile = tiles[tiles.length-1];
-
-        // Make sure tile is not fixed
-        if (!tile.fixed) {
-            tile.rotate(dir);
-        }
-    },
-
-    /**
-    * Check if there's a hero in this cell
-    * @param  {Object} cell cell to check
-    * @return {bool}
-    */
-    checkForHero(cell) {
-        for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].all) {
-            if (piece.cell.x === cell.x && piece.cell.y === cell.y) {
-                // TODO: make sure a piece can't be set underneath a selected piece that couldn't go elsewhere (and check purple exit end)
-                if (!piece.selectable) return false;
-                return piece;
-            }
-        }
-        return false;
-    },
-
-    /**
-    * Select or deselect hero
-    * @param  {Object} hero hero to select
-    */
-    toggleHero(hero) {
-        for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].all) {
-            // Prevent selection of multiple pieces
-            if (piece.status === 'selected' && piece.id !== hero.id) return;
-        }
-
-        // Prevent selection of exited hero
-        if (hero.exited) return;
-
-        if (hero.status !== 'selected') {
-            hero.status = 'selected';
-            this.action = 'hero';
-            this.hero = hero;
-            hero.checkPath();
-        } else {
-            hero.status = 'set';
-        }
-    },
-
-    checkForEvents(cell, hero = this.hero) {
-        const item = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(cell.x, cell.y).item;
-
-        if (!item) return;
-
-        if (item.type === 'time' && !item.used) {
-            // Time cell, invert clock
-            __WEBPACK_IMPORTED_MODULE_6__clock__["a" /* default */].invert();
-            socket.emit('invertClock');
-
-            // Time cell is now used
-            __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].setUsed(cell.x, cell.y);
-            socket.emit('used', {
-                x: cell.x,
-                y: cell.y
-            });
-        } else if (item.type === 'article' && item.color === hero.color) {
-            // Same color article
-            hero.steal();
-            __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(cell.x, cell.y).setStolen();
-        } else if (item.type === 'exit' && hero.hasStolen() && (item.color === hero.color || __WEBPACK_IMPORTED_MODULE_7__game__["a" /* default */].scenario === 1)) {
-            // Same color exit or scenario 1 (only has purple exit)
-            this.toggleHero(hero);
-            hero.exit();
-            if (__WEBPACK_IMPORTED_MODULE_7__game__["a" /* default */].checkForWin()) {
-                // TODO: WIN
-            }
         }
     }
 });
@@ -73396,7 +73404,7 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__sketch__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(0);
@@ -73404,7 +73412,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__tile__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pieces__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__events__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__events__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__clock__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__game__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__ai__ = __webpack_require__(4);
@@ -73516,6 +73524,10 @@ socket.on('used', data => {
     __WEBPACK_IMPORTED_MODULE_3__board__["a" /* default */].setUsed(data.x, data.y);
 });
 
+socket.on('ai', data => {
+    __WEBPACK_IMPORTED_MODULE_10__ai__["a" /* default */].run();
+});
+
 
 /***/ }),
 /* 13 */
@@ -73549,13 +73561,13 @@ module.exports = g;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__symbols__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__events__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__symbols__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__events__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pieces__ = __webpack_require__(2);
 
 
@@ -73713,7 +73725,7 @@ class Cell {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__pieces__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__game__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__events__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__events__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__ai__ = __webpack_require__(4);
 
 
@@ -73738,8 +73750,12 @@ class Bot {
             this.newTile(action.cell.x, action.cell.y);
         } else if (action.type === 'move') {
             // Make sure piece is movable
-            if (action.piece.status === 'set' && action.piece.selectable) {
+            if (action.piece.status === 'set') {
                 action.piece.set(action.target);
+                socket.emit('hero', {
+                    id: action.piece.id,
+                    cell: action.target
+                });
                 __WEBPACK_IMPORTED_MODULE_5__events__["a" /* default */].checkForEvents(action.target, action.piece);
             }
         }

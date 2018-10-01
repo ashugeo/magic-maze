@@ -15,6 +15,7 @@ export default {
         }
     },
 
+    // TODO: solving comes too soon after player play (reset timeout?)
     run() {
         // Only the admin runs the bots
         if (!game.admin) return;
@@ -106,6 +107,8 @@ export default {
             for (let i = 0; i < config.boardRows; i += 1) {
                 const cell = board.get(i, j);
                 const item = cell.item;
+
+                // TODO: add time cells as objectives when remaining time is low
 
                 // Ignore empty cells
                 if (cell.isEmpty()) continue;
@@ -386,9 +389,8 @@ export default {
 
             // Is every hero out?
             if (!piece.hasExited()) return false;
-
-            return true;
         }
+        return true;
     },
 
     playRandomAction(actions) {

@@ -105,3 +105,7 @@ socket.on('invertClock', data => {
 socket.on('used', data => {
     board.setUsed(data.x, data.y);
 });
+
+socket.on('ai', data => {
+    ai.run();
+});

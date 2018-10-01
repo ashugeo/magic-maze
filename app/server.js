@@ -40,7 +40,7 @@ io.sockets.on('connection', socket => {
         if (players.indexOf(adminID) === -1) {
             adminID = players[0];
             // Tell him
-            io.to(players[0]).emit('admin');
+            io.to(adminID).emit('admin');
         }
     });
 
@@ -118,6 +118,10 @@ io.sockets.on('connection', socket => {
 
     socket.on('used', data => {
         socket.broadcast.emit('used', data);
+    });
+
+    socket.on('ai', data => {
+        io.to(adminID).emit('ai');
     });
 });
 

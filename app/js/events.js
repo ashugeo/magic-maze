@@ -79,8 +79,8 @@ export default {
 
         if (!hero) return;
 
-        if (!(cell.x === this.oldHeroCell.x && cell.y === this.oldHeroCell.y) && this.action === 'hero') {
-            if (hero.canGo(cell)) {
+        if (!(cell.x === this.oldHeroCell.x && cell.y === this.oldHeroCell.y)) {
+            if (this.action === 'hero' && hero.canGo(cell)) {
                 // FIXME: hero will sometimes go to a cell it shouldn't if spammed/timed correctly
                 hero.set(cell);
                 socket.emit('hero', {
@@ -88,7 +88,13 @@ export default {
                     cell: cell
                 });
                 this.checkForEvents(cell);
+            } else {
+                // Released hero (illegal move), tell admin to rerun AI
+                socket.emit('ai');
             }
+        } else {
+            // Released hero (same cell), tell admin to rerun AI
+            socket.emit('ai');
         }
 
         this.action = '';
@@ -274,6 +280,8 @@ export default {
         } else if (item.type === 'article' && item.color === hero.color) {
             // Same color article
             hero.steal();
+
+            // Article is now stolen
             board.get(cell.x, cell.y).setStolen();
         } else if (item.type === 'exit' && hero.hasStolen() && (item.color === hero.color || game.scenario === 1)) {
             // Same color exit or scenario 1 (only has purple exit)
