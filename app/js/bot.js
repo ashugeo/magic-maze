@@ -23,6 +23,10 @@ export default class Bot {
             // Make sure piece is movable
             if (action.piece.status === 'set') {
                 action.piece.set(action.target);
+                socket.emit('hero', {
+                    id: action.piece.id,
+                    cell: action.target
+                });
                 events.checkForEvents(action.target, action.piece);
             }
         }
