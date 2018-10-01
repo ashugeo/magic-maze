@@ -3,6 +3,7 @@ import board from './board';
 import pieces from './pieces';
 import Tile from './tile';
 import game from './game';
+import events from './events';
 import ai from './ai';
 
 export default class Bot {
@@ -22,6 +23,7 @@ export default class Bot {
             // Make sure piece is movable
             if (action.piece.status === 'set' && action.piece.selectable) {
                 action.piece.set(action.target);
+                events.checkForEvents(action.target, action.piece);
             }
         }
     }

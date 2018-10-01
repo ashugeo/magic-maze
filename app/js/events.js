@@ -255,8 +255,7 @@ export default {
         }
     },
 
-    checkForEvents(cell) {
-        const hero = this.hero;
+    checkForEvents(cell, hero = this.hero) {
         const item = board.get(cell.x, cell.y).item;
 
         if (!item) return;
