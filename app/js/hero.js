@@ -1,7 +1,8 @@
 import config from './config';
 import board from './board';
-import pieces from './pieces'
-import game from './game'
+import pieces from './pieces';
+import game from './game';
+import ai from './ai';
 
 export default class Hero {
     constructor(id) {
@@ -11,6 +12,7 @@ export default class Hero {
             x: 0,
             y: 0
         },
+        // TODO: rework piece status ('set', 'selected', .selectable…)
         this.status = '',
         this.path = [];
         this.selectable = true;
@@ -23,7 +25,7 @@ export default class Hero {
     move(force = false) {
         if (force) {
             this.pos = {x: this.target.x, y: this.target.y};
-            game.runBots();
+            ai.run();
         } else {
             let deltaX = this.target.x - this.pos.x;
             let deltaY = this.target.y - this.pos.y;

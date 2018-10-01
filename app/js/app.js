@@ -8,6 +8,7 @@ import pieces from './pieces';
 import events from './events';
 import clock from './clock';
 import game from './game';
+import ai from './ai';
 
 window.tiles = [];
 window.json = [];
@@ -33,8 +34,7 @@ function start(options) {
     events.init();
     pieces.init();
     clock.init();
-    game.runBots();
-
+    if (game.admin) ai.run();
 }
 
 const $ui = document.getElementById('ui');
@@ -76,7 +76,7 @@ socket.on('role', roles => {
     for (let i in roles) {
         i = parseInt(i);
         $ui.innerHTML += roles[i];
-        if (roles[i+1]) $ui.innerHTML += ', ';
+        if (roles[i + 1]) $ui.innerHTML += ', ';
     }
     $ui.innerHTML += '.'
 });

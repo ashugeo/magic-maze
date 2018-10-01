@@ -19,7 +19,7 @@ export default {
         }
     },
 
-    getPieceByColor(color) {
+    findPieceByColor(color) {
         for (let piece of this.all) {
             if (piece.color === color) return piece;
         }
@@ -36,8 +36,8 @@ export default {
                 piece.selectable = false;
                 piece.move();
             } else if (!piece.selectable) {
-                piece.move(true);
                 piece.selectable = true;
+                piece.move(true);
             }
 
             // Display path

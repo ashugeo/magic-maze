@@ -1,37 +1,17 @@
 import config from './config';
-import pieces from './pieces';
-import board from './board';
-import Bot from './bot'
+import ai from './ai';
 
 export default {
 
     scenario: 0,
-    bots: [],
+    admin: false,
 
     init(options) {
         this.scenario = 1;
-        for (let i = 0; i < options.bots; i += 1) {
-            this.bots.push(new Bot(i, options.botsRoles[i]));
-        }
-    },
 
-    runBots() {
-        setTimeout(() => {
-            for (let bot of this.bots) {
-                bot.solve();
-            }
-        }, config.botsInterval);
-    },
-
-    checkForWin() {
-        for (let piece of pieces.all) {
-            // Has every hero stolen their article?
-            if (!piece.hasStolen()) return false;
-
-            // Is every hero out?
-            if (!piece.hasExited()) return false;
-
-            return true;
+        if (options) {
+            this.admin = true;
+            ai.init(options);
         }
     }
 }

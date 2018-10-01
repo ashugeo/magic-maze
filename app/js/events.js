@@ -6,6 +6,7 @@ import pieces from './pieces'
 import Hero from './hero';
 import clock from './clock';
 import game from './game';
+import ai from './ai';
 
 export default {
 
@@ -25,6 +26,8 @@ export default {
                 this.rotateTile(1);
             } else if (e.which === 27) { // Esc: cancel current action
                 this.cancel();
+            } else if (e.which === 66) { // B: run bots
+                ai.run();
             }
         });
 
@@ -159,10 +162,10 @@ export default {
             });
 
             // Mark cell as explored
-            this.bridgeCell.setExplored(true);
+            this.bridgeCell.setExplored();
 
-            // Run bots
-            game.runBots();
+            // Run AI
+            ai.run();
         }
     },
 
@@ -221,6 +224,7 @@ export default {
     checkForHero(cell) {
         for (let piece of pieces.all) {
             if (piece.cell.x === cell.x && piece.cell.y === cell.y) {
+                // TODO: make sure a piece can't be set underneath a selected piece that couldn't go elsewhere (and check purple exit end)
                 if (!piece.selectable) return false;
                 return piece;
             }

@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 11);
+/******/ 	return __webpack_require__(__webpack_require__.s = 12);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -103,8 +103,8 @@
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__cell__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__cell__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile__ = __webpack_require__(5);
 
 
 
@@ -131,6 +131,10 @@
 
     save(x, y, data) {
         this.layout[x][y].save(data);
+    },
+
+    setUsed(x, y) {
+        this.layout[x][y].setUsed();
     }
 });
 
@@ -142,8 +146,8 @@
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__hero__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__camera__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__hero__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__camera__ = __webpack_require__(6);
 
 
 
@@ -165,7 +169,7 @@
         }
     },
 
-    getPieceByColor(color) {
+    findPieceByColor(color) {
         for (let piece of this.all) {
             if (piece.color === color) return piece;
         }
@@ -182,8 +186,8 @@
                 piece.selectable = false;
                 piece.move();
             } else if (!piece.selectable) {
-                piece.move(true);
                 piece.selectable = true;
+                piece.move(true);
             }
 
             // Display path
@@ -279,9 +283,448 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ai__ = __webpack_require__(4);
+
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+
+    scenario: 0,
+    admin: false,
+
+    init(options) {
+        this.scenario = 1;
+
+        if (options) {
+            this.admin = true;
+            __WEBPACK_IMPORTED_MODULE_1__ai__["a" /* default */].init(options);
+        }
+    }
+});
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__pieces__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__game__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__bot__ = __webpack_require__(16);
+
+
+
+
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+    canSolve: true,
+    pausedRun: false,
+    bots: [],
+
+    init(options) {
+        for (let i = 0; i < options.bots; i += 1) {
+            this.bots.push(new __WEBPACK_IMPORTED_MODULE_4__bot__["a" /* default */](i, options.botsRoles[i]));
+        }
+    },
+
+    run() {
+        // Only the admin runs the bots
+        if (!__WEBPACK_IMPORTED_MODULE_3__game__["a" /* default */].admin) return;
+
+        // Prevent more than one call per second (let the bots time to think!)
+        if (this.canSolve) {
+            this.canSolve = false;
+            this.solve();
+            setTimeout(() => {
+                this.canSolve = true;
+                if (this.pausedRun) {
+                    this.pausedRun = false;
+                    this.run();
+                }
+            }, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].botsInterval)
+        } else {
+            this.pausedRun = true;
+        }
+    },
+
+    solve() {
+        console.log('Solving at', new Date().getSeconds());
+        let actions = [];
+
+        // Check for possible explorations
+        for (let piece of __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].all) {
+            const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(piece.cell.x, piece.cell.y);
+            const item = cell.item;
+
+            // If hero sits on an unexplored bridge with same color
+            if (
+                cell.item &&
+                item.type === 'bridge' &&
+                item.color === piece.color &&
+                !cell.isExplored()
+            ) {
+                // Place new tile
+                actions.push({
+                    role: 'explore',
+                    cell: {
+                        x: piece.cell.x,
+                        y: piece.cell.y
+                    }
+                });
+            }
+        }
+
+        // Find objectives
+        const objectives = this.findObjectives();
+
+        for (let objective of objectives) {
+            // Find piece for each objective
+            const piece = __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].findPieceByColor(objective.item.color);
+
+            // Find path
+            const path = this.findPath(objective.coord, piece);
+            if (!path) continue;
+
+            // Find target
+            const move = this.findMove(path);
+
+            actions.push({type: 'move', role: move.role, target: move.target, piece: piece});
+        }
+
+        this.playRandomAction(actions);
+    },
+
+    findObjectives() {
+        let objectives = [];
+        for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardCols; j += 1) {
+            for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardRows; i += 1) {
+                const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(i, j);
+                const item = cell.item;
+
+                // Ignore empty cells
+                if (cell.isEmpty()) continue;
+
+                // Find unexplored bridges
+                if (item.type === 'bridge' && !cell.isExplored()) {
+                    objectives.push(cell);
+                }
+
+                // Find articles to steal
+                if (item.type === 'article' && !cell.isStolen()) {
+                    objectives.push(cell);
+                }
+
+                // Find exits (if hero has stolen article)
+                if (item.type === 'exit') {
+                    for (let piece of __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].all) {
+                        if (piece.hasStolen()) objectives.push(cell);
+                    }
+                }
+            }
+        }
+
+        return objectives;
+    },
+
+    /**
+    * Pathfinder function
+    * @param  {Object} target {x: y:}
+    * @param  {Object} piece  {x: y:}
+    * @return {Object/bool}   path (or false if none)
+    */
+    findPath(objective, piece) {
+        // FIXME: illegal diagonal moves (because of multiple targets for one piece)
+        // FIXME: bots play before they should when there are more than one :'(
+
+        const start = piece.cell;
+        let end;
+
+        // Cells to be evaluated
+        let open = this.getNeighbors(start, piece.color);
+
+        // Cells already evaluated
+        let closed = [start];
+
+        // Compute cost of each neighbor
+        for (let neighbor of open) {
+            neighbor.parent = start;
+            neighbor.cost = this.getCost(neighbor, start, objective);
+        }
+
+        while (open.length > 0) {
+            // Find cell with lowest cost
+            let current = open.reduce((min, o) => o.cost < min.cost ? o : min, open[0]);
+
+            // Remove current from open, add to closed
+            open = open.filter(n => { return !(n.x === current.x && n.y === current.y); });
+            closed.push(current);
+
+            // If current is the objective, path has been found
+            if (current.x === objective.x && current.y === objective.y) {
+                end = current;
+                break;
+            }
+
+            let neighbors = this.getNeighbors(current, piece.color);
+            for (let neighbor of neighbors) {
+                // Make sure neighbor has not already been evaluated
+                if (this.isInArray(neighbor, closed)) continue;
+
+                // Compute new cost
+                let newCost = this.getCost(neighbor, start, objective);
+
+                // If new cost is lower, or neighbor hasn't been evaluated
+                if (newCost < neighbor.cost || !this.isInArray(neighbor, open)) {
+                    neighbor.cost = newCost;
+                    neighbor.parent = current;
+                    if (!this.isInArray(neighbor, open)) {
+                        open.push(neighbor);
+                    }
+                }
+            }
+        }
+
+        // No path found
+        if (!end) return false;
+
+        // Find parent for each cell in path
+        let path = [];
+        path.push(end);
+        while (end.parent) {
+            path.push(end.parent);
+            end = end.parent;
+        }
+
+        // Revert path
+        path = path.reverse();
+
+        return path;
+    },
+
+    /**
+    * Find furthest cell on a path in one move, and corresponding role
+    * @param  {Object} path  path to objective
+    * @return {Object}       {target, role: 'up'|'down'|'left'|'right'|'vortex'|'escalator'}
+    */
+    findMove(path) {
+        let target;
+        let role;
+
+        for (let i = 0; i < path.length - 1; i += 1) {
+            const current = path[i];
+            const next = path[i + 1];
+            let _role;
+
+            if (current.x !== next.x && current.y !== next.y) {
+                const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(current.x, current.y);
+                if (cell.escalator) {
+                    _role = 'escalator';
+                } else if (cell.item.type === 'vortex') {
+                    _role = 'vortex';
+                }
+            } else {
+                if (next.y > current.y) {
+                    _role = 'down';
+                } else if (next.y < current.y) {
+                    _role = 'up';
+                }
+
+                if (next.x > current.x) {
+                    _role = 'right';
+                } else if (next.x < current.x) {
+                    _role = 'left';
+                }
+            }
+
+            if (role && _role !== role)  {
+                target = current;
+                break;
+            } else if (i === path.length - 2) {
+                role = _role;
+                target = next;
+                break;
+            }
+
+            role = _role;
+        }
+
+        return {target: target, role: role};
+    },
+
+    /**
+    * Checks if cell is in array
+    * @param  {Object}  cell  {x: y:}
+    * @param  {array}   array array to check in
+    * @return {bool}
+    */
+    isInArray(cell, array) {
+        return array.some(a => { return (a.x === cell.x && a.y === cell.y)});
+    },
+
+    /**
+    * Find accessible neighbors (no walls blocking the way)
+    * @param  {Object} origin {x: y:}
+    * @param  {Object} color  color of piece
+    * @return {array}         neighbors
+    */
+    getNeighbors(origin, color) {
+        let neighbors = [];
+        origin = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(origin.x, origin.y);
+
+        if (origin.escalator) {
+            neighbors.push({
+                x: origin.escalator.x,
+                y: origin.escalator.y,
+                escalator: origin.escalator
+            });
+        }
+
+        // Enable vortex
+        if (origin.item && origin.item.type === 'vortex' && origin.item.color === color) {
+            // Search whole board for vortexes
+            for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardCols; j += 1) {
+                for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardRows; i += 1) {
+                    const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(i, j);
+                    if (cell.isEmpty()) continue;
+
+                    if (cell.item &&
+                        cell.item.type === 'vortex' &&
+                        cell.item.color === color &&
+                        !(cell.coord.x === origin.coord.x && cell.coord.y === origin.coord.y)
+                    ) {
+                        neighbors.push({
+                            x: cell.coord.x,
+                            y: cell.coord.y,
+                            item: {
+                                type: 'vortex',
+                                color: color
+                            }
+                        });
+                    }
+                }
+            }
+        }
+
+        for (let i = 0; i < 4; i += 1) {
+            // 0: up
+            // 1: right
+            // 2: bottom
+            // 3: left
+            const neighbor = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(
+                origin.coord.x + [0, 1, 0, -1][i],
+                origin.coord.y + [-1, 0, 1, 0][i]
+            );
+
+            let canGo = true;
+
+            // Make sure neighbor isn't empty
+            if (neighbor.isEmpty()) canGo = false;
+
+            // Make sure neighbor doesn't hold another piece
+            // TODO: move a piece that's blocking another (good luck for this one)
+            for (let piece of __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].all) {
+                if (piece.cell.x === neighbor.coord.x && piece.cell.y === neighbor.coord.y) {
+                    canGo = false;
+                }
+            }
+
+            if (!canGo) continue;
+
+            // Make sure no wall is blocking the way
+            if (
+                (i === 0 &&
+                    (!origin.walls.top && !neighbor.walls.bottom) ||
+                    (origin.walls.top === 'orange' && neighbor.walls.bottom === 'orange' && color === 'orange')
+                ) ||
+                (i === 1 &&
+                    (!origin.walls.right && !neighbor.walls.left) ||
+                    (origin.walls.right === 'orange' && neighbor.walls.left === 'orange' && color === 'orange')
+                ) ||
+                (i === 2 &&
+                    (!origin.walls.bottom && !neighbor.walls.top) ||
+                    (origin.walls.bottom === 'orange' && neighbor.walls.top === 'orange' && color === 'orange')
+                ) ||
+                (i === 3 &&
+                    (!origin.walls.left && !neighbor.walls.right) ||
+                    (origin.walls.left === 'orange' && neighbor.walls.right === 'orange' && color === 'orange')
+                )
+            ) {
+                neighbors.push({x: neighbor.coord.x, y: neighbor.coord.y});
+            }
+        }
+
+        return neighbors;
+    },
+
+    /**
+    * Compute cost for a cell
+    * @param  {Object} cell   {x: y:}
+    * @param  {Object} piece  {x: y:}
+    * @param  {Object} target {x: y:}
+    * @return {int}           cost
+    */
+    getCost(cell, piece, target) {
+        // Distance between this cell and starting cell
+        let distStart = Math.abs(piece.x - cell.x) + Math.abs(piece.y - cell.y);
+
+        // Distance between this cell and target
+        let distTarget = Math.abs(target.x - cell.x) + Math.abs(target.y - cell.y);
+
+        return distStart + distTarget;
+    },
+
+    checkForWin() {
+        for (let piece of __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].all) {
+            // Has every hero stolen their article?
+            if (!piece.hasStolen()) return false;
+
+            // Is every hero out?
+            if (!piece.hasExited()) return false;
+
+            return true;
+        }
+    },
+
+    playRandomAction(actions) {
+        if (actions.length === 0) return;
+        const id = Math.floor(Math.random() * actions.length);
+        const action = actions[id];
+
+        // console.log(action);
+
+        // Run bot with corresponding role
+        for (let bot of this.bots) {
+            if (bot.roles.indexOf(action.role) > -1) {
+                bot.play(action);
+                return;
+            } else {
+                // TODO: turn this into a feature elsewhere (player tips) or remove it
+                if (action.piece) {
+                    // console.log(action.role, action.piece.color, 'not allowed');
+                } else {
+                    // console.log(action.role, 'not allowed');
+                }
+                // Remove action from possible actions and rerun
+                actions.splice(id, 1);
+                this.playRandomAction(actions);
+            }
+        }
+    }
+});
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__symbols__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__symbols__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__pieces__ = __webpack_require__(2);
 
 
@@ -723,55 +1166,7 @@ class Tile {
 
 
 /***/ }),
-/* 4 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__pieces__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__bot__ = __webpack_require__(15);
-
-
-
-
-
-/* harmony default export */ __webpack_exports__["a"] = ({
-
-    scenario: 0,
-    bots: [],
-
-    init(options) {
-        this.scenario = 1;
-        for (let i = 0; i < options.bots; i += 1) {
-            this.bots.push(new __WEBPACK_IMPORTED_MODULE_3__bot__["a" /* default */](i, options.botsRoles[i]));
-        }
-    },
-
-    runBots() {
-        setTimeout(() => {
-            for (let bot of this.bots) {
-                bot.solve();
-            }
-        }, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].botsInterval);
-    },
-
-    checkForWin() {
-        for (let piece of __WEBPACK_IMPORTED_MODULE_1__pieces__["a" /* default */].all) {
-            // Has every hero stolen their article?
-            if (!piece.hasStolen()) return false;
-
-            // Is every hero out?
-            if (!piece.hasExited()) return false;
-
-            return true;
-        }
-    }
-});
-
-
-/***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -856,14 +1251,16 @@ class Tile {
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__pieces__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__game__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__game__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__ai__ = __webpack_require__(4);
+
 
 
 
@@ -877,6 +1274,7 @@ class Hero {
             x: 0,
             y: 0
         },
+        // TODO: rework piece status ('set', 'selected', .selectable…)
         this.status = '',
         this.path = [];
         this.selectable = true;
@@ -889,7 +1287,7 @@ class Hero {
     move(force = false) {
         if (force) {
             this.pos = {x: this.target.x, y: this.target.y};
-            __WEBPACK_IMPORTED_MODULE_3__game__["a" /* default */].runBots();
+            __WEBPACK_IMPORTED_MODULE_4__ai__["a" /* default */].run();
         } else {
             let deltaX = this.target.x - this.pos.x;
             let deltaY = this.target.y - this.pos.y;
@@ -1129,7 +1527,7 @@ class Hero {
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {var require;var require;/*! p5.js v0.5.16 October 11, 2017 */
@@ -72538,10 +72936,10 @@ module.exports = p5;
 
 },{"../core/core":55,"./p5.Geometry":102}]},{},[46])(46)
 });
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(13)))
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -72611,18 +73009,20 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__pieces__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__clock__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__game__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__clock__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__game__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__ai__ = __webpack_require__(4);
+
 
 
 
@@ -72650,6 +73050,8 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
                 this.rotateTile(1);
             } else if (e.which === 27) { // Esc: cancel current action
                 this.cancel();
+            } else if (e.which === 66) { // B: run bots
+                __WEBPACK_IMPORTED_MODULE_8__ai__["a" /* default */].run();
             }
         });
 
@@ -72784,10 +73186,10 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
             });
 
             // Mark cell as explored
-            this.bridgeCell.setExplored(true);
+            this.bridgeCell.setExplored();
 
-            // Run bots
-            __WEBPACK_IMPORTED_MODULE_7__game__["a" /* default */].runBots();
+            // Run AI
+            __WEBPACK_IMPORTED_MODULE_8__ai__["a" /* default */].run();
         }
     },
 
@@ -72846,6 +73248,7 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
     checkForHero(cell) {
         for (let piece of __WEBPACK_IMPORTED_MODULE_4__pieces__["a" /* default */].all) {
             if (piece.cell.x === cell.x && piece.cell.y === cell.y) {
+                // TODO: make sure a piece can't be set underneath a selected piece that couldn't go elsewhere (and check purple exit end)
                 if (!piece.selectable) return false;
                 return piece;
             }
@@ -72910,7 +73313,7 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -72969,22 +73372,24 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__sketch__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__sketch__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__tile__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__tile__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__hero__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pieces__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__events__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__clock__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__game__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__events__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__clock__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__game__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__ai__ = __webpack_require__(4);
+
 
 
 
@@ -73020,8 +73425,7 @@ function start(options) {
     __WEBPACK_IMPORTED_MODULE_7__events__["a" /* default */].init();
     __WEBPACK_IMPORTED_MODULE_6__pieces__["a" /* default */].init();
     __WEBPACK_IMPORTED_MODULE_8__clock__["a" /* default */].init();
-    __WEBPACK_IMPORTED_MODULE_9__game__["a" /* default */].runBots();
-
+    if (__WEBPACK_IMPORTED_MODULE_9__game__["a" /* default */].admin) __WEBPACK_IMPORTED_MODULE_10__ai__["a" /* default */].run();
 }
 
 const $ui = document.getElementById('ui');
@@ -73063,7 +73467,7 @@ socket.on('role', roles => {
     for (let i in roles) {
         i = parseInt(i);
         $ui.innerHTML += roles[i];
-        if (roles[i+1]) $ui.innerHTML += ', ';
+        if (roles[i + 1]) $ui.innerHTML += ', ';
     }
     $ui.innerHTML += '.'
 });
@@ -73095,7 +73499,7 @@ socket.on('used', data => {
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports) {
 
 var g;
@@ -73122,17 +73526,17 @@ module.exports = g;
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__symbols__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__events__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__symbols__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__events__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__pieces__ = __webpack_require__(2);
 
 
@@ -73210,7 +73614,7 @@ function displayTiles() {
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -73234,13 +73638,17 @@ class Cell {
         this.item = data.item ? data.item : false;
         this.escalator = data.escalator ? data.escalator : false;
 
-        // If bridge goes into set tile, is can be considered as explored
+        // If bridge goes into set tile, it can be considered as explored
         if (data.item && data.item.type === 'bridge') {
-            let _x = [-1, 0, 0, 1][data.tileCell.x];
-            let _y = [0, 1, -1, 0][data.tileCell.x];
-
-            let cell = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].get(this.coord.x + _x, this.coord.y + _y);
+            const _x = [-1, 0, 0, 1][data.tileCell.x];
+            const _y = [0, 1, -1, 0][data.tileCell.x];
+            const cell = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].get(this.coord.x + _x, this.coord.y + _y);
             if (!cell.isEmpty()) this.setExplored();
+
+            // Bridge goes into unexplored bridge, set it as explored as well
+            if (cell.item && cell.item.type === 'bridge') {
+                cell.setExplored();
+            }
         }
     }
 
@@ -73277,15 +73685,17 @@ class Cell {
 
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__pieces__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__game__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__game__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__ai__ = __webpack_require__(4);
+
 
 
 
@@ -73294,360 +73704,23 @@ class Cell {
 
 class Bot {
     constructor(id, roles) {
-        console.log(roles);
         this.id = id;
         this.roles = roles;
-        this.actions = [];
-        this.canAct = true;
-    }
-
-    solve() {
-        console.clear();
-        console.log('solve');
-        // Check for possible explorations
-        for (let piece of __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].all) {
-            const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(piece.cell.x, piece.cell.y);
-            const item = cell.item;
-
-            // If hero can explore
-            if (this.roles.indexOf('explore') > -1) {
-                // If hero sits on an unexplored bridge with same color
-                if (cell.item && item.type === 'bridge' && item.color === piece.color && !cell.isExplored()) {
-                    // Place new tile
-                    this.actions.push({
-                        type: 'tile',
-                        cell: {
-                            x: piece.cell.x,
-                            y: piece.cell.y
-                        }
-                    });
-                }
-            }
-        }
-
-        // TODO: prioritize closest target for each piece
-        // TODO: blocked bridges (goes into wall) are not targets
-        // TODO: unexplored bridges with a tile ahead should count as explored
-        // TODO: move a piece that's blocking another (good luck for this one)
-
-        // Find targets
-        let targets = [];
-        for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardCols; j += 1) {
-            for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardRows; i += 1) {
-                const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(i, j);
-                const item = cell.item;
-
-                // Ignore empty cells
-                if (cell.isEmpty()) continue;
-
-                // Find unexplored bridges
-                if (item.type === 'bridge' && !cell.isExplored()) {
-                    targets.push(cell);
-                }
-
-                // Find articles to steal
-                if (item.type === 'article' && !cell.isStolen()) {
-                    targets.push(cell);
-                }
-
-                // Find exits (if hero has stolen article)
-                if (item.type === 'exit') {
-                    for (let piece of __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].all) {
-                        if (piece.hasStolen()) targets.push(cell);
-                    }
-                }
-            }
-        }
-
-        console.log('targets:', targets);
-
-        for (let target of targets) {
-            // Find piece for each target
-            const piece = __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].getPieceByColor(target.item.color);
-
-            console.log('piece.color:', piece.color);
-
-            // Find path
-            const path = this.findPath(target.coord, piece);
-            if (path) this.processPath(piece, path);
-        }
-
-
-        // console.log(JSON.stringify(this.actions, null, 4));
-        this.act();
-    }
-
-    act() {
-        console.log('act', new Date().getSeconds());
-        if (this.actions.length > 0) {
-            if (!this.canAct) return;
-            this.canAct = false;
-            const action = this.actions[0];
-
-            if (action.type === 'tile') {
-                this.newTile(action.cell.x, action.cell.y);
-                this.actions.shift();
-            } else if (action.type === 'move') {
-                if (action.piece.status === 'set' && action.piece.selectable) {
-                    action.piece.set(action.target);
-                    this.actions.shift();
-                }
-            }
-
-            setTimeout(() => {
-                this.canAct = true;
-                this.act();
-            }, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].botsInterval);
-        }
     }
 
     /**
-    * Pathfinder function
-    * @param  {Object} target {x: y:}
-    * @param  {Object} piece  {x: y:}
-    * @return {Object/bool}   path (or false if none)
+    * Execute an action
+    * @param  {Object} action Action to execute
     */
-    findPath(target, piece) {
-        console.log('findPath');
-        // FIXME: illegal diagonal moves
-        // FIXME: bots before they should when there are more than one :'(
-
-        const start = piece.cell;
-        let end;
-
-        console.log('start:', start);
-
-        // Set of nodes to be evaluated
-        let open = this.getNeighbors(start, piece.color);
-
-        // Set of nodes already evaluated
-        let closed = [start];
-
-        // Compute cost of each neighbor
-        for (let neighbor of open) {
-            neighbor.parent = start;
-            neighbor.cost = this.getCost(neighbor, start, target);
-        }
-
-        while (open.length > 0) {
-            // Find cell with lowest cost
-            let current = open.reduce((min, o) => o.cost < min.cost ? o : min, open[0]);
-
-            // Remove current from open, add to closed
-            open = open.filter(n => { return !(n.x === current.x && n.y === current.y); });
-            closed.push(current);
-
-            // If current is the target, path has been found
-            if (current.x === target.x && current.y === target.y) {
-                end = current;
-                break;
-            }
-
-            let neighbors = this.getNeighbors(current, piece.color);
-            for (let neighbor of neighbors) {
-                // Make sure neighbor has not already been evaluated
-                if (this.isInArray(neighbor, closed)) continue;
-
-                // Compute new cost
-                let newCost = this.getCost(neighbor, start, target);
-
-                // If new cost is lower, or neighbor hasn't been evaluated
-                if (newCost < neighbor.cost || !this.isInArray(neighbor, open)) {
-                    neighbor.cost = newCost;
-                    neighbor.parent = current;
-                    if (!this.isInArray(neighbor, open)) {
-                        open.push(neighbor);
-                    }
-                }
+    play(action) {
+        if (action.role === 'explore') {
+            this.newTile(action.cell.x, action.cell.y);
+        } else if (action.type === 'move') {
+            // Make sure piece is movable
+            if (action.piece.status === 'set' && action.piece.selectable) {
+                action.piece.set(action.target);
             }
         }
-
-        // No path found
-        if (!end) return false;
-
-        // Find parent for each cell in path
-        let path = [];
-        path.push(end);
-        while (end.parent) {
-            path.push(end.parent)
-            end = end.parent;
-        }
-
-        // Revert path
-        path = path.reverse();
-
-        console.log(path);
-        return path;
-    }
-
-    /**
-    * Move given piece to the furthest cell on a path depending on roles
-    * @param  {Object} piece piece to move
-    * @param  {Object} path  path to target
-    */
-    processPath(piece, path) {
-        let target;
-        let direction;
-
-        for (let i = 0; i < path.length - 1; i += 1) {
-            const current = path[i];
-            const next = path[i + 1];
-            let _dir;
-
-            if (current.x !== next.x && current.y !== next.y) {
-                // Vortex or escalator
-            } else {
-                if (next.y > current.y) {
-                    _dir = 'down';
-                } else if (next.y < current.y) {
-                    _dir = 'up';
-                }
-
-                if (next.x > current.x) {
-                    _dir = 'right';
-                } else if (next.x < current.x) {
-                    _dir = 'left';
-                }
-            }
-
-
-            if (direction && _dir !== direction)  {
-                target = current;
-                break;
-            } else if (i === path.length - 2) {
-                direction = _dir;
-                target = next;
-                break;
-            }
-
-            direction = _dir;
-        }
-
-        if (this.roles.indexOf(direction) > -1) {
-            this.actions.push({
-                type: 'move',
-                piece: piece,
-                target: target
-            });
-        }
-    }
-
-    /**
-    * Checks if cell is in array
-    * @param  {Object}  cell  {x: y:}
-    * @param  {array}   array array to check in
-    * @return {bool}
-    */
-    isInArray(cell, array) {
-        return array.some(a => { return (a.x === cell.x && a.y === cell.y)});
-    }
-
-    /**
-    * Find accessible neighbors (no walls blocking the way)
-    * @param  {Object} origin {x: y:}
-    * @param  {Object} color  color of piece
-    * @return {array}         neighbors
-    */
-    getNeighbors(origin, color) {
-        console.log('getNeighbors');
-        let neighbors = [];
-        origin = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(origin.x, origin.y);
-
-        if (origin.escalator) {
-            neighbors.push({x: origin.escalator.x, y: origin.escalator.y, escalator: origin.escalator});
-        }
-
-        // console.log('origin:', origin);
-
-        if (origin.item && origin.item.type === 'vortex') {
-            for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardCols; j += 1) {
-                for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].boardRows; i += 1) {
-                    const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(i, j);
-                    if (cell.isEmpty()) continue;
-                    if (cell.item &&
-                        cell.item.type === 'vortex' &&
-                        cell.item.color === color &&
-                        !(cell.coord.x === origin.coord.x && cell.coord.y === origin.coord.y)
-                    ) {
-                        neighbors.push({
-                            x: cell.coord.x,
-                            y: cell.coord.y,
-                            item: {
-                                type: 'vortex',
-                                color: color
-                            }
-                        });
-                    }
-                }
-            }
-        }
-
-        // TODO: enable elevators
-
-        for (let i = 0; i < 4; i += 1) {
-            // 0: up
-            // 1: right
-            // 2: bottom
-            // 3: left
-            const neighbor = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(
-                origin.coord.x + [0, 1, 0, -1][i],
-                origin.coord.y + [-1, 0, 1, 0][i]
-            );
-
-            let canGo = true;
-
-            // Make sure neighbor isn't empty
-            if (neighbor.isEmpty()) canGo = false;
-
-            // Make sure neighbor doesn't hold another piece
-            for (let piece of __WEBPACK_IMPORTED_MODULE_2__pieces__["a" /* default */].all) {
-                if (piece.cell.x === neighbor.coord.x && piece.cell.y === neighbor.coord.y) {
-                    canGo = false;
-                }
-            }
-
-            if (!canGo) continue;
-
-            // Make sure no wall is blocking the way
-            if (
-                (i === 0 &&
-                    (!origin.walls.top && !neighbor.walls.bottom) ||
-                    (origin.walls.top === 'orange' && neighbor.walls.bottom === 'orange')
-                ) ||
-                (i === 1 &&
-                    (!origin.walls.right && !neighbor.walls.left) ||
-                    (origin.walls.right === 'orange' && neighbor.walls.left === 'orange')
-                ) ||
-                (i === 2 &&
-                    (!origin.walls.bottom && !neighbor.walls.top) ||
-                    (origin.walls.bottom === 'orange' && neighbor.walls.top === 'orange')
-                ) ||
-                (i === 3 &&
-                    (!origin.walls.left && !neighbor.walls.right) ||
-                    (origin.walls.left === 'orange' && neighbor.walls.right === 'orange')
-                )
-            ) {
-                neighbors.push({x: neighbor.coord.x, y: neighbor.coord.y});
-            }
-        }
-        return neighbors;
-    }
-
-    /**
-    * Compute cost for a cell
-    * @param  {Object} cell   {x: y:}
-    * @param  {Object} piece  {x: y:}
-    * @param  {Object} target {x: y:}
-    * @return {int}           cost
-    */
-    getCost(cell, piece, target) {
-        // Distance between this cell and starting cell
-        let distStart = Math.abs(piece.x - cell.x) + Math.abs(piece.y - cell.y);
-
-        // Distance between this cell and target cell
-        let distTarget = Math.abs(target.x - cell.x) + Math.abs(target.y - cell.y);
-
-        return distStart + distTarget;
     }
 
     /**
@@ -73670,7 +73743,6 @@ class Bot {
             return;
         }
 
-
         // Compute new orientation relative to bridge X coordinate
         let o = tile.getOrientation();
         let _o = [1, 0, 2, 3][cell.tileCell.x];
@@ -73691,8 +73763,8 @@ class Bot {
         // Mark bridge as explored
         cell.setExplored(x, y);
 
-        // Run again
-        // game.runBots();
+        // Run AI again
+        __WEBPACK_IMPORTED_MODULE_5__ai__["a" /* default */].run();
     }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Bot;
