@@ -1520,6 +1520,7 @@ class Hero {
     mouseUp() {
         const cell = this.getHoveredCell();
         const hero = this.hero;
+        let checkForEvents = false;
 
         if (!hero) return;
 
@@ -1531,7 +1532,7 @@ class Hero {
                     id: hero.id,
                     cell: cell
                 });
-                this.checkForEvents(cell);
+                checkForEvents = true;
             } else {
                 // Released hero (illegal move), tell admin to rerun AI
                 socket.emit('ai');
@@ -1545,6 +1546,8 @@ class Hero {
         hero.path = [];
         this.toggleHero(hero);
         this.hero = false;
+
+        if (checkForEvents) this.checkForEvents(cell, hero);
     },
 
     oldMouseCell: {},
@@ -1675,7 +1678,7 @@ class Hero {
         for (let hero of __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].all) {
             if (hero.cell.x === cell.x && hero.cell.y === cell.y) {
                 // TODO: make sure a hero can't be set underneath a selected hero that couldn't go elsewhere (and check purple exit end)
-                if (!hero.selectable) return false;
+                if (!hero.selectable || hero.hasExited()) return false;
                 return hero;
             }
         }
@@ -1687,25 +1690,25 @@ class Hero {
     * @param  {Object} hero hero to select
     */
     toggleHero(hero) {
-        for (let hero of __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].all) {
+        for (let h of __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].all) {
             // Prevent selection of multiple heroes
-            if (hero.status === 'selected' && hero.id !== hero.id) return;
+            if (h.status === 'selected' && h.id !== hero.id) return;
         }
 
         // Prevent selection of exited hero
         if (hero.exited) return;
 
-        if (hero.status !== 'selected') {
+        if (hero.status === 'selected') {
+            hero.status = 'set';
+        } else {
             hero.status = 'selected';
             this.action = 'hero';
             this.hero = hero;
             hero.checkPath();
-        } else {
-            hero.status = 'set';
         }
     },
 
-    checkForEvents(cell, hero = this.hero) {
+    checkForEvents(cell, hero) {
         const item = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(cell.x, cell.y).item;
 
         if (!item) return;
