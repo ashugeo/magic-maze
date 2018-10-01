@@ -19,30 +19,30 @@ export default {
         }
     },
 
-    findPieceByColor(color) {
-        for (let piece of this.all) {
-            if (piece.color === color) return piece;
+    findByColor(color) {
+        for (let hero of this.all) {
+            if (hero.color === color) return hero;
         }
     },
 
     display() {
         p5.noStroke();
-        for (let piece of this.all) {
-            // Piece movement animation, only if necessary
-            let deltaX = piece.target.x - piece.pos.x;
-            let deltaY = piece.target.y - piece.pos.y;
+        for (let hero of this.all) {
+            // Hero movement animation, only if necessary
+            let deltaX = hero.target.x - hero.pos.x;
+            let deltaY = hero.target.y - hero.pos.y;
             let delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
             if (delta > 1 / 20) {
-                piece.selectable = false;
-                piece.move();
-            } else if (!piece.selectable) {
-                piece.selectable = true;
-                piece.move(true);
+                hero.selectable = false;
+                hero.move();
+            } else if (!hero.selectable) {
+                hero.selectable = true;
+                hero.move(true);
             }
 
             // Display path
             p5.push();
-            const path = piece.path;
+            const path = hero.path;
             for (let cell of path) {
                 const boardCell = board.get(cell.x, cell.y);
                 const tileCell = boardCell.tileCell;
@@ -103,16 +103,16 @@ export default {
                 p5.pop();
             }
 
-            // Display piece
+            // Display hero
             p5.push();
-            p5.translate(piece.pos.x * config.size, piece.pos.y * config.size);
+            p5.translate(hero.pos.x * config.size, hero.pos.y * config.size);
             // p5.noFill();
-            // p5.stroke(config.colors[piece.color]);
+            // p5.stroke(config.colors[hero.color]);
             // p5.strokeWeight(2);
             // p5.ellipse(config.size / 2, config.size / 2, 18 + Math.cos(p5.frameCount / 10));
-            p5.fill(config.colors[piece.color]);
+            p5.fill(config.colors[hero.color]);
 
-            if (piece.status === 'selected') {
+            if (hero.status === 'selected') {
                 // Hero is selected, show it with a stroke
                 p5.stroke(0, 20);
                 p5.strokeWeight(4);

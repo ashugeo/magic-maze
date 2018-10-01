@@ -1,6 +1,6 @@
 import config from './config';
 import board from './board';
-import pieces from './pieces';
+import heroes from './heroes';
 import game from './game';
 import ai from './ai';
 
@@ -70,35 +70,35 @@ export default class Hero {
     * @return {Object}        Path
     */
     getPath(target) {
-        const piece = this.cell;
+        const hero = this.cell;
         const path = this.path = [];
 
-        if (piece.x === target.x && piece.y === target.y) {
+        if (hero.x === target.x && hero.y === target.y) {
             // Same column and row = same cell
-            path.push({x: piece.x, y: piece.y});
+            path.push({x: hero.x, y: hero.y});
             return path;
         }
 
         // Check for vortex
         if (role.indexOf('vortex') > -1) {
-            const item = board.get(piece.x, piece.y).item;
+            const item = board.get(hero.x, hero.y).item;
             if (item && item.type === 'vortex' && item.color === this.color) {
                 const targetItem = board.get(target.x, target.y).item;
                 if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
-                    path.push({x: piece.x, y: piece.y});
+                    path.push({x: hero.x, y: hero.y});
                     path.push({x: target.x, y: target.y, reachable: true});
                     return path;
                 }
             }
         }
 
-        if (piece.x !== target.x && piece.y !== target.y) {
+        if (hero.x !== target.x && hero.y !== target.y) {
             // Not the same column or row
             // Check for escalator
             if (role.indexOf('escalator') > -1) {
-                const escalator = board.get(piece.x, piece.y).escalator;
+                const escalator = board.get(hero.x, hero.y).escalator;
                 if (escalator && escalator.x === target.x && escalator.y === target.y) {
-                    path.push({x: piece.x, y: piece.y});
+                    path.push({x: hero.x, y: hero.y});
                     path.push({x: target.x, y: target.y, reachable: true});
                     return path;
                 }
@@ -107,23 +107,23 @@ export default class Hero {
             return;
         }
 
-        if (piece.x < target.x) {
-            for (let i = piece.x; i <= target.x; i += 1) {
-                path.push({x: i, y: piece.y})
+        if (hero.x < target.x) {
+            for (let i = hero.x; i <= target.x; i += 1) {
+                path.push({x: i, y: hero.y})
             }
-        } else if (piece.x > target.x) {
-            for (let i = piece.x; i >= target.x; i -= 1) {
-                path.push({x: i, y: piece.y})
+        } else if (hero.x > target.x) {
+            for (let i = hero.x; i >= target.x; i -= 1) {
+                path.push({x: i, y: hero.y})
             }
         }
 
-        if (piece.y < target.y) {
-            for (let i = piece.y; i <= target.y; i += 1) {
-                path.push({x: piece.x, y: i})
+        if (hero.y < target.y) {
+            for (let i = hero.y; i <= target.y; i += 1) {
+                path.push({x: hero.x, y: i})
             }
-        } else if (piece.y > target.y) {
-            for (let i = piece.y; i >= target.y; i -= 1) {
-                path.push({x: piece.x, y: i})
+        } else if (hero.y > target.y) {
+            for (let i = hero.y; i >= target.y; i -= 1) {
+                path.push({x: hero.x, y: i})
             }
         }
         return path;
@@ -157,10 +157,10 @@ export default class Hero {
             // Already marked as reachable (vortex and escalator)
             if (path[i+1] && path[i+1].reachable) {
 
-                // Make sure there is no other piece on target
-                for (let piece of pieces.all) {
-                    if (path[i+1].x === piece.cell.x && path[i+1].y === piece.cell.y) {
-                        // Another piece blocking the way
+                // Make sure there is no other hero on target
+                for (let hero of heroes.all) {
+                    if (path[i+1].x === hero.cell.x && path[i+1].y === hero.cell.y) {
+                        // Another hero blocking the way
                         path[i+1].reachable = false;
                         return;
                     }
@@ -171,9 +171,9 @@ export default class Hero {
             }
 
             if (i > 0) {
-                for (let piece of pieces.all) {
-                    if (path[i].x === piece.cell.x && path[i].y === piece.cell.y) {
-                        // Another piece blocking the way
+                for (let hero of heroes.all) {
+                    if (path[i].x === hero.cell.x && path[i].y === hero.cell.y) {
+                        // Another hero blocking the way
                         path[i].reachable = false;
                         return;
                     }

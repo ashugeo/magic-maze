@@ -1,6 +1,6 @@
 import config from './config';
 import board from './board';
-import pieces from './pieces';
+import heroes from './heroes';
 import game from './game';
 import Bot from './bot';
 
@@ -39,12 +39,12 @@ export default {
         // console.log('Solving at', new Date().getSeconds());
         let actions = [];
 
-        for (let piece of pieces.all) {
-            // Piece has already exited board
-            if (piece.hasExited()) continue;
+        for (let hero of heroes.all) {
+            // Hero has already exited board
+            if (hero.hasExited()) continue;
 
             // Check for possible explorations
-            const cell = board.get(piece.cell.x, piece.cell.y);
+            const cell = board.get(hero.cell.x, hero.cell.y);
             const item = cell.item;
 
             // Prevent two explorations at once
@@ -56,16 +56,16 @@ export default {
             }
 
             // If hero sits on an unexplored bridge with same color
-            if (cell.item && item.type === 'bridge' && item.color === piece.color && !cell.isExplored() && canExplore) {
+            if (cell.item && item.type === 'bridge' && item.color === hero.color && !cell.isExplored() && canExplore) {
                 // Place new tile
                 actions.push({
                     role: 'explore',
                     cell: {
-                        x: piece.cell.x,
-                        y: piece.cell.y
+                        x: hero.cell.x,
+                        y: hero.cell.y
                     },
                     cost: 0,
-                    piece: piece
+                    hero: hero
                 });
             }
         }
@@ -73,23 +73,23 @@ export default {
         // Find objectives
         const objectives = this.findObjectives();
 
-        // Find piece for each objective
+        // Find hero for each objective
         for (let objective of objectives) {
-            let piece;
+            let hero;
             if (objective.item.type === 'exit' && game.scenario === 1) {
                 // All heroes exit through the purple exit
-                for (let hero of pieces.all) {
-                    if (hero.hasStolen()) piece = hero;
+                for (let h of heroes.all) {
+                    if (h.hasStolen()) hero = h;
                 }
             } else {
-                piece = pieces.findPieceByColor(objective.item.color);
+                hero = heroes.findByColor(objective.item.color);
             }
 
-            // Piece has already exited board
-            if (piece.hasExited()) continue;
+            // Hero has already exited board
+            if (hero.hasExited()) continue;
 
             // Find path
-            const path = this.findPath(objective.coord, piece);
+            const path = this.findPath(objective.coord, hero);
             if (!path) continue;
 
             // Find target
@@ -97,13 +97,13 @@ export default {
 
             let canMove = true;
             for (let i in actions) {
-                if (actions[i].piece && actions[i].piece.id === piece.id) {
+                if (actions[i].hero && actions[i].hero.id === hero.id) {
                     // Prevent exploration + move from bridge at once
-                    if (actions[i].role === 'explore' && actions[i].piece.id === piece.id) {
+                    if (actions[i].role === 'explore' && actions[i].hero.id === hero.id) {
                         canMove = false;
                     }
 
-                    // Prioritize lowest cost action for each piece
+                    // Prioritize lowest cost action for each hero
                     if (actions[i].cost <= path.length) {
                         canMove = false;
                     } else {
@@ -113,7 +113,7 @@ export default {
             }
 
             if (canMove) {
-                actions.push({type: 'move', role: move.role, target: move.target, cost: path.length, piece: piece});
+                actions.push({type: 'move', role: move.role, target: move.target, cost: path.length, hero: hero});
             }
         }
 
@@ -128,6 +128,7 @@ export default {
                 const item = cell.item;
 
                 // TODO: add time cells as objectives when remaining time is low
+                // TODO: add priority to cost (time cell priority would increase over time)
 
                 // Ignore empty cells
                 if (cell.isEmpty()) continue;
@@ -144,8 +145,8 @@ export default {
 
                 // Find exits (if hero has stolen article)
                 if (item.type === 'exit') {
-                    for (let piece of pieces.all) {
-                        if (piece.hasStolen()) objectives.push(cell);
+                    for (let hero of heroes.all) {
+                        if (hero.hasStolen()) objectives.push(cell);
                     }
                 }
             }
@@ -157,18 +158,15 @@ export default {
     /**
     * Pathfinder function
     * @param  {Object} target {x: y:}
-    * @param  {Object} piece  {x: y:}
+    * @param  {Object} hero  {x: y:}
     * @return {Object/bool}   path (or false if none)
     */
-    findPath(objective, piece) {
-        // FIXME: illegal diagonal moves (because of multiple targets for one piece)
-        // FIXME: bots play before they should when there are more than one :'(
-
-        const start = piece.cell;
+    findPath(objective, hero) {
+        const start = hero.cell;
         let end;
 
         // Cells to be evaluated
-        let open = this.getNeighbors(start, piece.color);
+        let open = this.getNeighbors(start, hero.color);
 
         // Cells already evaluated
         let closed = [start];
@@ -193,7 +191,7 @@ export default {
                 break;
             }
 
-            let neighbors = this.getNeighbors(current, piece.color);
+            let neighbors = this.getNeighbors(current, hero.color);
             for (let neighbor of neighbors) {
                 // Make sure neighbor has not already been evaluated
                 if (this.isInArray(neighbor, closed)) continue;
@@ -292,7 +290,7 @@ export default {
     /**
     * Find accessible neighbors (no walls blocking the way)
     * @param  {Object} origin {x: y:}
-    * @param  {Object} color  color of piece
+    * @param  {Object} color  color of hero
     * @return {array}         neighbors
     */
     getNeighbors(origin, color) {
@@ -350,10 +348,10 @@ export default {
             // Make sure neighbor isn't empty
             if (neighbor.isEmpty()) canGo = false;
 
-            // Make sure neighbor doesn't hold another piece
-            // TODO: move a piece that's blocking another (good luck for this one)
-            for (let piece of pieces.all) {
-                if (piece.cell.x === neighbor.coord.x && piece.cell.y === neighbor.coord.y) {
+            // Make sure neighbor doesn't hold another hero
+            // TODO: move a hero that's blocking another (good luck for this one)
+            for (let hero of heroes.all) {
+                if (hero.cell.x === neighbor.coord.x && hero.cell.y === neighbor.coord.y) {
                     canGo = false;
                 }
             }
@@ -389,13 +387,13 @@ export default {
     /**
     * Compute cost for a cell
     * @param  {Object} cell   {x: y:}
-    * @param  {Object} piece  {x: y:}
+    * @param  {Object} hero  {x: y:}
     * @param  {Object} target {x: y:}
     * @return {int}           cost
     */
-    getCost(cell, piece, target) {
+    getCost(cell, hero, target) {
         // Distance between this cell and starting cell
-        let distStart = Math.abs(piece.x - cell.x) + Math.abs(piece.y - cell.y);
+        let distStart = Math.abs(hero.x - cell.x) + Math.abs(hero.y - cell.y);
 
         // Distance between this cell and target
         let distTarget = Math.abs(target.x - cell.x) + Math.abs(target.y - cell.y);
@@ -404,12 +402,12 @@ export default {
     },
 
     checkForWin() {
-        for (let piece of pieces.all) {
+        for (let hero of heroes.all) {
             // Has every hero stolen their article?
-            if (!piece.hasStolen()) return false;
+            if (!hero.hasStolen()) return false;
 
             // Is every hero out?
-            if (!piece.hasExited()) return false;
+            if (!hero.hasExited()) return false;
         }
         return true;
     },
@@ -426,8 +424,8 @@ export default {
                 return;
             } else {
                 // TODO: turn this into a feature elsewhere (player tips) or remove it
-                if (action.piece) {
-                    // console.log(action.role, action.piece.color, 'not allowed');
+                if (action.hero) {
+                    // console.log(action.role, action.hero.color, 'not allowed');
                 } else {
                     // console.log(action.role, 'not allowed');
                 }

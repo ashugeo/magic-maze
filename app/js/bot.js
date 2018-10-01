@@ -1,6 +1,6 @@
 import config from './config';
 import board from './board';
-import pieces from './pieces';
+import heroes from './heroes';
 import Tile from './tile';
 import game from './game';
 import events from './events';
@@ -20,14 +20,14 @@ export default class Bot {
         if (action.role === 'explore') {
             this.newTile(action.cell.x, action.cell.y);
         } else if (action.type === 'move') {
-            // Make sure piece is selectable
-            if (action.piece.selectable) {
-                action.piece.set(action.target);
+            // Make sure hero is selectable
+            if (action.hero.selectable) {
+                action.hero.set(action.target);
                 socket.emit('hero', {
-                    id: action.piece.id,
+                    id: action.hero.id,
                     cell: action.target
                 });
-                events.checkForEvents(action.target, action.piece);
+                events.checkForEvents(action.target, action.hero);
             }
         }
     }

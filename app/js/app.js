@@ -4,7 +4,7 @@ import config from './config';
 import board from './board';
 import Tile from './tile';
 import Hero from './hero';
-import pieces from './pieces';
+import heroes from './heroes';
 import events from './events';
 import clock from './clock';
 import game from './game';
@@ -32,7 +32,7 @@ function start(options) {
     game.init(options);
     board.init();
     events.init();
-    pieces.init();
+    heroes.init();
     clock.init();
     if (game.admin) ai.run();
 }
@@ -83,7 +83,7 @@ socket.on('role', roles => {
 });
 
 socket.on('hero', data => {
-    const hero = pieces.all[data.id];
+    const hero = heroes.all[data.id];
     const cell = data.cell;
     hero.set(cell);
 });

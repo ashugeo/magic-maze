@@ -4,7 +4,7 @@ import camera from './camera';
 import board from './board';
 import symbols from './symbols'
 import events from './events'
-import pieces from './pieces'
+import heroes from './heroes'
 // import Tile from './tile'
 
 const sketch = p5 => {
@@ -39,7 +39,7 @@ const sketch = p5 => {
         // Display tiles
         displayTiles();
 
-        pieces.display();
+        heroes.display();
 
         if (config.grid) {
             symbols.grid();

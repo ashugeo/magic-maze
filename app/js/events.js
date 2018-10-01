@@ -2,7 +2,7 @@ import config from './config';
 import board from './board';
 import camera from './camera';
 import Tile from './tile';
-import pieces from './pieces'
+import heroes from './heroes'
 import Hero from './hero';
 import clock from './clock';
 import game from './game';
@@ -183,9 +183,9 @@ export default {
     newTile() {
         let canAddTile = false;
 
-        for (let piece of pieces.all) {
-            const cell = board.get(piece.cell.x, piece.cell.y);
-            if (cell.item && cell.item.type === 'bridge' && cell.item.color === piece.color) {
+        for (let hero of heroes.all) {
+            const cell = board.get(hero.cell.x, hero.cell.y);
+            if (cell.item && cell.item.type === 'bridge' && cell.item.color === hero.color) {
                 this.bridgeCell = cell;
                 if (!cell.isExplored()) {
                     canAddTile = true;
@@ -228,11 +228,11 @@ export default {
     * @return {bool}
     */
     checkForHero(cell) {
-        for (let piece of pieces.all) {
-            if (piece.cell.x === cell.x && piece.cell.y === cell.y) {
-                // TODO: make sure a piece can't be set underneath a selected piece that couldn't go elsewhere (and check purple exit end)
-                if (!piece.selectable) return false;
-                return piece;
+        for (let hero of heroes.all) {
+            if (hero.cell.x === cell.x && hero.cell.y === cell.y) {
+                // TODO: make sure a hero can't be set underneath a selected hero that couldn't go elsewhere (and check purple exit end)
+                if (!hero.selectable) return false;
+                return hero;
             }
         }
         return false;
@@ -243,9 +243,9 @@ export default {
     * @param  {Object} hero hero to select
     */
     toggleHero(hero) {
-        for (let piece of pieces.all) {
-            // Prevent selection of multiple pieces
-            if (piece.status === 'selected' && piece.id !== hero.id) return;
+        for (let hero of heroes.all) {
+            // Prevent selection of multiple heroes
+            if (hero.status === 'selected' && hero.id !== hero.id) return;
         }
 
         // Prevent selection of exited hero
