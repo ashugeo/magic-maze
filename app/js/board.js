@@ -28,5 +28,9 @@ export default {
 
     setUsed(x, y) {
         this.layout[x][y].setUsed();
+    },
+
+    setStolen(x, y) {
+        this.layout[x][y].setStolen();
     }
 }
