@@ -51,7 +51,7 @@ socket.on('admin', () => {
     setTimeout(() => {
         $ui.innerHTML += `<div id="admin">
         <p>Vous êtes administrateur de la partie.</p>
-        <input type="number" id="bots" value="1" min="0" max="7" /> bot(s)
+        <input type="number" id="bots" value="0" min="0" max="7" /> bot(s)
         <button id="start">Commencer la partie !</button>
         </div>`;
 

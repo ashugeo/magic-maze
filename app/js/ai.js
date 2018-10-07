@@ -424,11 +424,12 @@ export default {
                 return;
             } else {
                 // TODO: turn this into a feature elsewhere (player tips) or remove it
-                if (action.hero) {
-                    // console.log(action.role, action.hero.color, 'not allowed');
-                } else {
-                    // console.log(action.role, 'not allowed');
-                }
+                // if (action.hero) {
+                //     console.log(action.role, action.hero.color, 'not allowed');
+                // } else {
+                //     console.log(action.role, 'not allowed');
+                // }
+
                 // Remove action from possible actions and rerun
                 actions.splice(id, 1);
                 this.playRandomAction(actions);

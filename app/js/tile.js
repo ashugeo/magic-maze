@@ -126,14 +126,9 @@ export default class Tile {
     * @return {int} base rotation of tile
     */
     getOrientation() {
-        let i;
-
         // Find X coordinate of enter
-        if (this.findItem('enter')) {
-            i = this.findItem('enter').x;
-        } else {
-            i = 0;
-        }
+        const enter = this.findItem('enter')
+        const i = enter ? enter.x : 0;
 
         // Determine rotation
         let r = [0, 3, 1, 2][i];
@@ -145,10 +140,10 @@ export default class Tile {
 
     /**
     * Get tile bridge coordinates (cell out of tile)
-    * @param  {int}   x mouse X coordinate
-    * @param  {int}   y mouse Y coordinate
-    * @param  {int}   o tile orientation
-    * @return {Object}   {x, y}
+    * @param  {int}    x mouse X coordinate
+    * @param  {int}    y mouse Y coordinate
+    * @param  {int}    o tile orientation
+    * @return {Object}    {x, y}
     */
     getBridge(x, y, o) {
         x += [2, 4, 1, -1][o];
@@ -159,9 +154,9 @@ export default class Tile {
 
     /**
     * Get tile enter coordinates (cell inside tile)
-    * @param  {int}   x mouse X coordinate
-    * @param  {int}   y mouse Y coordinate
-    * @param  {int}   b bridge X coordinate
+    * @param  {int}    x mouse X coordinate
+    * @param  {int}    y mouse Y coordinate
+    * @param  {int}    b bridge X coordinate
     * @return {Object}   {x, y}
     */
     getEnter(x, y, b) {
@@ -173,9 +168,9 @@ export default class Tile {
 
     /**
     * Get tile origin coordinates (top left cell)
-    * @param  {int}   x mouse X coordinate
-    * @param  {int}   y mouse Y coordinate
-    * @param  {int}   b bridge X coordinate
+    * @param  {int}    x mouse X coordinate
+    * @param  {int}    y mouse Y coordinate
+    * @param  {int}    b bridge X coordinate
     * @return {Object}   {x, y}
     */
     getOrigin(x, y, o) {

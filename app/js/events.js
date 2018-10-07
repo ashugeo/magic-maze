@@ -229,6 +229,7 @@ export default {
     * Check if there's a hero in this cell
     * @param  {Object} cell cell to check
     * @return {bool}
+    * @return {Object|bool}
     */
     checkForHero(cell) {
         for (let hero of heroes.all) {
