@@ -1,50 +1,126 @@
-const size = 100;
-const tolerance = 4;
+const config = {
+    size: 100,
+    tolerance: 4,
+    colors: {
+        green: '#57bd6a',
+        orange: '#e87b1a',
+        purple: '#961c91',
+        yellow: '#f7dc0a'
+    }
+}
 
-const tools = ['wall', 'enter', 'bridge', 'vortex']
-let tool = 'wall';
-let color;
+let canvas;
+let tile;
+let tool = 'wall'; // wall, enter, bridge, vortex
+let color = 'green';
+let p1 = false;
+let p2 = false;
 
 function setup() {
-    createCanvas(windowWidth, windowHeight);
+    canvas = createCanvas(500, 500);
     tile = new Tile();
 }
 
 function draw() {
-    background(255);
-    translate(width/2 - size*2, height/2 - size*2);
+    background('255');
+    translate(width / 2 - config.size * 2, height / 2 - config.size * 2);
 
     // Background grid
     grid();
 
     // Display tile
     tile.display();
-
 }
 
 function mousePressed() {
-    const mC = getHoveredCell();
+    const mouseCell = getHoveredCell();
+    if (!mouseCell) return;
+    const cell = tile.layout[mouseCell.x][mouseCell.y];
+    const x = cell.coord.x;
+    const y = cell.coord.y;
 
-    if (mC) {
-        const cell = tile.data[mC.y][mC.x];
+    if (tool === 'wall' || tool === 'wall-orange') {
+        const side = getHoveredSide(mouseCell);
+        if (!side) return;
+        let state = cell.walls[side];
 
-        if (mC.wall) {
-            // Add/remove wall
-            cell[mC.wall] === 1 ? state = 0 : state = 1;
-            cell[mC.wall] = state;
-
-            // Add/remove same wall to neighbour cell
-            if (mC.wall === 'topWall' && tile.data[mC.y-1]) {
-                tile.data[mC.y-1][mC.x].bottomWall = state;
-            } else if (mC.wall === 'rightWall' && tile.data[mC.y][mC.x+1]) {
-                tile.data[mC.y][mC.x+1].leftWall = state;
-            } else if (mC.wall === 'bottomWall' && tile.data[mC.y+1]) {
-                tile.data[mC.y+1][mC.x].topWall = state;
-            } else if (mC.wall === 'leftWall' && tile.data[mC.y][mC.x-1]) {
-                tile.data[mC.y][mC.x-1].rightWall = state;
+        if (tool === 'wall-orange') {
+            if (state === true || state === false) {
+                state = 'orange';
+            } else if (state === 'orange') {
+                state = false;
             }
-        } else if (mC.item) {
-            cell.item = mC.item;
+        } else {
+            if (state === 'orange') {
+                state = true
+            } else {
+                state = !state;
+            }
+        }
+
+        // Add/remove wall
+        cell.walls[side] = state;
+
+
+        // Add/remove same wall to neighbour cell
+        if (side === 'top' && tile.layout[x][y - 1]) {
+            tile.layout[x][y - 1].walls.bottom = state;
+        } else if (side === 'right' && tile.layout[x + 1]) {
+            tile.layout[x + 1][y].walls.left = state;
+        } else if (side === 'bottom' && tile.layout[x][y + 1]) {
+            tile.layout[x][y + 1].walls.top = state;
+        } else if (side === 'left' && tile.layout[x - 1]) {
+            tile.layout[x - 1][y].walls.right = state;
+        }
+    } else if (tool === 'escalator') {
+        if (!p1) {
+            p1 = {x: x, y: y};
+        } else if (!p2) {
+            p2 = {x: x, y: y};
+
+            tile.layout[p1.x][p1.y].escalator = {x: p2.x, y: p2.y};
+            tile.layout[p2.x][p2.y].escalator = {x: p1.x, y: p1.y};
+        } else {
+            tile.layout[p1.x][p1.y].escalator = false;
+            tile.layout[p2.x][p2.y].escalator = false;
+            p1 = {x: x, y: y};
+            p2 = false;
+        }
+    } else {
+        // Enter, bridge, vortex, exit & time
+
+        // Remove item
+        if (cell.item && cell.item.type === tool && cell.item.color === color) {
+            cell.item = false;
+            return;
+        }
+
+        // Bridges have only four possible cells to be set on
+        if (tool === 'bridge' || tool === 'enter') {
+            if (!(
+                (x === 0 && y === 1) ||
+                (x === 1 && y === 3) ||
+                (x === 2 && y === 0) ||
+                (x === 3 && y === 2)
+            )) return;
+        }
+
+        // Exits too but not the same
+        if (tool === 'exit') {
+            if (!(
+                (x === 0 && y === 0) ||
+                (x === 0 && y === 3) ||
+                (x === 3 && y === 0) ||
+                (x === 3 && y === 3)
+            )) return;
+        }
+
+        // All bridges and vortexes should have a color
+        if ((tool === 'bridge' || tool === 'vortex') && !color) return;
+
+        cell.item = {
+            'type': tool,
+            'color': color
         }
     }
 }
@@ -53,46 +129,33 @@ class Tile {
     constructor(id) {
         this.x = 0;
         this.y = 0;
-        this.data = {};
+        this.layout = {};
+
         for (let i = 0; i < 4; i += 1) {
-            this.data[i] = {};
+            this.layout[i] = {};
 
             for (let j = 0; j < 4; j += 1) {
-                this.data[i][j] = {};
-
-                const cell = this.data[i][j];
-
-                // Build generic outer walls
-                if (i === 0 && j !== 2) {
-                    cell.topWall = 1;
-                }
-                if (j === 3 && i !== 2) {
-                    cell.rightWall = 1;
-                }
-                if (i === 3 && j !== 1) {
-                    cell.bottomWall = 1;
-                }
-                if (j === 0 && i !== 1) {
-                    cell.leftWall = 1;
-                }
+                this.layout[i][j] = new Cell(i, j);
             }
         }
     }
 
     display() {
+        fill('#f5faff');
+
         for (let i = 0; i < 4; i += 1) {
             for (let j = 0; j < 4; j += 1) {
                 // For each cell
-                const cell = this.data[i][j];
+                const cell = this.layout[i][j];
 
                 push();
-                translate(j*size, i*size);
+                translate(i * config.size, j * config.size);
 
                 // Draw basic grid
                 blendMode(MULTIPLY);
                 stroke(240);
                 strokeWeight(2);
-                rect(0, 0, size, size);
+                rect(0, 0, config.size, config.size);
 
                 stroke(0);
 
@@ -102,65 +165,105 @@ class Tile {
                     if (item.type === 'vortex') {
                         fill(config.colors[item.color]);
                         noStroke();
-                        ellipse(size/2, size/2, size/2, size/2);
+                        ellipse(config.size/2, config.size/2, config.size/2, config.size/2);
                         stroke(0);
-                    } else if (item.type === 'bridge' || item.type === 'enter') {
-                        // Set color (for bridge)
-                        if (item.color) stroke(item.color);
+                    } else if (item.type === 'article') {
+                        noStroke();
+                        fill(config.colors[item.color]);
+                        star(config.size / 2, config.size / 2, 10, 25, 5);
+                    } else if (item.type === 'bridge' || item.type === 'enter' || item.type === 'exit') {
+                        // Set color (for bridge & exit)
+                        if (config.colors[item.color]) {
+                            fill(config.colors[item.color]);
+                            stroke(config.colors[item.color]);
+                        }
 
-                        if (i === 0) {
+                        if (j === 0 && i < 3) {
                             arrow(item.type);
-                        } else if (i === 3) {
+                        } else if (j === 3 && i > 0) {
                             push();
                             rotate(PI);
-                            translate(-size, -size);
+                            translate(-config.size, -config.size);
                             arrow(item.type);
                             pop();
-                        } else if (j === 0) {
+                        } else if (i === 0) {
                             push();
-                            translate(0, size);
+                            translate(0, config.size);
                             rotate(-PI/2);
                             arrow(item.type);
                             pop();
-                        } else if (j === 3) {
+                        } else if (i === 3) {
                             push();
-                            translate(size, 0);
+                            translate(config.size, 0);
                             rotate(PI/2);
                             arrow(item.type);
                             pop();
                         }
+                    } else if (item.type === "time") {
+                        blendMode(NORMAL);
+                        stroke(0);
+                        fill(255);
+                        ellipse(config.size / 2, config.size / 2, 40, 40);
+                        line(config.size / 2, config.size / 2 + 2, config.size / 2 - 7, config.size / 2 - 5);
+                        line(config.size / 2, config.size / 2 + 2, config.size / 2 + 10, config.size / 2 - 9);
                     }
                 }
 
                 let esc = cell.escalator;
                 if (esc) {
-                    stroke(0,0,255);
-                    const x1 = size/2;
-                    const y1 = size/2;
-                    const x2 = size/2 + (esc.y - j)*size;
-                    const y2 = size/2 + (esc.x - i)*size;
+                    stroke(0, 0, 255);
+                    const x1 = config.size / 2;
+                    const y1 = config.size / 2;
+                    const x2 = config.size / 2 + (esc.x - i) * config.size;
+                    const y2 = config.size / 2 + (esc.y - j) * config.size;
                     line(x1, y1, x2, y2);
                 }
 
                 // Draw walls
-                blendMode(MULTIPLY);
-                stroke(0);
-                if (cell.topWall > 0) {
-                    line(0, 0, size, 0);
+                blendMode(NORMAL);
+                if (cell.walls.top) {
+                    stroke(0);
+                    if (cell.walls.top === 'orange') stroke(config.colors['orange']);
+                    line(0, 0, config.size, 0);
                 }
-                if (cell.rightWall > 0) {
-                    line(size, 0, size, size);
+                if (cell.walls.right) {
+                    stroke(0);
+                    if (cell.walls.right === 'orange') stroke(config.colors['orange']);
+                    line(config.size, 0, config.size, config.size);
                 }
-                if (cell.bottomWall > 0) {
-                    line(0, size, size, size);
+                if (cell.walls.bottom) {
+                    stroke(0);
+                    if (cell.walls.tobottomp === 'orange') stroke(config.colors['orange']);
+                    line(0, config.size, config.size, config.size);
                 }
-                if (cell.leftWall > 0) {
-                    line(0, 0, 0, size);
+                if (cell.walls.left) {
+                    stroke(0);
+                    if (cell.walls.left === 'orange') stroke(config.colors['orange']);
+                    line(0, 0, 0, config.size);
                 }
 
                 pop();
             }
-        } // end of cell
+        }
+    }
+}
+
+class Cell {
+    constructor(x, y) {
+        this.coord = {
+            x: x,
+            y: y
+        };
+        this.walls = {};
+
+        // Build generic outer walls
+        this.walls.top = (y === 0 && x !== 2);
+        this.walls.right = (x === 3 && y !== 2);
+        this.walls.bottom = (y === 3 && x !== 1);
+        this.walls.left = (x === 0 && y !== 1);
+
+        this.item = false;
+        this.escalator = false;
     }
 }
 
@@ -171,16 +274,223 @@ function grid() {
     for (let i = 0; i < 4; i += 1) {
         for (let j = 0; j < 4; j += 1) {
             push();
-            translate(i*size, j*size);
+            translate(i * config.size, j * config.size);
 
             // Draw cell
             stroke(240);
-            rect(0, 0, size, size);
+            rect(0, 0, config.size, config.size);
 
             pop();
         }
     }
 }
+
+/**
+* Draw an arrow
+* @param  {string} type bridge, enter
+*/
+function arrow(type) {
+    if (type === 'bridge') {
+        // Linear arrow
+        blendMode(NORMAL);
+        line(config.size/2, config.size/4, config.size/2, config.size/1.5);
+        line(config.size/2, config.size/4, config.size/3, config.size/2.5);
+        line(config.size/2, config.size/4, config.size/1.5, config.size/2.5);
+        blendMode(MULTIPLY);
+    } else if (type === 'enter') {
+        // Filled arrow
+        strokeJoin(ROUND);
+        strokeCap(ROUND);
+        stroke(150);
+        blendMode(NORMAL);
+        fill(255);
+        beginShape();
+        vertex(config.size/2.25, config.size/3);
+        vertex(config.size/2.25, config.size/4);
+        vertex(config.size/1.7, config.size/4);
+        vertex(config.size/1.7, config.size/3);
+        vertex(config.size/1.5, config.size/3);
+        vertex(config.size/1.93, config.size/2);
+        vertex(config.size/2.75, config.size/3);
+        vertex(config.size/2.75, config.size/3);
+        endShape(CLOSE);
+    } else if (type === 'exit') {
+        // Filled arrow
+        strokeJoin(ROUND);
+        strokeCap(ROUND);
+        blendMode(NORMAL);
+        line(config.size/2, config.size/2, config.size/2, config.size/1.4);
+        line(config.size/2, config.size/2, config.size/2 - 10, config.size/1.7);
+        line(config.size/2, config.size/2, config.size/2 + 10, config.size/1.7);
+        rect(config.size/2 - 15, config.size/2 - 25, 30, 15);
+    }
+}
+
+/**
+* Draw a star
+* @param  {int} x  X coordinate
+* @param  {int} y  Y coordinate
+* @param  {int} r1 inner radius
+* @param  {int} r2 outer radius
+* @param  {int} n  points (branches)
+*/
+function star(x, y, r1, r2, n) {
+    var angle = TWO_PI / n;
+    beginShape();
+    for (let a = -18 * TWO_PI / 360; a <= TWO_PI; a += angle) {
+        let sx = x + cos(a) * r2;
+        let sy = y + sin(a) * r2;
+        vertex(sx, sy);
+        sx = x + cos(a + angle / 2) * r1;
+        sy = y + sin(a + angle / 2) * r1;
+        vertex(sx, sy);
+    }
+    endShape(CLOSE);
+}
+
+/**
+* Get hovered cell coordinates
+* @return {Object} position {x, y}
+*/
+function getHoveredCell() {
+    const x = floor((2 * config.size + mouseX - width / 2) / config.size);
+    const y = floor((2 * config.size + mouseY - width / 2) / config.size);
+
+    if (x < 0 || x > 3 || y < 0 || y > 3) {
+        return false;
+    }
+
+    return {x: x, y: y}
+}
+
+/**
+* Get closest side of cell
+* @return {string}  top, bottom, left, right
+*/
+function getHoveredSide() {
+    let side = false;
+    const x = (mouseX - width / 2 + config.size * 2) % config.size;
+    const y = (mouseY - width / 2 + config.size * 2) % config.size;
+
+    // Detect closest side of cell
+    if (x < config.size / config.tolerance) {
+        side = 'left';
+    } else if (config.size - x < config.size / config.tolerance) {
+        side = 'right';
+    }
+
+    if (y < config.size / config.tolerance) {
+        side = 'top';
+    } else if (config.size - y < config.size / config.tolerance) {
+        side = 'bottom';
+    }
+
+    return side;
+}
+
+function clearTile() {
+    for (let j = 0; j < 4; j += 1) {
+        for (let i = 0; i < 4; i += 1) {
+            const cell = tile.layout[i][j];
+
+            // Remove all walls
+            cell.walls = {
+                'top': false,
+                'right': false,
+                'bottom': false,
+                'left': false
+            }
+
+            // Restore generic walls
+            cell.walls.top = (j === 0 && i !== 2);
+            cell.walls.right = (i === 3 && j !== 2);
+            cell.walls.bottom = (j === 3 && i !== 1);
+            cell.walls.left = (i === 0 && j !== 1);
+
+            // Remove item and escalator
+            cell.item = false;
+            cell.escalator = false;
+        }
+    }
+}
+
+function randomize() {
+    clearTile();
+    for (let j = 0; j < 4; j += 1) {
+        for (let i = 0; i < 4; i += 1) {
+            const cell = tile.layout[i][j];
+
+            // Randomize all walls
+            // cell.walls = {
+            //     'top': Math.random() < .5 ? true : false,
+            //     'right': Math.random() < .5 ? true : false,
+            //     'bottom': Math.random() < .5 ? true : false,
+            //     'left': Math.random() < .5 ? true : false
+            // }
+        }
+    }
+}
+
+function exportImage() {
+    let jpg = createGraphics(600, 600);
+    jpg.image(canvas, -70, -70, 740, 740);
+    save(jpg, 'tile.jpg');
+}
+
+function exportJSON() {
+    let json = {};
+
+    for (let i = 0; i < 4; i += 1) {
+        json[i] = {};
+
+        for (let j = 0; j < 4; j += 1) {
+            json[i][j] = {};
+            json[i][j].walls = {};
+
+            json[i][j].walls.top = tile.layout[i][j].walls.top;
+            json[i][j].walls.right = tile.layout[i][j].walls.right;
+            json[i][j].walls.bottom = tile.layout[i][j].walls.bottom;
+            json[i][j].walls.left = tile.layout[i][j].walls.left;
+
+            json[i][j]['item'] = tile.layout[i][j].item;
+            json[i][j]['escalator'] = tile.layout[i][j].escalator;
+        }
+    }
+
+    save(json, 'tile.json');
+}
+
+$(document).on('click', 'ul li', (e) => {
+    const $el = $(e.currentTarget);
+    $el.parent().find('li.selected').removeClass('selected');
+    $el.addClass('selected');
+
+    if ($el.parent().hasClass('colors')) {
+        color = $el.attr('data-color');
+    } else if ($el.parent().hasClass('tools')) {
+        tool = $el.attr('data-tool');
+    }
+
+    if (tool === 'bridge' || tool === 'vortex' || tool === 'exit' || tool === 'article') {
+        $('.colors').css('opacity', 1);
+    } else {
+        $('.colors').css('opacity', 0);
+    }
+});
+
+$(document).on('click', 'button[name="clear"]', () => {
+    clearTile();
+});
+
+$(document).on('click', 'button[name="random"]', () => {
+    randomize();
+});
+
+$(document).on('click', 'button[name="export"]', () => {
+    exportImage();
+    exportJSON();
+});
+
 
 /**
 * General key press actions
@@ -190,106 +500,40 @@ function keyPressed(e) {
     if (keyIsDown(49)) { // 1
         tool = 'wall';
     } else if (keyIsDown(50)) { // 2
-        tool = 'enter';
+        tool = 'wall-orange';
     } else if (keyIsDown(51)) { // 3
-        tool = 'bridge';
+        tool = 'enter';
     } else if (keyIsDown(52)) { // 4
+        tool = 'bridge';
+    } else if (keyIsDown(53)) { // 5
         tool = 'vortex';
+    } else if (keyIsDown(54)) { // 6
+        tool = 'article';
+    } else if (keyIsDown(55)) { // 7
+        tool = 'exit';
+    } else if (keyIsDown(56)) { // 8
+        tool = 'time';
+    } else if (keyIsDown(57)) { // 9
+        tool = 'escalator';
+    } else if (keyIsDown(71)) { // G
+        color = 'green';
+    } else if (keyIsDown(79)) { // O
+        color = 'orange';
+    } else if (keyIsDown(80)) { // P
+        color = 'purple';
+    } else if (keyIsDown(89)) { // Y
+        color = 'yellow';
     }
 
-    // console.log(tool);
-}
+    $('ul.tools').find('li.selected').removeClass('selected');
+    $('ul.tools').find('li[data-tool="' + tool + '"]').addClass('selected');
 
-/**
-* Draw an arrow
-*/
-function arrow(type) {
-    if (type === 'bridge') {
-        // Linear arrow
-        blendMode(NORMAL);
-        line(size/2, size/4, size/2, size/1.5);
-        line(size/2, size/4, size/3, size/2.5);
-        line(size/2, size/4, size/1.5, size/2.5);
-        blendMode(MULTIPLY);
-    } else if (type === 'enter') {
-        // Filled arrow
-        strokeJoin(ROUND);
-        strokeCap(ROUND);
-        stroke(150);
-        fill(255);
-        beginShape();
-        vertex(size/2.25, size/3);
-        vertex(size/2.25, size/4);
-        vertex(size/1.7, size/4);
-        vertex(size/1.7, size/3);
-        vertex(size/1.5, size/3);
-        vertex(size/1.93, size/2);
-        vertex(size/2.75, size/3);
-        vertex(size/2.75, size/3);
-        endShape(CLOSE);
-    }
-}
+    $('ul.colors').find('li.selected').removeClass('selected');
+    $('ul.colors').find('li[data-color="' + color + '"]').addClass('selected');
 
-/**
-* Get hovered cell coordinates
-* @return {Object} position {'x': , 'y': }
-*/
-function getHoveredCell() {
-    const i = floor((mouseX - width/2) / size) + 2;
-    const j = floor((mouseY - width/2) / size) + 2;
-
-    if (i < 0 || i > 3 || j < 0 || j > 3) {
-        return false;
-    }
-
-    const cX = (mouseX - width/2 + size*2) % size;
-    const cY = (mouseY - width/2 + size*2) % size;
-
-    let wall = false;
-    let item = false;
-
-    if (tool === 'wall') {
-        // Detect closest wall
-        if (cX < size / tolerance) {
-            wall = 'leftWall';
-        } else if (size - cX < size / tolerance) {
-            wall = 'rightWall';
-        }
-
-        if (cY < size / tolerance) {
-            wall = 'topWall';
-        } else if (size - cY < size / tolerance) {
-            wall = 'bottomWall';
-        }
+    if (tool === 'bridge' || tool === 'vortex' || tool === 'exit' || tool === 'article') {
+        $('.colors').css('opacity', 1);
     } else {
-        item = {
-            'type': tool,
-            'color': color
-        }
+        $('.colors').css('opacity', 0);
     }
-
-    const cell = {
-        'x': i,
-        'y': j,
-        'wall': wall,
-        'item': item
-    }
-
-    console.log(cell);
-    console.log(tile.data);
-
-    return cell;
 }
-
-$(document).on('click', 'ul li', (e) => {
-    const $el = $(e.currentTarget);
-    $el.parent().find('li.selected').removeClass('selected');
-    $el.addClass('selected');
-
-    if ($el.parent().hasClass('colors')) {
-        // $('ul.tools li').attr('data-color', $el.attr('data-color'));
-        color = $el.attr('data-color');
-    } else if ($el.parent().hasClass('tools')) {
-        tool = $el.attr('data-tool');
-    }
-});
