@@ -1,6 +1,7 @@
 import ai from './ai';
 import board from './board';
 import config from './config';
+import events from './events';
 import game from './game';
 import heroes from './heroes';
 
@@ -25,6 +26,7 @@ export default class Hero {
         if (force) {
             this.pos = {x: this.target.x, y: this.target.y};
             ai.run();
+            events.checkForEvents(this.cell, this);
         } else {
             let deltaX = this.target.x - this.pos.x;
             let deltaY = this.target.y - this.pos.y;

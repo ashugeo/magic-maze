@@ -76,7 +76,6 @@ export default {
     mouseUp() {
         const cell = this.getHoveredCell();
         const hero = this.hero;
-        let checkForEvents = false;
 
         if (!hero) return;
 
@@ -88,7 +87,6 @@ export default {
                     id: hero.id,
                     cell: cell
                 });
-                checkForEvents = true;
             } else {
                 // Released hero (illegal move), tell admin to rerun AI
                 socket.emit('ai');
@@ -102,8 +100,6 @@ export default {
         hero.path = [];
         this.toggleHero(hero);
         this.hero = false;
-
-        if (checkForEvents) this.checkForEvents(cell, hero);
     },
 
     oldMouseCell: {},
@@ -228,14 +224,13 @@ export default {
     /**
     * Check if there's a hero in this cell
     * @param  {Object} cell cell to check
-    * @return {bool}
     * @return {Object|bool}
     */
     checkForHero(cell) {
         for (let hero of heroes.all) {
             if (hero.cell.x === cell.x && hero.cell.y === cell.y) {
                 // TODO: make sure a hero can't be set underneath a selected hero that couldn't go elsewhere (and check purple exit end)
-                if (!hero.selectable || hero.hasExited()) return false;
+                if (hero.hasExited()) return false;
                 return hero;
             }
         }
