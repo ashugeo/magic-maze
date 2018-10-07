@@ -10,10 +10,10 @@ export default {
     init() {
         for (let i = 0; i < 4; i += 1) {
             this.all.push(new Hero(i));
-            this.all[i].set({
-                x: config.firstTile.x + [1, 2, 2, 1][i],
-                y: config.firstTile.y + [1, 1, 2, 2][i]
-            });
+            this.all[i].set(
+                config.firstTile.x + [1, 2, 2, 1][i],
+                config.firstTile.y + [1, 1, 2, 2][i]
+            );
             this.all[i].pos = this.all[i].target;
             this.all[i].status = 'set';
         }

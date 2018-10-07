@@ -83,7 +83,7 @@ export default {
         if (!(cell.x === this.oldHeroCell.x && cell.y === this.oldHeroCell.y)) {
             if (this.action === 'hero' && hero.canGoTo(cell)) {
                 // FIXME: hero will sometimes go to a cell it shouldn't if spammed/timed correctly
-                hero.set(cell);
+                hero.set(cell.x, cell.y);
                 socket.emit('hero', {
                     id: hero.id,
                     cell: cell

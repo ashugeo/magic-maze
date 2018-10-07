@@ -85,7 +85,7 @@ socket.on('role', roles => {
 socket.on('hero', data => {
     const hero = heroes.all[data.id];
     const cell = data.cell;
-    hero.set(cell);
+    hero.set(cell.x, cell.y);
 });
 
 socket.on('board', data => {

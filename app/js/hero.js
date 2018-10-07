@@ -37,27 +37,34 @@ export default class Hero {
 
     /**
     * Set hero on cell
-    * @param {Object} cell cell X and Y coordinates
+    * @param {int} x cell X coordinate
+    * @param {int} y cell Y coordinate
     */
-    set(cell) {
+    set(x, y) {
         this.cell = {
-            x: cell.x,
-            y: cell.y
+            x: x,
+            y: y
         };
 
-        const boardCell = board.get(cell.x, cell.y);
+
+        const boardCell = board.get(x, y);
         const tileCell = boardCell.tileCell;
-        const tileShift = tiles[boardCell.tileID].shift;
+        const tileShift = tiles[boardCell.tileID] ? tiles[boardCell.tileID].shift : false;
 
         if (config.debug) {
             this.target = {
-                x: cell.x ,
-                y: cell.y
+                x: x,
+                y: y
             }
         } else {
+            if (tileShift) {
+                x += [.25, .1, -.1, -.25][tileCell.x] + tileShift.x / config.size;
+                y += [.25, .1, -.1, -.25][tileCell.y] + tileShift.y / config.size;
+            }
+
             this.target = {
-                x: cell.x + [.25, .1, -.1, -.25][tileCell.x] + tileShift.x / config.size,
-                y: cell.y + [.25, .1, -.1, -.25][tileCell.y] + tileShift.y / config.size
+                x: x,
+                y: y
             }
         }
 

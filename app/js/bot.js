@@ -22,7 +22,7 @@ export default class Bot {
         } else if (action.type === 'move') {
             // Make sure hero is selectable
             if (action.hero.selectable) {
-                action.hero.set(action.target);
+                action.hero.set(action.target.x, action.target.y);
                 socket.emit('hero', {
                     id: action.hero.id,
                     cell: action.target
