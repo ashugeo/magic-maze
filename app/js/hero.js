@@ -16,6 +16,7 @@ export default class Hero {
         this.status = 'set', // set, selected, exited
         this.selectable = true,
         this.path = [];
+        this.opacity = 255;
     }
 
     /**

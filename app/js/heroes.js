@@ -106,20 +106,28 @@ export default {
             // Display hero
             p5.push();
             p5.translate(hero.pos.x * config.size, hero.pos.y * config.size);
+
+            // Circle animation
             // p5.noFill();
             // p5.stroke(config.colors[hero.color]);
             // p5.strokeWeight(2);
             // p5.ellipse(config.size / 2, config.size / 2, 18 + Math.cos(p5.frameCount / 10));
-            p5.fill(config.colors[hero.color]);
+
+            // Fade out animation
+            if (hero.hasExited()) hero.opacity -= 8;
+
+            // Hexadecimal to p5 color array
+            let color = p5.color(config.colors[hero.color]).levels;
+            p5.fill(color[0], color[1], color[2], hero.opacity);
 
             if (hero.status === 'selected') {
                 // Hero is selected, show it with a stroke
-                p5.stroke(0, 20);
+                p5.stroke(0, 20 * hero.opacity / 255);
                 p5.strokeWeight(4);
                 p5.ellipse(config.size / 2, config.size / 2, 16);
             }
 
-            p5.stroke(0, 20);
+            p5.stroke(0, 20 * hero.opacity / 255);
             p5.strokeWeight(4);
             p5.ellipse(config.size / 2, config.size/2, 12);
             p5.pop();
