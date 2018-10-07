@@ -2019,7 +2019,7 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__events__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__game__ = __webpack_require__(4);
 
 
 
@@ -2041,7 +2041,7 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
         // No time left
         if (this.remaining === 0) {
             this.stop();
-            __WEBPACK_IMPORTED_MODULE_1__events__["a" /* default */].lose();
+            __WEBPACK_IMPORTED_MODULE_1__game__["a" /* default */].lose();
             return;
         }
 
