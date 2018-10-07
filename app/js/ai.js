@@ -16,7 +16,10 @@ export default {
     },
 
     run() {
-        // Only the admin runs the bots
+        // Only run AI if there are bots
+        if (this.bots.length === 0) return;
+
+        // Only the admin runs the AI
         if (!game.admin) return;
 
         // Prevent more than one call per second (let the bots time to think!)
