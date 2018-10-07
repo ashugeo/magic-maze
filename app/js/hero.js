@@ -259,7 +259,18 @@ export default class Hero {
 
     exit() {
         this.status = 'exited';
-        // this.set({x: 0, y: 0});
+
+        // Find exit cell (out of of board)
+        const boardCell = board.get(this.cell.x, this.cell.y);
+        const tileCell = boardCell.tileCell;
+        const tileID = boardCell.tileID;
+        const tile = tiles[tileID];
+        const exit = tile.getExitPlusOne(tileCell.x, tileCell.y);
+
+        // Move out of board
+        const x = this.cell.x + exit.x;
+        const y = this.cell.y + exit.y;
+        this.set(x, y);
     }
 
     hasExited() {
