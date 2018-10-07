@@ -28,6 +28,15 @@ export default {
     display() {
         p5.noStroke();
         for (let hero of this.all) {
+
+            // Don't display hidden heroes
+            if (hero.display === false) continue;
+
+            // Fade out and disappear
+            if (hero.opacity < 0) {
+                hero.display = false;
+            }
+
             // Hero movement animation, only if necessary
             let deltaX = hero.target.x - hero.pos.x;
             let deltaY = hero.target.y - hero.pos.y;
