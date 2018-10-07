@@ -775,6 +775,15 @@
             this.admin = true;
             __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].init(options);
         }
+    },
+
+    // TODO: win and lose
+    win() {
+        console.log('game won!');
+    },
+
+    lose() {
+        console.log('game lost!');
     }
 });
 
@@ -1873,11 +1882,7 @@ class Hero {
     */
     checkForHero(cell) {
         for (let hero of __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].all) {
-            if (hero.cell.x === cell.x && hero.cell.y === cell.y) {
-                // TODO: make sure a hero can't be set underneath a selected hero that couldn't go elsewhere (and check purple exit end)
-                if (hero.hasExited()) return false;
-                return hero;
-            }
+            if (hero.cell.x === cell.x && hero.cell.y === cell.y) return hero;
         }
         return false;
     },
@@ -1931,8 +1936,7 @@ class Hero {
             // Same color exit or scenario 1 (only has purple exit)
             hero.exit();
             if (__WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].checkForWin()) {
-                // TODO: WIN
-                console.log('game won!');
+                __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].win();
             }
         }
     }
@@ -2015,6 +2019,8 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__events__ = __webpack_require__(8);
+
 
 
 /* harmony default export */ __webpack_exports__["a"] = ({
@@ -2035,6 +2041,7 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
         // No time left
         if (this.remaining === 0) {
             this.stop();
+            __WEBPACK_IMPORTED_MODULE_1__events__["a" /* default */].lose();
             return;
         }
 

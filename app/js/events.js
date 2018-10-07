@@ -228,11 +228,7 @@ export default {
     */
     checkForHero(cell) {
         for (let hero of heroes.all) {
-            if (hero.cell.x === cell.x && hero.cell.y === cell.y) {
-                // TODO: make sure a hero can't be set underneath a selected hero that couldn't go elsewhere (and check purple exit end)
-                if (hero.hasExited()) return false;
-                return hero;
-            }
+            if (hero.cell.x === cell.x && hero.cell.y === cell.y) return hero;
         }
         return false;
     },
@@ -286,8 +282,7 @@ export default {
             // Same color exit or scenario 1 (only has purple exit)
             hero.exit();
             if (ai.checkForWin()) {
-                // TODO: WIN
-                console.log('game won!');
+                game.win();
             }
         }
     }

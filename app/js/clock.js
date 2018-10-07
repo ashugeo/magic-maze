@@ -1,4 +1,5 @@
 import config from './config';
+import events from './events';
 
 export default {
     init() {
@@ -18,6 +19,7 @@ export default {
         // No time left
         if (this.remaining === 0) {
             this.stop();
+            events.lose();
             return;
         }
 

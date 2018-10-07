@@ -13,5 +13,14 @@ export default {
             this.admin = true;
             ai.init(options);
         }
+    },
+
+    // TODO: win and lose
+    win() {
+        console.log('game won!');
+    },
+
+    lose() {
+        console.log('game lost!');
     }
 }
