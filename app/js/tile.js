@@ -167,6 +167,31 @@ export default class Tile {
     }
 
     /**
+    * Get tile "exit+1" coordinates (cell out of tile)
+    * @param  {int}    x exit X coordinate
+    * @param  {int}    y exit Y coordinate
+    * @return {Object}   {x, y}
+    */
+    getExitPlusOne(x, y) {
+        let corner;
+        // Corners pattern:
+        // 0 -- 1
+        // |    |
+        // 3 -- 2
+
+        if (x === 0) {
+            corner = y === 0 ? 0 : 3;
+        } else if (x === 3) {
+            corner = y === 0 ? 1 : 2;
+        }
+
+        let _x = [0, 1, 0, -1][corner];
+        let _y = [-1, 0, 1, 0][corner];
+
+        return {x: _x, y: _y};
+    }
+
+    /**
     * Get tile origin coordinates (top left cell)
     * @param  {int}    x mouse X coordinate
     * @param  {int}    y mouse Y coordinate
