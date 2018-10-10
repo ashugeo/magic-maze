@@ -1,15 +1,19 @@
 export default {
     debug: false,
-    grid: true,
+    grid: false,
     cameraSpeed: 5,
     cameraMouse: false,
     zoomMax: 4,
     zoomMin: 1,
     zoomSpeed: 15,
-    boardRows: 24,
-    boardCols: 24,
+    boardRows: 32,
+    boardCols: 32,
     size: 32,
     tiles: 5,
+    firstTile: {
+        x: 14,
+        y: 14
+    },
     heroes: ['green', 'orange', 'purple', 'yellow'],
     colors: {
         green: '#57bd6a',
@@ -18,10 +22,6 @@ export default {
         yellow: '#f7dc0a'
     },
     heroSpeed: 16,
-    firstTile: {
-        x: 10,
-        y: 10
-    },
     timer: 180,
     botsInterval: 1000
 }

@@ -41,26 +41,27 @@ const $ui = document.getElementById('ui');
 const $players = document.getElementById('players');
 
 // FIXME: why is this not reliable?
-socket.on('players', players => {
-    $players.innerHTML = players;
-    $players.innerHTML += players > 1 ? ' joueurs connectés.' : ' joueur connecté.';
+socket.on('people', people => {
+    $people.innerHTML = people;
+    $people.innerHTML += people > 1 ? ' joueurs connectés' : ' joueur connecté';
 });
 
 socket.on('admin', () => {
     // Timeout needed to give time for 'players' event
     setTimeout(() => {
-        $ui.innerHTML += `<div id="admin">
-        <p>Vous êtes administrateur de la partie.</p>
-        <input type="number" id="bots" value="0" min="0" max="7" /> bot(s)
-        <button id="start">Commencer la partie !</button>
-        </div>`;
+        $admin.innerHTML += `<h3>Maître du jeu</h3>
+        <p>Bot(s) <input type="number" id="bots" value="0" min="0" max="7" /></p>
+        <p>Scénario <input type="number" id="scenario" value="1" min="1" max="15" /></p>
+        <button id="start">Commencer la partie !</button>`;
 
         document.getElementById('start').addEventListener('mousedown', () => {
             socket.emit('start', {
-                bots: parseInt(document.getElementById('bots').value)
+                bots: parseInt(document.getElementById('bots').value),
+                scenario: parseInt(document.getElementById('scenario').value)
             });
-            document.getElementById('admin').innerHTML = '';
+            document.getElementById('admin').remove();
         });
+
     }, 100);
 });
 
@@ -73,13 +74,15 @@ socket.on('role', roles => {
     role = roles;
 
     // Display role
-    $ui.innerHTML += 'Actions autorisées : ';
+    let text = '<p>Actions autorisées : ';
     for (let i in roles) {
         i = parseInt(i);
-        $ui.innerHTML += roles[i];
-        if (roles[i + 1]) $ui.innerHTML += ', ';
+        text += roles[i];
+        if (roles[i + 1]) text += ', ';
     }
-    $ui.innerHTML += '.'
+    text += '.</p>'
+
+    $ui.innerHTML += text;
 });
 
 socket.on('hero', data => {
