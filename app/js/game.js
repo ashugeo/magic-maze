@@ -7,10 +7,9 @@ export default {
     admin: false,
 
     init(options) {
-        this.scenario = 1;
-
         if (options) {
             this.admin = true;
+            this.scenario = options.scenario;
             ai.init(options);
         }
     },

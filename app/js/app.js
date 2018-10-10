@@ -38,7 +38,16 @@ function start(options) {
 }
 
 const $ui = document.getElementById('ui');
-const $players = document.getElementById('players');
+const $admin = document.getElementById('admin');
+const $people = document.getElementById('people');
+const $spectator = document.getElementById('spectator');
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('spectator').addEventListener('mousedown', (e) => {
+        const spectator = !e.srcElement.checked;
+        socket.emit('spectator', spectator);
+    });
+});
 
 // FIXME: why is this not reliable?
 socket.on('people', people => {

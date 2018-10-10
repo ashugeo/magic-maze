@@ -70,16 +70,20 @@
 "use strict";
 /* harmony default export */ __webpack_exports__["a"] = ({
     debug: false,
-    grid: true,
+    grid: false,
     cameraSpeed: 5,
     cameraMouse: false,
     zoomMax: 4,
     zoomMin: 1,
     zoomSpeed: 15,
-    boardRows: 24,
-    boardCols: 24,
+    boardRows: 32,
+    boardCols: 32,
     size: 32,
     tiles: 5,
+    firstTile: {
+        x: 14,
+        y: 14
+    },
     heroes: ['green', 'orange', 'purple', 'yellow'],
     colors: {
         green: '#57bd6a',
@@ -88,10 +92,6 @@
         yellow: '#f7dc0a'
     },
     heroSpeed: 16,
-    firstTile: {
-        x: 10,
-        y: 10
-    },
     timer: 180,
     botsInterval: 1000
 });
@@ -769,10 +769,9 @@
     admin: false,
 
     init(options) {
-        this.scenario = 1;
-
         if (options) {
             this.admin = true;
+            this.scenario = options.scenario;
             __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].init(options);
         }
     },
@@ -1673,7 +1672,7 @@ class Hero {
         */
         document.addEventListener('keydown', e => {
             if (e.which === 67) { // C: engage tile setting
-                if (role.indexOf('explore') > -1) this.newTile();
+                if (role.indexOf('explore') > -1 && json[tiles.length]) this.newTile();
             } else if (e.which === 82) { // R: rotate tile counterclockwise
                 this.rotateTile(-1);
             } else if (e.which === 84) { // T: rotate tile clockwise
@@ -1851,12 +1850,14 @@ class Hero {
             this.action = 'setting';
 
             // Select tile being set
-            const tile = tiles[tiles.length-1];
+            const tile = tiles[tiles.length - 1];
 
             // Make sure last tile is fixed to prevent multiple tiles setting
             if (tile.fixed) {
-                // tiles.push(new Tile(1)); // TODO: remove this
-                tiles.push(new __WEBPACK_IMPORTED_MODULE_8__tile__["a" /* default */]((tiles.length - 1) % (__WEBPACK_IMPORTED_MODULE_4__config__["a" /* default */].tiles - 1) + 1));
+                // TODO: remove this
+                // tiles.push(new Tile((tiles.length - 1) % (config.tiles - 1) + 1));
+
+                tiles.push(new __WEBPACK_IMPORTED_MODULE_8__tile__["a" /* default */](tiles.length));
             }
         }
     },
@@ -73545,29 +73546,39 @@ function start(options) {
 }
 
 const $ui = document.getElementById('ui');
-const $players = document.getElementById('players');
+const $admin = document.getElementById('admin');
+const $people = document.getElementById('people');
+const $spectator = document.getElementById('spectator');
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('spectator').addEventListener('mousedown', (e) => {
+        const spectator = !e.srcElement.checked;
+        socket.emit('spectator', spectator);
+    });
+});
 
 // FIXME: why is this not reliable?
-socket.on('players', players => {
-    $players.innerHTML = players;
-    $players.innerHTML += players > 1 ? ' joueurs connectés.' : ' joueur connecté.';
+socket.on('people', people => {
+    $people.innerHTML = people;
+    $people.innerHTML += people > 1 ? ' joueurs connectés' : ' joueur connecté';
 });
 
 socket.on('admin', () => {
     // Timeout needed to give time for 'players' event
     setTimeout(() => {
-        $ui.innerHTML += `<div id="admin">
-        <p>Vous êtes administrateur de la partie.</p>
-        <input type="number" id="bots" value="0" min="0" max="7" /> bot(s)
-        <button id="start">Commencer la partie !</button>
-        </div>`;
+        $admin.innerHTML += `<h3>Maître du jeu</h3>
+        <p>Bot(s) <input type="number" id="bots" value="0" min="0" max="7" /></p>
+        <p>Scénario <input type="number" id="scenario" value="1" min="1" max="15" /></p>
+        <button id="start">Commencer la partie !</button>`;
 
         document.getElementById('start').addEventListener('mousedown', () => {
             socket.emit('start', {
-                bots: parseInt(document.getElementById('bots').value)
+                bots: parseInt(document.getElementById('bots').value),
+                scenario: parseInt(document.getElementById('scenario').value)
             });
-            document.getElementById('admin').innerHTML = '';
+            document.getElementById('admin').remove();
         });
+
     }, 100);
 });
 
@@ -73580,13 +73591,15 @@ socket.on('role', roles => {
     role = roles;
 
     // Display role
-    $ui.innerHTML += 'Actions autorisées : ';
+    let text = '<p>Actions autorisées : ';
     for (let i in roles) {
         i = parseInt(i);
-        $ui.innerHTML += roles[i];
-        if (roles[i + 1]) $ui.innerHTML += ', ';
+        text += roles[i];
+        if (roles[i + 1]) text += ', ';
     }
-    $ui.innerHTML += '.'
+    text += '.</p>'
+
+    $ui.innerHTML += text;
 });
 
 socket.on('hero', data => {
@@ -73722,7 +73735,7 @@ class Bot {
     * @param  {Object} action Action to execute
     */
     play(action) {
-        if (action.role === 'explore') {
+        if (action.role === 'explore' && json[tiles.length]) {
             this.newTile(action.cell.x, action.cell.y);
         } else if (action.type === 'move') {
             // Make sure hero is selectable
@@ -73744,7 +73757,7 @@ class Bot {
     */
     newTile(x, y) {
         // Create and save new tile
-        const tile = new __WEBPACK_IMPORTED_MODULE_6__tile__["a" /* default */]((tiles.length - 1) % (__WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].tiles - 1) + 1);
+        const tile = new __WEBPACK_IMPORTED_MODULE_6__tile__["a" /* default */](tiles.length);
         tiles.push(tile);
 
         // Get cell and enter coordinates

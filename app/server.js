@@ -10,70 +10,86 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
-let players = [];
+let people = [];
 let adminID = '';
 
 io.sockets.on('connection', socket => {
-    // New player entered room
-    players = Object.keys(io.sockets.sockets);
+    // New person entered the room
+    people.push({id: socket.id, spectator: false});
 
     // Tell everyone
-    io.emit('players', players.length);
+    io.emit('people', people.length);
 
-    // First player, make him admin
-    if (players.length === 1) {
+    // First person, make it admin
+    if (people.length === 1) {
         adminID = socket.id;
         socket.emit('admin');
     }
 
     socket.on('disconnect', () => {
-        // Player left the room
-        players = Object.keys(io.sockets.sockets);
+        // This person left the room, remove it from people array
+        people = people.filter(p => { return (p.id !== socket.id); });
         // Tell everyone
-        io.emit('players', players.length);
+        io.emit('people', people.length);
 
         // It was the admin, set a new admin
-        if (players.indexOf(adminID) === -1) {
-            adminID = players[0];
+        if (people.length > 0 && !people.some(p => {return p.id === adminID})) {
+            adminID = people[0].id;
             // Tell him
             io.to(adminID).emit('admin');
         }
+    });
+
+    // Player toggled the spectator checkbox
+    socket.on('spectator', isSpectator => {
+        const person = people.filter(p => { return p.id === socket.id; })[0];
+        person.spectator = isSpectator;
     });
 
     socket.on('start', options => {
         // Make sure the admin started the game
         if (socket.id !== adminID) return;
 
-        let allPlayers = players.length;
+        // Build players array
+        const players = people.filter(p => { return !p.spectator });
+        let playersCount = players.length;
 
-        // Add bots to players
+        // Add bots to players count
         if (options.bots > 0) {
-            allPlayers += options.bots;
+            playersCount += options.bots;
             options.botsRoles = [];
         }
 
         // Get all actions for that number of players
         let roles = [];
         for (let i in actions) {
-            if (actions[i].players.indexOf(allPlayers) > -1) {
+            if (actions[i].players.indexOf(playersCount) > -1) {
                 roles.push(actions[i].roles);
             }
         }
 
-        if (allPlayers === 1) {
+        if (playersCount === 1) {
             // Only one player, merge roles together
             let allRoles = [].concat(...roles);
-            io.to(players[0]).emit('role', allRoles);
+
+            if (players.length === 1) {
+                // Admin is the only player
+                io.to(players[0].id).emit('role', allRoles);
+            } else {
+                // Admin is watching one bot play
+                options.botsRoles.push(allRoles);
+            }
         } else {
             // Give actions to players randomly
             shuffleArray(roles);
+
             for (let i in roles) {
                 i = parseInt(i);
 
-                if (players[i]) {
+                if (people[i]) {
                     // Tell this player his role(s)
-                    io.to(players[i]).emit('role', roles[i]);
-                } else if (options.bots > 0) {
+                    io.to(people[i].id).emit('role', roles[i]);
+                } else {
                     // Not a player but a bot, save in options
                     options.botsRoles.push(roles[i]);
                 }
@@ -81,11 +97,11 @@ io.sockets.on('connection', socket => {
         }
 
         // Tell everyone to start game
-        for (let player of players) {
-            if (player === adminID) {
-                io.to(player).emit('start', options);
+        for (let person of people) {
+            if (person.id === adminID) {
+                io.to(person.id).emit('start', options);
             } else {
-                io.to(player).emit('start');
+                io.to(person.id).emit('start');
             }
         }
 
