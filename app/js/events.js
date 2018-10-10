@@ -19,7 +19,7 @@ export default {
         */
         document.addEventListener('keydown', e => {
             if (e.which === 67) { // C: engage tile setting
-                if (role.indexOf('explore') > -1) this.newTile();
+                if (role.indexOf('explore') > -1 && json[tiles.length]) this.newTile();
             } else if (e.which === 82) { // R: rotate tile counterclockwise
                 this.rotateTile(-1);
             } else if (e.which === 84) { // T: rotate tile clockwise
@@ -197,12 +197,14 @@ export default {
             this.action = 'setting';
 
             // Select tile being set
-            const tile = tiles[tiles.length-1];
+            const tile = tiles[tiles.length - 1];
 
             // Make sure last tile is fixed to prevent multiple tiles setting
             if (tile.fixed) {
-                // tiles.push(new Tile(1)); // TODO: remove this
-                tiles.push(new Tile((tiles.length - 1) % (config.tiles - 1) + 1));
+                // TODO: remove this
+                // tiles.push(new Tile((tiles.length - 1) % (config.tiles - 1) + 1));
+
+                tiles.push(new Tile(tiles.length));
             }
         }
     },

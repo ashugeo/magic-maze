@@ -17,7 +17,7 @@ export default class Bot {
     * @param  {Object} action Action to execute
     */
     play(action) {
-        if (action.role === 'explore') {
+        if (action.role === 'explore' && json[tiles.length]) {
             this.newTile(action.cell.x, action.cell.y);
         } else if (action.type === 'move') {
             // Make sure hero is selectable
@@ -39,7 +39,7 @@ export default class Bot {
     */
     newTile(x, y) {
         // Create and save new tile
-        const tile = new Tile((tiles.length - 1) % (config.tiles - 1) + 1);
+        const tile = new Tile(tiles.length);
         tiles.push(tile);
 
         // Get cell and enter coordinates
