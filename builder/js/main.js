@@ -240,7 +240,7 @@ class Tile {
                 }
                 if (cell.walls.bottom) {
                     stroke(0);
-                    if (cell.walls.tobottomp === 'orange') stroke(config.colors['orange']);
+                    if (cell.walls.bottom === 'orange') stroke(config.colors['orange']);
                     line(0, config.size, config.size, config.size);
                 }
                 if (cell.walls.left) {
