@@ -76,6 +76,9 @@ function mousePressed() {
         if (!p1) {
             p1 = {x: x, y: y};
         } else if (!p2) {
+            // Escalator can't go to same cell
+            if (x === p1.x && y === p1.y) return;
+
             p2 = {x: x, y: y};
 
             tile.layout[p1.x][p1.y].escalator = {x: p2.x, y: p2.y};
