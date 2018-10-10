@@ -68,7 +68,6 @@ socket.on('admin', () => {
                 bots: parseInt(document.getElementById('bots').value),
                 scenario: parseInt(document.getElementById('scenario').value)
             });
-            document.getElementById('admin').remove();
         });
 
     }, 100);
@@ -76,6 +75,11 @@ socket.on('admin', () => {
 
 socket.on('start', options => {
     start(options);
+
+    if (options) {
+        // Admin only
+        document.getElementById('admin').remove();
+    }
 });
 
 socket.on('role', roles => {

@@ -54,11 +54,16 @@ io.sockets.on('connection', socket => {
         const players = people.filter(p => { return !p.spectator });
         let playersCount = players.length;
 
-        // Add bots to players count
+        // This game has bots
         if (options.bots > 0) {
+            // Add bots to players count
             playersCount += options.bots;
+
             options.botsRoles = [];
         }
+
+        // A game can't start with no one playing
+        if (playersCount === 0) return;
 
         // Get all actions for that number of players
         let roles = [];
