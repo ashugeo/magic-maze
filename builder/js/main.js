@@ -322,7 +322,7 @@ function arrow(type) {
         vertex(config.size/2.75, config.size/3);
         endShape(CLOSE);
     } else if (type === 'exit') {
-        // Filled arrow
+        // Linear arrow with rectangle
         strokeJoin(ROUND);
         strokeCap(ROUND);
         blendMode(NORMAL);
@@ -372,7 +372,7 @@ function getHoveredCell() {
 
 /**
 * Get closest side of cell
-* @return {string}  top, bottom, left, right
+* @return {string|bool}  top, bottom, left, right or false
 */
 function getHoveredSide() {
     let side = false;
@@ -395,6 +395,9 @@ function getHoveredSide() {
     return side;
 }
 
+/**
+* Clear tile and restore default
+*/
 function clearTile() {
     for (let j = 0; j < 4; j += 1) {
         for (let i = 0; i < 4; i += 1) {
@@ -421,6 +424,9 @@ function clearTile() {
     }
 }
 
+/**
+* Randomize tile walls and items
+*/
 function randomize() {
     clearTile();
     for (let j = 0; j < 4; j += 1) {
@@ -438,12 +444,18 @@ function randomize() {
     }
 }
 
+/**
+* Save canvas as a 600*600 JPG image
+*/
 function exportImage() {
     let jpg = createGraphics(600, 600);
     jpg.image(canvas, -70, -70, 740, 740);
     save(jpg, 'tile.jpg');
 }
 
+/**
+* Save tile data in JSON file
+*/
 function exportJSON() {
     let json = {};
 
@@ -467,22 +479,20 @@ function exportJSON() {
     save(json, 'tile.json');
 }
 
+/**
+* General click actions
+*/
+
 $(document).on('click', 'ul li', (e) => {
     const $el = $(e.currentTarget);
-    $el.parent().find('li.selected').removeClass('selected');
-    $el.addClass('selected');
 
-    if ($el.parent().hasClass('colors')) {
+    if ($el.attr('data-color')) {
         color = $el.attr('data-color');
-    } else if ($el.parent().hasClass('tools')) {
+    } else if ($el.attr('data-tool')) {
         tool = $el.attr('data-tool');
     }
 
-    if (tool === 'bridge' || tool === 'vortex' || tool === 'exit' || tool === 'article') {
-        $('.colors').css('opacity', 1);
-    } else {
-        $('.colors').css('opacity', 0);
-    }
+    updateUI();
 });
 
 $(document).on('click', 'button[name="clear"]', () => {
@@ -497,7 +507,6 @@ $(document).on('click', 'button[name="export"]', () => {
     exportImage();
     exportJSON();
 });
-
 
 /**
 * General key press actions
@@ -532,6 +541,13 @@ function keyPressed(e) {
         color = 'yellow';
     }
 
+    updateUI();
+}
+
+/**
+* Update UI elements (tools and colors selectors)
+*/
+function updateUI() {
     $('ul.tools').find('li.selected').removeClass('selected');
     $('ul.tools').find('li[data-tool="' + tool + '"]').addClass('selected');
 
