@@ -118,9 +118,16 @@ function mousePressed() {
         // All bridges and vortexes should have a color
         if ((tool === 'bridge' || tool === 'vortex') && !color) return;
 
-        cell.item = {
-            'type': tool,
-            'color': color
+        // Time and enter have no color
+        if (tool === 'time' || tool === 'enter') {
+            cell.item = {
+                'type': tool
+            }
+        } else {
+            cell.item = {
+                'type': tool,
+                'color': color
+            }
         }
     }
 }
