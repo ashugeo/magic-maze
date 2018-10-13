@@ -52,7 +52,7 @@ export default class Hero {
 
         const boardCell = board.get(x, y);
         const tileCell = boardCell.tileCell;
-        const tileShift = tiles.getTile(boardCell.tileID).shift;
+        const tileShift = tiles.getTile(boardCell.tileID) ? tiles.getTile(boardCell.tileID).shift : false;
 
         if (config.debug) {
             this.target = {

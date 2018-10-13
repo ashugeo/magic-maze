@@ -1717,7 +1717,7 @@ class Hero {
 
         const boardCell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(x, y);
         const tileCell = boardCell.tileCell;
-        const tileShift = __WEBPACK_IMPORTED_MODULE_5__tiles__["a" /* default */].getTile(boardCell.tileID).shift;
+        const tileShift = __WEBPACK_IMPORTED_MODULE_5__tiles__["a" /* default */].getTile(boardCell.tileID) ? __WEBPACK_IMPORTED_MODULE_5__tiles__["a" /* default */].getTile(boardCell.tileID).shift : false;
 
         if (__WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].debug) {
             this.target = {
