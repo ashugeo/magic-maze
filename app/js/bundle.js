@@ -1716,8 +1716,8 @@ class Hero {
 
 
         const boardCell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(x, y);
+        const tile = __WEBPACK_IMPORTED_MODULE_5__tiles__["a" /* default */].getTile(boardCell.tileID);
         const tileCell = boardCell.tileCell;
-        const tileShift = __WEBPACK_IMPORTED_MODULE_5__tiles__["a" /* default */].getTile(boardCell.tileID) ? __WEBPACK_IMPORTED_MODULE_5__tiles__["a" /* default */].getTile(boardCell.tileID).shift : false;
 
         if (__WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].debug) {
             this.target = {
@@ -1725,9 +1725,9 @@ class Hero {
                 y: y
             }
         } else {
-            if (tileShift) {
-                x += [.25, .1, -.1, -.25][tileCell.x] + tileShift.x / __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].size;
-                y += [.25, .1, -.1, -.25][tileCell.y] + tileShift.y / __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].size;
+            if (tile) {
+                x += [.25, .1, -.1, -.25][tileCell.x] + tile.shift.x / __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].size;
+                y += [.25, .1, -.1, -.25][tileCell.y] + tile.shift.y / __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].size;
             }
 
             this.target = {

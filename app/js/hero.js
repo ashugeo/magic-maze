@@ -51,8 +51,8 @@ export default class Hero {
 
 
         const boardCell = board.get(x, y);
+        const tile = tiles.getTile(boardCell.tileID);
         const tileCell = boardCell.tileCell;
-        const tileShift = tiles.getTile(boardCell.tileID) ? tiles.getTile(boardCell.tileID).shift : false;
 
         if (config.debug) {
             this.target = {
@@ -60,9 +60,9 @@ export default class Hero {
                 y: y
             }
         } else {
-            if (tileShift) {
-                x += [.25, .1, -.1, -.25][tileCell.x] + tileShift.x / config.size;
-                y += [.25, .1, -.1, -.25][tileCell.y] + tileShift.y / config.size;
+            if (tile) {
+                x += [.25, .1, -.1, -.25][tileCell.x] + tile.shift.x / config.size;
+                y += [.25, .1, -.1, -.25][tileCell.y] + tile.shift.y / config.size;
             }
 
             this.target = {
