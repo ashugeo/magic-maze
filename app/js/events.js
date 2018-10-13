@@ -7,6 +7,7 @@ import game from './game';
 import Hero from './hero';
 import heroes from './heroes'
 import Tile from './tile';
+import tiles from './tiles';
 
 export default {
 
@@ -140,7 +141,7 @@ export default {
     */
     cancel() {
         if (this.action === 'placing') {
-            game.putBackInStock();
+            tiles.putBackInStock();
         }
         this.action = '';
     },
@@ -151,7 +152,7 @@ export default {
     */
     setTile(cell) {
         // Select picked tile
-        const tile = game.getPickedTile();
+        const tile = tiles.getPickedTile();
         const o = tile.getOrientation();
 
         if (tile.canBeSet && tile.status === 'picked') {
@@ -181,7 +182,7 @@ export default {
     */
     newTile() {
         if (role.indexOf('explore') === -1) return;
-        if (game.getStockSize() === 0) return;
+        if (tiles.getStockSize() === 0) return;
         let canAddTile = false;
 
         for (let hero of heroes.all) {
@@ -200,10 +201,10 @@ export default {
             this.action = 'placing';
 
             // Make sure last tile is fixed to prevent multiple tiles picking
-            const lastTile = game.getLastTile();
+            const lastTile = tiles.getLastTile();
 
             if (lastTile.status === 'set') {
-                game.getFromStock();
+                tiles.getFromStock();
             }
         }
     },
@@ -213,7 +214,7 @@ export default {
     * @param  {int} dir direction (1 for clockwise, -1 for counterclockwise)
     */
     rotateTile(dir) {
-        const pickedTile = game.getPickedTile();
+        const pickedTile = tiles.getPickedTile();
         if (pickedTile) pickedTile.rotate(dir);
     },
 

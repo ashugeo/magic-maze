@@ -3,9 +3,9 @@ import board from './board';
 import camera from './camera';
 import config from './config';
 import events from './events';
-import game from './game';
 import heroes from './heroes';
 import symbols from './symbols';
+import tiles from './tiles';
 
 const sketch = p5 => {
     window.p5 = p5;
@@ -53,7 +53,7 @@ const sketch = p5 => {
 * Display all tiles
 */
 function displayTiles() {
-    for (let tile of game.tiles) {
+    for (let tile of tiles.all) {
         // Don't display stock tiles
         if (tile.status === 'stock') continue;
 

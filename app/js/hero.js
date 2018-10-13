@@ -2,8 +2,8 @@ import ai from './ai';
 import board from './board';
 import config from './config';
 import events from './events';
-import game from './game';
 import heroes from './heroes';
+import tiles from './tiles';
 
 export default class Hero {
     constructor(id) {
@@ -52,7 +52,7 @@ export default class Hero {
 
         const boardCell = board.get(x, y);
         const tileCell = boardCell.tileCell;
-        const tileShift = game.getTile(boardCell.tileID).shift;
+        const tileShift = tiles.getTile(boardCell.tileID).shift;
 
         if (config.debug) {
             this.target = {
@@ -267,7 +267,7 @@ export default class Hero {
         const boardCell = board.get(this.cell.x, this.cell.y);
         const tileCell = boardCell.tileCell;
         const tileID = boardCell.tileID;
-        const tile = game.getTile(tileID);
+        const tile = tiles.getTile(tileID);
         const exit = tile.getExitPlusOne(tileCell.x, tileCell.y);
 
         // Move out of board

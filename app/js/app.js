@@ -9,6 +9,7 @@ import heroes from './heroes';
 import p5 from 'p5';
 import sketch from './sketch';
 import Tile from './tile';
+import tiles from './tiles';
 
 let deck = [];
 window.socket = io({transports: ['websocket'], upgrade: false});
@@ -28,7 +29,8 @@ function fetchJSON(i) {
 
 function start(options) {
     new p5(sketch);
-    game.init(deck, options);
+    game.init(options);
+    tiles.init(deck);
     board.init();
     events.init();
     heroes.init();
@@ -108,10 +110,10 @@ socket.on('board', data => {
 });
 
 socket.on('tile', data => {
-    const tile = game.getTile(data.tile.id);
+    const tile = tiles.getTile(data.tile.id);
     tile.rotation = data.tile.rotation;
     tile.set(data.x, data.y);
-    game.board.push(tile.id);
+    tiles.board.push(tile.id);
 });
 
 socket.on('invertClock', data => {

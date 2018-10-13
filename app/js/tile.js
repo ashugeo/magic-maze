@@ -1,8 +1,8 @@
 import board from './board';
 import config from './config';
-import game from './game';
 import heroes from './heroes';
 import symbols from './symbols';
+import tiles from './tiles';
 
 const size = config.size;
 
@@ -12,7 +12,6 @@ export default class Tile {
         this.data = tile.data;
         this.rotation = 0;
         this.status = 'stock'; // stock, picked, set
-        // TODO: replace?
         this.canBeSet = false;
         this.shift = {
             x: 0,
@@ -35,7 +34,7 @@ export default class Tile {
 
         // Compute shift
         if (!config.debug && target) {
-            const parentTile = game.getTile(target.tileID);
+            const parentTile = tiles.getTile(target.tileID);
 
             if (parentTile) {
                 let _x = 0;
@@ -210,7 +209,7 @@ export default class Tile {
         this.move(x, y);
         this.status = 'set';
         this.saveToBoard(x, y);
-        game.setTile(this.id);
+        tiles.setTile(this.id);
     }
 
     saveToBoard(x, y) {

@@ -2,9 +2,9 @@ import ai from './ai';
 import board from './board';
 import config from './config';
 import events from './events';
-import game from './game';
 import heroes from './heroes';
 import Tile from './tile';
+import tiles from './tiles';
 
 export default class Bot {
     constructor(id, roles) {
@@ -17,7 +17,7 @@ export default class Bot {
     * @param  {Object} action Action to execute
     */
     play(action) {
-        if (action.role === 'explore' && game.getStockSize()) {
+        if (action.role === 'explore' && tiles.getStockSize()) {
             this.newTile(action.cell.x, action.cell.y);
         } else if (action.type === 'move') {
             // Make sure hero is selectable
@@ -39,7 +39,7 @@ export default class Bot {
     */
     newTile(x, y) {
         // Pick next tile
-        const tile = game.getFromStock();
+        const tile = tiles.getFromStock();
 
         // Get cell and enter coordinates
         const cell = board.get(x, y);
@@ -47,8 +47,7 @@ export default class Bot {
 
         if (!board.get(enter.x, enter.y).isEmpty()) {
             // Already a tile there, cancel
-            console.log('cancel');
-            game.putBackInStock();
+            tiles.putBackInStock();
             return;
         }
 

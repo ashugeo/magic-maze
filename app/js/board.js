@@ -1,7 +1,7 @@
 import Cell from './cell';
 import config from './config';
-import game from './game';
 import Tile from './tile';
+import tiles from './tiles';
 
 export default {
     layout: [],
@@ -14,7 +14,7 @@ export default {
             }
         }
 
-        const firstTile = game.getFromStock(0);
+        const firstTile = tiles.getFromStock(0);
         firstTile.set(config.firstTile.x, config.firstTile.y);
     },
 
