@@ -168,14 +168,14 @@ export default {
             });
 
             // Mark cell as explored
-            this.bridgeCell.setExplored();
+            this.gateCell.setExplored();
 
             // Run AI
             ai.run();
         }
     },
 
-    bridgeCell: {},
+    gateCell: {},
 
     /**
     * Get next tile from stock
@@ -187,8 +187,8 @@ export default {
 
         for (let hero of heroes.all) {
             const cell = board.get(hero.cell.x, hero.cell.y);
-            if (cell.item && cell.item.type === 'bridge' && cell.item.color === hero.color) {
-                this.bridgeCell = cell;
+            if (cell.item && cell.item.type === 'gate' && cell.item.color === hero.color) {
+                this.gateCell = cell;
                 if (!cell.isExplored()) {
                     canAddTile = true;
                     break;

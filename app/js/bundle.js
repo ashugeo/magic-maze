@@ -104,86 +104,20 @@
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ai__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__helpers__ = __webpack_require__(17);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(5);
-
-
 
 
 
 /* harmony default export */ __webpack_exports__["a"] = ({
 
-    deck: [], // Array of IDs (growing order)
-    stock: [], // Array of IDs (to be mixed)
-    board: [], // Array of IDs (chronologically)
-    tiles: [], // Array of Tile objects
-    pickedTile: false,
     scenario: 0,
     admin: false,
 
-    init(deck, options) {
-        for (let id in deck) {
-            id = parseInt(id);
-            this.deck.push(id);
-            this.stock.push(id);
-            this.tiles.push(new __WEBPACK_IMPORTED_MODULE_3__tile__["a" /* default */](deck[id]));
-        }
-
-        const firstTile = this.stock[0];
-        this.stock.shift();
-        this.stock = __WEBPACK_IMPORTED_MODULE_2__helpers__["a" /* default */].shuffleArray(this.stock);
-        this.stock.unshift(firstTile);
-
+    init(options) {
         if (options) {
             this.admin = true;
             this.scenario = options.scenario;
             __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].init(options);
         }
-    },
-
-    getFromStock(index) {
-        // Get next tile in mixed stock (if no index provided)
-        let id = index === undefined ? this.stock[0] : index;
-
-        // Take tile ID out of stock
-        this.stock.shift();
-
-        // Save picked tile ID
-        this.pickedTile = id;
-
-        // Change tile status to picked
-        this.getTile(id).status = 'picked';
-
-        if (!index) return this.getTile(id);
-    },
-
-    putBackInStock() {
-        this.getTile(this.pickedTile).status = 'stock';
-        this.stock.unshift(this.pickedTile);
-        this.pickedTile = false;
-    },
-
-    getPickedTile() {
-        const id = this.pickedTile;
-        return this.getTile(id);
-    },
-
-    getTile(id) {
-        return this.tiles.find(t => { return t.id === id; });
-    },
-
-    setTile(id) {
-        this.pickedTile = false;
-        this.board.push(id);
-    },
-
-    getLastTile() {
-        const id = this.board[this.board.length - 1];
-        return this.getTile(id);
-    },
-
-    getStockSize() {
-        return this.stock.length;
     },
 
     isAdmin() {
@@ -208,8 +142,8 @@
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__cell__ = __webpack_require__(13);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__game__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tile__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tiles__ = __webpack_require__(18);
 
 
 
@@ -226,7 +160,7 @@
             }
         }
 
-        const firstTile = __WEBPACK_IMPORTED_MODULE_2__game__["a" /* default */].getFromStock(0);
+        const firstTile = __WEBPACK_IMPORTED_MODULE_3__tiles__["a" /* default */].getFromStock(0);
         firstTile.set(__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].firstTile.x, __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].firstTile.y);
     },
 
@@ -257,8 +191,8 @@
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__camera__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__game__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__hero__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__hero__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__tiles__ = __webpack_require__(18);
 
 
 
@@ -271,7 +205,7 @@
 
     init() {
         for (let i = 0; i < 4; i += 1) {
-            this.all.push(new __WEBPACK_IMPORTED_MODULE_4__hero__["a" /* default */](i));
+            this.all.push(new __WEBPACK_IMPORTED_MODULE_3__hero__["a" /* default */](i));
             this.all[i].set(
                 __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].firstTile.x + [1, 2, 2, 1][i],
                 __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].firstTile.y + [1, 1, 2, 2][i]
@@ -325,7 +259,7 @@
                 let tileShift = {x: 0, y: 0};
 
                 if (tileCell && !__WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].debug) {
-                    tileShift = __WEBPACK_IMPORTED_MODULE_3__game__["a" /* default */].getTile(boardCell.tileID).shift;
+                    tileShift = __WEBPACK_IMPORTED_MODULE_4__tiles__["a" /* default */].getTile(boardCell.tileID).shift;
                     const walls = boardCell.walls;
                     const s = .16; // Shift
 
@@ -477,8 +411,8 @@
                 }
             }
 
-            // If hero sits on an unexplored bridge with same color
-            if (cell.item && item.type === 'bridge' && item.color === hero.color && !cell.isExplored() && canExplore) {
+            // If hero sits on an unexplored gate with same color
+            if (cell.item && item.type === 'gate' && item.color === hero.color && !cell.isExplored() && canExplore) {
                 // Place new tile
                 actions.push({
                     role: 'explore',
@@ -520,7 +454,7 @@
             let canMove = true;
             for (let i in actions) {
                 if (actions[i].hero && actions[i].hero.id === hero.id) {
-                    // Prevent exploration + move from bridge at once
+                    // Prevent exploration + move from gate at once
                     if (actions[i].role === 'explore' && actions[i].hero.id === hero.id) {
                         canMove = false;
                     }
@@ -555,8 +489,8 @@
                 // Ignore empty cells
                 if (cell.isEmpty()) continue;
 
-                // Find unexplored bridges
-                if (item.type === 'bridge' && !cell.isExplored()) {
+                // Find unexplored gates
+                if (item.type === 'gate' && !cell.isExplored()) {
                     objectives.push(cell);
                 }
 
@@ -868,9 +802,9 @@
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__game__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__heroes__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__symbols__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__heroes__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__symbols__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__tiles__ = __webpack_require__(18);
 
 
 
@@ -885,7 +819,6 @@ class Tile {
         this.data = tile.data;
         this.rotation = 0;
         this.status = 'stock'; // stock, picked, set
-        // TODO: replace?
         this.canBeSet = false;
         this.shift = {
             x: 0,
@@ -903,12 +836,12 @@ class Tile {
         }
 
         const o = this.getOrientation();
-        const enter = this.getBridge(x, y, o);
+        const enter = this.getgate(x, y, o);
         const target = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].get(enter.x, enter.y);
 
         // Compute shift
         if (!__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].debug && target) {
-            const parentTile = __WEBPACK_IMPORTED_MODULE_2__game__["a" /* default */].getTile(target.tileID);
+            const parentTile = __WEBPACK_IMPORTED_MODULE_4__tiles__["a" /* default */].getTile(target.tileID);
 
             if (parentTile) {
                 let _x = 0;
@@ -973,15 +906,15 @@ class Tile {
             }
         }
 
-        // Make sure cell next to enter is a bridge
-        const nextToEnter = this.getBridge(x, y, this.getOrientation());
+        // Make sure cell next to enter is a gate
+        const nextToEnter = this.getgate(x, y, this.getOrientation());
         const cellNextToEnter = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].get(nextToEnter.x, nextToEnter.y);
         if (!cellNextToEnter.isEmpty()) {
-            if (cellNextToEnter.item.type !== 'bridge') {
+            if (cellNextToEnter.item.type !== 'gate') {
                 return false;
             } else {
-                // There is a bridge, make sure it has a hero on it with the same color
-                for (let hero of __WEBPACK_IMPORTED_MODULE_3__heroes__["a" /* default */].all) {
+                // There is a gate, make sure it has a hero on it with the same color
+                for (let hero of __WEBPACK_IMPORTED_MODULE_2__heroes__["a" /* default */].all) {
                     if (hero.cell.x === nextToEnter.x && hero.cell.y === nextToEnter.y) {
                         if (hero.color === cellNextToEnter.item.color) {
                             return true;
@@ -1013,13 +946,13 @@ class Tile {
     }
 
     /**
-    * Get tile bridge coordinates (cell out of tile)
+    * Get tile gate coordinates (cell out of tile)
     * @param  {int}    x mouse X coordinate
     * @param  {int}    y mouse Y coordinate
     * @param  {int}    o tile orientation
     * @return {Object}    {x, y}
     */
-    getBridge(x, y, o) {
+    getgate(x, y, o) {
         x += [2, 4, 1, -1][o];
         y += [-1, 2, 4, 1][o];
 
@@ -1030,7 +963,7 @@ class Tile {
     * Get tile enter coordinates (cell inside tile)
     * @param  {int}    x mouse X coordinate
     * @param  {int}    y mouse Y coordinate
-    * @param  {int}    b bridge X coordinate
+    * @param  {int}    b gate X coordinate
     * @return {Object}   {x, y}
     */
     getEnter(x, y, b) {
@@ -1069,7 +1002,7 @@ class Tile {
     * Get tile origin coordinates (top left cell)
     * @param  {int}    x mouse X coordinate
     * @param  {int}    y mouse Y coordinate
-    * @param  {int}    b bridge X coordinate
+    * @param  {int}    b gate X coordinate
     * @return {Object}   {x, y}
     */
     getOrigin(x, y, o) {
@@ -1083,7 +1016,7 @@ class Tile {
         this.move(x, y);
         this.status = 'set';
         this.saveToBoard(x, y);
-        __WEBPACK_IMPORTED_MODULE_2__game__["a" /* default */].setTile(this.id);
+        __WEBPACK_IMPORTED_MODULE_4__tiles__["a" /* default */].setTile(this.id);
     }
 
     saveToBoard(x, y) {
@@ -1231,30 +1164,30 @@ class Tile {
                             p5.stroke(__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].colors[item.color]);
                             p5.ellipse(size / 2, size / 2, size / 2, size / 2);
                             p5.blendMode('multiply');
-                        } else if (item.type === 'bridge' || item.type === 'enter') {
-                            // Set color (for bridge)
+                        } else if (item.type === 'gate' || item.type === 'enter') {
+                            // Set color (for gate)
                             if (item.color) p5.stroke(__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].colors[item.color]);
 
                             // Rotate and draw item depending on cell coordinates
                             p5.push();
                             if (j === 0) {
                                 // Pointing up
-                                __WEBPACK_IMPORTED_MODULE_4__symbols__["a" /* default */].arrow(item.type);
+                                __WEBPACK_IMPORTED_MODULE_3__symbols__["a" /* default */].arrow(item.type);
                             } else if (j === 3) {
                                 // Pointing bottom
                                 p5.translate(size, size);
                                 p5.rotate(p5.PI);
-                                __WEBPACK_IMPORTED_MODULE_4__symbols__["a" /* default */].arrow(item.type);
+                                __WEBPACK_IMPORTED_MODULE_3__symbols__["a" /* default */].arrow(item.type);
                             } else if (i === 0) {
                                 // Pointing left
                                 p5.translate(0, size);
                                 p5.rotate(-p5.PI / 2);
-                                __WEBPACK_IMPORTED_MODULE_4__symbols__["a" /* default */].arrow(item.type);
+                                __WEBPACK_IMPORTED_MODULE_3__symbols__["a" /* default */].arrow(item.type);
                             } else if (i === 3) {
                                 // Pointing right
                                 p5.translate(size, 0);
                                 p5.rotate(p5.PI / 2);
-                                __WEBPACK_IMPORTED_MODULE_4__symbols__["a" /* default */].arrow(item.type);
+                                __WEBPACK_IMPORTED_MODULE_3__symbols__["a" /* default */].arrow(item.type);
                             }
                             p5.pop();
                         }
@@ -1343,6 +1276,8 @@ class Tile {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__hero__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__heroes__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__tile__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__tiles__ = __webpack_require__(18);
+
 
 
 
@@ -1485,7 +1420,7 @@ class Tile {
     */
     cancel() {
         if (this.action === 'placing') {
-            __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].putBackInStock();
+            __WEBPACK_IMPORTED_MODULE_9__tiles__["a" /* default */].putBackInStock();
         }
         this.action = '';
     },
@@ -1496,7 +1431,7 @@ class Tile {
     */
     setTile(cell) {
         // Select picked tile
-        const tile = __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].getPickedTile();
+        const tile = __WEBPACK_IMPORTED_MODULE_9__tiles__["a" /* default */].getPickedTile();
         const o = tile.getOrientation();
 
         if (tile.canBeSet && tile.status === 'picked') {
@@ -1512,27 +1447,27 @@ class Tile {
             });
 
             // Mark cell as explored
-            this.bridgeCell.setExplored();
+            this.gateCell.setExplored();
 
             // Run AI
             __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].run();
         }
     },
 
-    bridgeCell: {},
+    gateCell: {},
 
     /**
     * Get next tile from stock
     */
     newTile() {
         if (role.indexOf('explore') === -1) return;
-        if (__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].getStockSize() === 0) return;
+        if (__WEBPACK_IMPORTED_MODULE_9__tiles__["a" /* default */].getStockSize() === 0) return;
         let canAddTile = false;
 
         for (let hero of __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].all) {
             const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(hero.cell.x, hero.cell.y);
-            if (cell.item && cell.item.type === 'bridge' && cell.item.color === hero.color) {
-                this.bridgeCell = cell;
+            if (cell.item && cell.item.type === 'gate' && cell.item.color === hero.color) {
+                this.gateCell = cell;
                 if (!cell.isExplored()) {
                     canAddTile = true;
                     break;
@@ -1545,10 +1480,10 @@ class Tile {
             this.action = 'placing';
 
             // Make sure last tile is fixed to prevent multiple tiles picking
-            const lastTile = __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].getLastTile();
+            const lastTile = __WEBPACK_IMPORTED_MODULE_9__tiles__["a" /* default */].getLastTile();
 
             if (lastTile.status === 'set') {
-                __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].getFromStock();
+                __WEBPACK_IMPORTED_MODULE_9__tiles__["a" /* default */].getFromStock();
             }
         }
     },
@@ -1558,7 +1493,7 @@ class Tile {
     * @param  {int} dir direction (1 for clockwise, -1 for counterclockwise)
     */
     rotateTile(dir) {
-        const pickedTile = __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].getPickedTile();
+        const pickedTile = __WEBPACK_IMPORTED_MODULE_9__tiles__["a" /* default */].getPickedTile();
         if (pickedTile) pickedTile.rotate(dir);
     },
 
@@ -1724,8 +1659,8 @@ class Tile {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__events__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__game__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__heroes__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__heroes__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__tiles__ = __webpack_require__(18);
 
 
 
@@ -1780,7 +1715,7 @@ class Hero {
 
         const boardCell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(x, y);
         const tileCell = boardCell.tileCell;
-        const tileShift = __WEBPACK_IMPORTED_MODULE_4__game__["a" /* default */].getTile(boardCell.tileID).shift;
+        const tileShift = __WEBPACK_IMPORTED_MODULE_5__tiles__["a" /* default */].getTile(boardCell.tileID).shift;
 
         if (__WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].debug) {
             this.target = {
@@ -1870,14 +1805,13 @@ class Hero {
     /**
     * Check path legality
     * @param  {Object} target Target cell
-    * @param  {array}  role   Roles (for bots)
     */
-    checkPath(target, role) {
+    checkPath(target) {
         // No specified target, check for self position (current cell)
         if (!target) target = this.cell;
 
-        // No specified role, use player role
-        if (!role) role = window.role;
+        // Use player role
+        const role = window.role;
 
         const path = this.getPath(target);
         if (!path) return;
@@ -1896,7 +1830,7 @@ class Hero {
             if (path[i+1] && path[i+1].reachable) {
 
                 // Make sure there is no other hero on target
-                for (let hero of __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].all) {
+                for (let hero of __WEBPACK_IMPORTED_MODULE_4__heroes__["a" /* default */].all) {
                     if (path[i+1].x === hero.cell.x && path[i+1].y === hero.cell.y) {
                         // Another hero blocking the way
                         path[i+1].reachable = false;
@@ -1909,7 +1843,7 @@ class Hero {
             }
 
             if (i > 0) {
-                for (let hero of __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].all) {
+                for (let hero of __WEBPACK_IMPORTED_MODULE_4__heroes__["a" /* default */].all) {
                     if (path[i].x === hero.cell.x && path[i].y === hero.cell.y) {
                         // Another hero blocking the way
                         path[i].reachable = false;
@@ -1995,7 +1929,7 @@ class Hero {
         const boardCell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(this.cell.x, this.cell.y);
         const tileCell = boardCell.tileCell;
         const tileID = boardCell.tileID;
-        const tile = __WEBPACK_IMPORTED_MODULE_4__game__["a" /* default */].getTile(tileID);
+        const tile = __WEBPACK_IMPORTED_MODULE_5__tiles__["a" /* default */].getTile(tileID);
         const exit = tile.getExitPlusOne(tileCell.x, tileCell.y);
 
         // Move out of board
@@ -2088,7 +2022,7 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
     * Draw an arrow
     */
     arrow(type) {
-        if (type === 'bridge') {
+        if (type === 'gate') {
             // Linear arrow
             p5.blendMode('normal');
             p5.line(size/2, size/4, size/2, size/1.5);
@@ -73574,6 +73508,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8_p5__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__sketch__ = __webpack_require__(16);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__tile__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__tiles__ = __webpack_require__(18);
+
 
 
 
@@ -73604,7 +73540,8 @@ function fetchJSON(i) {
 
 function start(options) {
     new __WEBPACK_IMPORTED_MODULE_8_p5___default.a(__WEBPACK_IMPORTED_MODULE_9__sketch__["a" /* default */]);
-    __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].init(deck, options);
+    __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].init(options);
+    __WEBPACK_IMPORTED_MODULE_11__tiles__["a" /* default */].init(deck);
     __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].init();
     __WEBPACK_IMPORTED_MODULE_4__events__["a" /* default */].init();
     __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].init();
@@ -73684,10 +73621,10 @@ socket.on('board', data => {
 });
 
 socket.on('tile', data => {
-    const tile = __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].getTile(data.tile.id);
+    const tile = __WEBPACK_IMPORTED_MODULE_11__tiles__["a" /* default */].getTile(data.tile.id);
     tile.rotation = data.tile.rotation;
     tile.set(data.x, data.y);
-    __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].board.push(tile.id);
+    __WEBPACK_IMPORTED_MODULE_11__tiles__["a" /* default */].board.push(tile.id);
 });
 
 socket.on('invertClock', data => {
@@ -73728,16 +73665,16 @@ class Cell {
         this.item = data.item ? data.item : false;
         this.escalator = data.escalator ? data.escalator : false;
 
-        // If bridge goes into set tile, it can be considered as explored
-        if (data.item && data.item.type === 'bridge') {
+        // If gate goes into set tile, it can be considered as explored
+        if (data.item && data.item.type === 'gate') {
             const _x = [-1, 0, 0, 1][data.tileCell.x];
             const _y = [0, 1, -1, 0][data.tileCell.x];
             const cell = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].get(this.coord.x + _x, this.coord.y + _y);
             if (!cell) return;
             if (!cell.isEmpty()) this.setExplored();
 
-            // Bridge goes into unexplored bridge, set it as explored as well
-            if (cell.item && cell.item.type === 'bridge') {
+            // gate goes into unexplored gate, set it as explored as well
+            if (cell.item && cell.item.type === 'gate') {
                 cell.setExplored();
             }
         }
@@ -73784,9 +73721,9 @@ class Cell {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__events__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__game__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__heroes__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__tile__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__heroes__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__tile__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__tiles__ = __webpack_require__(18);
 
 
 
@@ -73806,7 +73743,7 @@ class Bot {
     * @param  {Object} action Action to execute
     */
     play(action) {
-        if (action.role === 'explore' && __WEBPACK_IMPORTED_MODULE_4__game__["a" /* default */].getStockSize()) {
+        if (action.role === 'explore' && __WEBPACK_IMPORTED_MODULE_6__tiles__["a" /* default */].getStockSize()) {
             this.newTile(action.cell.x, action.cell.y);
         } else if (action.type === 'move') {
             // Make sure hero is selectable
@@ -73823,12 +73760,12 @@ class Bot {
 
     /**
     * Create and set a new tile
-    * @param  {int} x bridge X coordinate
-    * @param  {int} y bridge Y coordinate
+    * @param  {int} x gate X coordinate
+    * @param  {int} y gate Y coordinate
     */
     newTile(x, y) {
         // Pick next tile
-        const tile = __WEBPACK_IMPORTED_MODULE_4__game__["a" /* default */].getFromStock();
+        const tile = __WEBPACK_IMPORTED_MODULE_6__tiles__["a" /* default */].getFromStock();
 
         // Get cell and enter coordinates
         const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(x, y);
@@ -73836,12 +73773,11 @@ class Bot {
 
         if (!__WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(enter.x, enter.y).isEmpty()) {
             // Already a tile there, cancel
-            console.log('cancel');
-            __WEBPACK_IMPORTED_MODULE_4__game__["a" /* default */].putBackInStock();
+            __WEBPACK_IMPORTED_MODULE_6__tiles__["a" /* default */].putBackInStock();
             return;
         }
 
-        // Compute new orientation relative to bridge X coordinate
+        // Compute new orientation relative to gate X coordinate
         let o = tile.getOrientation();
         let _o = [1, 0, 2, 3][cell.tileCell.x];
 
@@ -73858,7 +73794,7 @@ class Bot {
             tile: tile
         });
 
-        // Mark bridge as explored
+        // Mark gate as explored
         cell.setExplored(x, y);
 
         // Run AI again
@@ -73907,9 +73843,9 @@ module.exports = g;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__events__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__game__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__heroes__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__symbols__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__heroes__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__symbols__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__tiles__ = __webpack_require__(18);
 
 
 
@@ -73951,10 +73887,10 @@ const sketch = p5 => {
         // Display tiles
         displayTiles();
 
-        __WEBPACK_IMPORTED_MODULE_6__heroes__["a" /* default */].display();
+        __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].display();
 
         if (__WEBPACK_IMPORTED_MODULE_3__config__["a" /* default */].grid) {
-            __WEBPACK_IMPORTED_MODULE_7__symbols__["a" /* default */].grid();
+            __WEBPACK_IMPORTED_MODULE_6__symbols__["a" /* default */].grid();
         }
 
         p5.pop();
@@ -73965,7 +73901,7 @@ const sketch = p5 => {
 * Display all tiles
 */
 function displayTiles() {
-    for (let tile of __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].tiles) {
+    for (let tile of __WEBPACK_IMPORTED_MODULE_7__tiles__["a" /* default */].all) {
         // Don't display stock tiles
         if (tile.status === 'stock') continue;
 
@@ -74002,6 +73938,84 @@ function displayTiles() {
             a[j] = x;
         }
         return a;
+    }
+});
+
+
+/***/ }),
+/* 18 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__helpers__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tile__ = __webpack_require__(5);
+
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+    all: [], // Array of Tile objects
+    deck: [], // Array of IDs (growing order)
+    stock: [], // Array of IDs (to be mixed)
+    board: [], // Array of IDs (chronologically)
+    pickedTile: false, // ID or false
+
+    init(deck) {
+        for (let id in deck) {
+            id = parseInt(id);
+            this.deck.push(id);
+            this.stock.push(id);
+            this.all.push(new __WEBPACK_IMPORTED_MODULE_1__tile__["a" /* default */](deck[id]));
+        }
+
+        const firstTile = this.stock[0];
+        this.stock.shift();
+        this.stock = __WEBPACK_IMPORTED_MODULE_0__helpers__["a" /* default */].shuffleArray(this.stock);
+        this.stock.unshift(firstTile);
+    },
+
+    getFromStock(index) {
+        // Get next tile in mixed stock (if no index provided)
+        let id = index === undefined ? this.stock[0] : index;
+
+        // Take tile ID out of stock
+        this.stock.shift();
+
+        // Save picked tile ID
+        this.pickedTile = id;
+
+        // Change tile status to picked
+        this.getTile(id).status = 'picked';
+
+        if (!index) return this.getTile(id);
+    },
+
+    putBackInStock() {
+        this.getTile(this.pickedTile).status = 'stock';
+        this.stock.unshift(this.pickedTile);
+        this.pickedTile = false;
+    },
+
+    getPickedTile() {
+        const id = this.pickedTile;
+        return this.getTile(id);
+    },
+
+    getTile(id) {
+        return this.all.find(t => { return t.id === id; });
+    },
+
+    setTile(id) {
+        this.pickedTile = false;
+        this.board.push(id);
+    },
+
+    getLastTile() {
+        const id = this.board[this.board.length - 1];
+        return this.getTile(id);
+    },
+
+    getStockSize() {
+        return this.stock.length;
     }
 });
 

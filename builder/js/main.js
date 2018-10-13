@@ -11,7 +11,7 @@ const config = {
 
 let canvas;
 let tile;
-let tool = 'wall'; // wall, enter, bridge, vortex
+let tool = 'wall'; // wall, enter, gate, vortex
 let color = 'green';
 let p1 = false;
 let p2 = false;
@@ -90,7 +90,7 @@ function mousePressed() {
             p2 = false;
         }
     } else {
-        // Enter, bridge, vortex, exit & time
+        // Enter, gate, vortex, exit & time
 
         // Remove item
         if (cell.item && cell.item.type === tool && cell.item.color === color) {
@@ -98,8 +98,8 @@ function mousePressed() {
             return;
         }
 
-        // Bridges have only four possible cells to be set on
-        if (tool === 'bridge' || tool === 'enter') {
+        // gates have only four possible cells to be set on
+        if (tool === 'gate' || tool === 'enter') {
             if (!(
                 (x === 0 && y === 1) ||
                 (x === 1 && y === 3) ||
@@ -118,8 +118,8 @@ function mousePressed() {
             )) return;
         }
 
-        // All bridges and vortexes should have a color
-        if ((tool === 'bridge' || tool === 'vortex') && !color) return;
+        // All gates and vortexes should have a color
+        if ((tool === 'gate' || tool === 'vortex') && !color) return;
 
         // Time and enter have no color
         if (tool === 'time' || tool === 'enter') {
@@ -181,8 +181,8 @@ class Tile {
                         noStroke();
                         fill(config.colors[item.color]);
                         star(config.size / 2, config.size / 2, 10, 25, 5);
-                    } else if (item.type === 'bridge' || item.type === 'enter' || item.type === 'exit') {
-                        // Set color (for bridge & exit)
+                    } else if (item.type === 'gate' || item.type === 'enter' || item.type === 'exit') {
+                        // Set color (for gate & exit)
                         if (config.colors[item.color]) {
                             fill(config.colors[item.color]);
                             stroke(config.colors[item.color]);
@@ -297,10 +297,10 @@ function grid() {
 
 /**
 * Draw an arrow
-* @param  {string} type bridge, enter
+* @param  {string} type gate, enter
 */
 function arrow(type) {
-    if (type === 'bridge') {
+    if (type === 'gate') {
         // Linear arrow
         blendMode(NORMAL);
         line(config.size/2, config.size/4, config.size/2, config.size/1.5);
@@ -523,7 +523,7 @@ function keyPressed(e) {
     } else if (keyIsDown(51)) { // 3
         tool = 'enter';
     } else if (keyIsDown(52)) { // 4
-        tool = 'bridge';
+        tool = 'gate';
     } else if (keyIsDown(53)) { // 5
         tool = 'vortex';
     } else if (keyIsDown(54)) { // 6
@@ -557,7 +557,7 @@ function updateUI() {
     $('ul.colors').find('li.selected').removeClass('selected');
     $('ul.colors').find('li[data-color="' + color + '"]').addClass('selected');
 
-    if (tool === 'bridge' || tool === 'vortex' || tool === 'exit' || tool === 'article') {
+    if (tool === 'gate' || tool === 'vortex' || tool === 'exit' || tool === 'article') {
         $('.colors').css('opacity', 1);
     } else {
         $('.colors').css('opacity', 0);

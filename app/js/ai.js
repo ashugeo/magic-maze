@@ -58,8 +58,8 @@ export default {
                 }
             }
 
-            // If hero sits on an unexplored bridge with same color
-            if (cell.item && item.type === 'bridge' && item.color === hero.color && !cell.isExplored() && canExplore) {
+            // If hero sits on an unexplored gate with same color
+            if (cell.item && item.type === 'gate' && item.color === hero.color && !cell.isExplored() && canExplore) {
                 // Place new tile
                 actions.push({
                     role: 'explore',
@@ -101,7 +101,7 @@ export default {
             let canMove = true;
             for (let i in actions) {
                 if (actions[i].hero && actions[i].hero.id === hero.id) {
-                    // Prevent exploration + move from bridge at once
+                    // Prevent exploration + move from gate at once
                     if (actions[i].role === 'explore' && actions[i].hero.id === hero.id) {
                         canMove = false;
                     }
@@ -136,8 +136,8 @@ export default {
                 // Ignore empty cells
                 if (cell.isEmpty()) continue;
 
-                // Find unexplored bridges
-                if (item.type === 'bridge' && !cell.isExplored()) {
+                // Find unexplored gates
+                if (item.type === 'gate' && !cell.isExplored()) {
                     objectives.push(cell);
                 }
 

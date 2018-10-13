@@ -34,8 +34,8 @@ export default class Bot {
 
     /**
     * Create and set a new tile
-    * @param  {int} x bridge X coordinate
-    * @param  {int} y bridge Y coordinate
+    * @param  {int} x gate X coordinate
+    * @param  {int} y gate Y coordinate
     */
     newTile(x, y) {
         // Pick next tile
@@ -51,7 +51,7 @@ export default class Bot {
             return;
         }
 
-        // Compute new orientation relative to bridge X coordinate
+        // Compute new orientation relative to gate X coordinate
         let o = tile.getOrientation();
         let _o = [1, 0, 2, 3][cell.tileCell.x];
 
@@ -68,7 +68,7 @@ export default class Bot {
             tile: tile
         });
 
-        // Mark bridge as explored
+        // Mark gate as explored
         cell.setExplored(x, y);
 
         // Run AI again

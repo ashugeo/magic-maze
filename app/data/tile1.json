@@ -134,7 +134,7 @@
                 "left": true
             },
             "item": {
-                "type": "bridge",
+                "type": "gate",
                 "color": "orange"
             },
             "escalator": {

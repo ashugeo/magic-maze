@@ -6,7 +6,7 @@ export default {
     * Draw an arrow
     */
     arrow(type) {
-        if (type === 'bridge') {
+        if (type === 'gate') {
             // Linear arrow
             p5.blendMode('normal');
             p5.line(size/2, size/4, size/2, size/1.5);

@@ -24,7 +24,7 @@
                 "left": true
             },
             "item": {
-                "type": "bridge",
+                "type": "gate",
                 "color": "green"
             }
         },
@@ -129,7 +129,7 @@
                 "left": true
             },
             "item": {
-                "type": "bridge",
+                "type": "gate",
                 "color": "yellow"
             }
         },

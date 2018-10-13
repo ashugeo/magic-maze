@@ -29,7 +29,7 @@ export default class Tile {
         }
 
         const o = this.getOrientation();
-        const enter = this.getBridge(x, y, o);
+        const enter = this.getgate(x, y, o);
         const target = board.get(enter.x, enter.y);
 
         // Compute shift
@@ -99,14 +99,14 @@ export default class Tile {
             }
         }
 
-        // Make sure cell next to enter is a bridge
-        const nextToEnter = this.getBridge(x, y, this.getOrientation());
+        // Make sure cell next to enter is a gate
+        const nextToEnter = this.getgate(x, y, this.getOrientation());
         const cellNextToEnter = board.get(nextToEnter.x, nextToEnter.y);
         if (!cellNextToEnter.isEmpty()) {
-            if (cellNextToEnter.item.type !== 'bridge') {
+            if (cellNextToEnter.item.type !== 'gate') {
                 return false;
             } else {
-                // There is a bridge, make sure it has a hero on it with the same color
+                // There is a gate, make sure it has a hero on it with the same color
                 for (let hero of heroes.all) {
                     if (hero.cell.x === nextToEnter.x && hero.cell.y === nextToEnter.y) {
                         if (hero.color === cellNextToEnter.item.color) {
@@ -139,13 +139,13 @@ export default class Tile {
     }
 
     /**
-    * Get tile bridge coordinates (cell out of tile)
+    * Get tile gate coordinates (cell out of tile)
     * @param  {int}    x mouse X coordinate
     * @param  {int}    y mouse Y coordinate
     * @param  {int}    o tile orientation
     * @return {Object}    {x, y}
     */
-    getBridge(x, y, o) {
+    getgate(x, y, o) {
         x += [2, 4, 1, -1][o];
         y += [-1, 2, 4, 1][o];
 
@@ -156,7 +156,7 @@ export default class Tile {
     * Get tile enter coordinates (cell inside tile)
     * @param  {int}    x mouse X coordinate
     * @param  {int}    y mouse Y coordinate
-    * @param  {int}    b bridge X coordinate
+    * @param  {int}    b gate X coordinate
     * @return {Object}   {x, y}
     */
     getEnter(x, y, b) {
@@ -195,7 +195,7 @@ export default class Tile {
     * Get tile origin coordinates (top left cell)
     * @param  {int}    x mouse X coordinate
     * @param  {int}    y mouse Y coordinate
-    * @param  {int}    b bridge X coordinate
+    * @param  {int}    b gate X coordinate
     * @return {Object}   {x, y}
     */
     getOrigin(x, y, o) {
@@ -357,8 +357,8 @@ export default class Tile {
                             p5.stroke(config.colors[item.color]);
                             p5.ellipse(size / 2, size / 2, size / 2, size / 2);
                             p5.blendMode('multiply');
-                        } else if (item.type === 'bridge' || item.type === 'enter') {
-                            // Set color (for bridge)
+                        } else if (item.type === 'gate' || item.type === 'enter') {
+                            // Set color (for gate)
                             if (item.color) p5.stroke(config.colors[item.color]);
 
                             // Rotate and draw item depending on cell coordinates
