@@ -42,7 +42,7 @@ io.sockets.on('connection', socket => {
 
     // Player toggled the spectator checkbox
     socket.on('spectator', isSpectator => {
-        const person = people.filter(p => { return p.id === socket.id; })[0];
+        const person = people.find(p => { return p.id === socket.id; });
         person.spectator = isSpectator;
     });
 
@@ -91,9 +91,9 @@ io.sockets.on('connection', socket => {
             for (let i in roles) {
                 i = parseInt(i);
 
-                if (people[i]) {
+                if (players[i]) {
                     // Tell this player his role(s)
-                    io.to(people[i].id).emit('role', roles[i]);
+                    io.to(players[i].id).emit('role', roles[i]);
                 } else {
                     // Not a player but a bot, save in options
                     options.botsRoles.push(roles[i]);
