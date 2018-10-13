@@ -93,7 +93,7 @@ function mousePressed() {
         // Enter, gate, vortex, exit & time
 
         // Remove item
-        if (cell.item && cell.item.type === tool && cell.item.color === color) {
+        if (cell.item && cell.item.type === tool && ((tool === 'time' || tool === 'enter') || cell.item.color === color)) {
             cell.item = false;
             return;
         }
