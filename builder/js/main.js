@@ -469,13 +469,13 @@ function exportJSON() {
             json[i][j] = {};
             json[i][j].walls = {};
 
-            json[i][j].walls.top = tile.layout[i][j].walls.top;
-            json[i][j].walls.right = tile.layout[i][j].walls.right;
-            json[i][j].walls.bottom = tile.layout[i][j].walls.bottom;
-            json[i][j].walls.left = tile.layout[i][j].walls.left;
+            json[i][j].walls.top = tile.layout[j][i].walls.top;
+            json[i][j].walls.right = tile.layout[j][i].walls.right;
+            json[i][j].walls.bottom = tile.layout[j][i].walls.bottom;
+            json[i][j].walls.left = tile.layout[j][i].walls.left;
 
-            json[i][j]['item'] = tile.layout[i][j].item;
-            json[i][j]['escalator'] = tile.layout[i][j].escalator;
+            json[i][j]['item'] = tile.layout[j][i].item;
+            json[i][j]['escalator'] = tile.layout[j][i].escalator;
         }
     }
 
