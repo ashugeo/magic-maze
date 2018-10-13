@@ -1,6 +1,7 @@
 import board from './board';
 import camera from './camera'
 import config from './config';
+import game from './game';
 import Hero from './hero';
 
 export default {
@@ -63,7 +64,7 @@ export default {
                 let tileShift = {x: 0, y: 0};
 
                 if (tileCell && !config.debug) {
-                    tileShift = tiles[boardCell.tileID].shift;
+                    tileShift = game.getTile(boardCell.tileID).shift;
                     const walls = boardCell.walls;
                     const s = .16; // Shift
 

@@ -17,7 +17,7 @@ export default class Bot {
     * @param  {Object} action Action to execute
     */
     play(action) {
-        if (action.role === 'explore' && json[tiles.length]) {
+        if (action.role === 'explore' && game.getStockSize()) {
             this.newTile(action.cell.x, action.cell.y);
         } else if (action.type === 'move') {
             // Make sure hero is selectable
@@ -38,9 +38,8 @@ export default class Bot {
     * @param  {int} y bridge Y coordinate
     */
     newTile(x, y) {
-        // Create and save new tile
-        const tile = new Tile(tiles.length);
-        tiles.push(tile);
+        // Pick next tile
+        const tile = game.getFromStock();
 
         // Get cell and enter coordinates
         const cell = board.get(x, y);
@@ -48,7 +47,8 @@ export default class Bot {
 
         if (!board.get(enter.x, enter.y).isEmpty()) {
             // Already a tile there, cancel
-            tiles.pop();
+            console.log('cancel');
+            game.putBackInStock();
             return;
         }
 

@@ -52,7 +52,7 @@ export default class Hero {
 
         const boardCell = board.get(x, y);
         const tileCell = boardCell.tileCell;
-        const tileShift = tiles[boardCell.tileID] ? tiles[boardCell.tileID].shift : false;
+        const tileShift = game.getTile(boardCell.tileID).shift;
 
         if (config.debug) {
             this.target = {
@@ -267,7 +267,7 @@ export default class Hero {
         const boardCell = board.get(this.cell.x, this.cell.y);
         const tileCell = boardCell.tileCell;
         const tileID = boardCell.tileID;
-        const tile = tiles[tileID];
+        const tile = game.getTile(tileID);
         const exit = tile.getExitPlusOne(tileCell.x, tileCell.y);
 
         // Move out of board

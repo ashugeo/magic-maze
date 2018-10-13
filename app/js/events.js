@@ -18,8 +18,8 @@ export default {
         * @param {Object} e event
         */
         document.addEventListener('keydown', e => {
-            if (e.which === 67) { // C: engage tile setting
-                if (role.indexOf('explore') > -1 && json[tiles.length]) this.newTile();
+            if (e.which === 67) { // C: engage tile placing
+                this.newTile();
             } else if (e.which === 82) { // R: rotate tile counterclockwise
                 this.rotateTile(-1);
             } else if (e.which === 84) { // T: rotate tile clockwise
@@ -60,7 +60,7 @@ export default {
     mouseDown() {
         const cell = this.getHoveredCell();
 
-        if (this.action === 'setting') {
+        if (this.action === 'placing') {
             this.setTile(cell);
         }
 
@@ -139,22 +139,22 @@ export default {
     * Cancel current action
     */
     cancel() {
-        if (this.action === 'setting') {
-            tiles.pop();
+        if (this.action === 'placing') {
+            game.putBackInStock();
         }
         this.action = '';
     },
 
     /**
-    * Set tile being placed
+    * Set picked tile
     * @param {Object} cell cell to set tile onto
     */
     setTile(cell) {
-        // Select tile being set
-        const tile = tiles[tiles.length - 1];
+        // Select picked tile
+        const tile = game.getPickedTile();
         const o = tile.getOrientation();
 
-        if (tile.canBeSet && !tile.fixed) {
+        if (tile.canBeSet && tile.status === 'picked') {
             this.action = '';
 
             // Set tile at origin
@@ -177,9 +177,11 @@ export default {
     bridgeCell: {},
 
     /**
-    * Push new tile to tiles array
+    * Get next tile from stock
     */
     newTile() {
+        if (role.indexOf('explore') === -1) return;
+        if (game.getStockSize() === 0) return;
         let canAddTile = false;
 
         for (let hero of heroes.all) {
@@ -193,34 +195,26 @@ export default {
             }
         }
 
+
         if (canAddTile) {
-            this.action = 'setting';
+            this.action = 'placing';
 
-            // Select tile being set
-            const tile = tiles[tiles.length - 1];
+            // Make sure last tile is fixed to prevent multiple tiles picking
+            const lastTile = game.getLastTile();
 
-            // Make sure last tile is fixed to prevent multiple tiles setting
-            if (tile.fixed) {
-                // TODO: remove this
-                // tiles.push(new Tile((tiles.length - 1) % (config.tiles - 1) + 1));
-
-                tiles.push(new Tile(tiles.length));
+            if (lastTile.status === 'set') {
+                game.getFromStock();
             }
         }
     },
 
     /**
-    * Rotate tile being set
+    * Rotate picked tile
     * @param  {int} dir direction (1 for clockwise, -1 for counterclockwise)
     */
     rotateTile(dir) {
-        // Select tile being set
-        const tile = tiles[tiles.length-1];
-
-        // Make sure tile is not fixed
-        if (!tile.fixed) {
-            tile.rotate(dir);
-        }
+        const pickedTile = game.getPickedTile();
+        if (pickedTile) pickedTile.rotate(dir);
     },
 
     /**

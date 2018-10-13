@@ -3,6 +3,7 @@ import board from './board';
 import camera from './camera';
 import config from './config';
 import events from './events';
+import game from './game';
 import heroes from './heroes';
 import symbols from './symbols';
 
@@ -52,9 +53,12 @@ const sketch = p5 => {
 * Display all tiles
 */
 function displayTiles() {
-    for (let tile of tiles) {
+    for (let tile of game.tiles) {
+        // Don't display stock tiles
+        if (tile.status === 'stock') continue;
+
         // Tiles is being placed, move it along cursor position
-        if (!tile.fixed) {
+        if (tile.status === 'picked') {
             // Hovered cell
             const cell = events.getHoveredCell();
             const o = tile.getOrientation();

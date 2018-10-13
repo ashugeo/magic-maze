@@ -1,5 +1,6 @@
 import Cell from './cell';
 import config from './config';
+import game from './game';
 import Tile from './tile';
 
 export default {
@@ -13,8 +14,8 @@ export default {
             }
         }
 
-        window.tiles.push(new Tile(0));
-        window.tiles[0].set(config.firstTile.x, config.firstTile.y);
+        const firstTile = game.getFromStock(0);
+        firstTile.set(config.firstTile.x, config.firstTile.y);
     },
 
     get(x, y) {

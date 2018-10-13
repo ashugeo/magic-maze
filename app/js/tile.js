@@ -1,18 +1,19 @@
 import board from './board';
 import config from './config';
+import game from './game';
 import heroes from './heroes';
 import symbols from './symbols';
 
 const size = config.size;
-let tileID = 0;
 
 export default class Tile {
-    constructor(id) {
-        this.id = id;
-        this.data = json[id];
+    constructor(tile) {
+        this.id = tile.id;
+        this.data = tile.data;
         this.rotation = 0;
+        this.status = 'stock'; // stock, picked, set
+        // TODO: replace?
         this.canBeSet = false;
-        this.fixed = false;
         this.shift = {
             x: 0,
             y: 0
@@ -34,7 +35,7 @@ export default class Tile {
 
         // Compute shift
         if (!config.debug && target) {
-            const parentTile = tiles[target.tileID];
+            const parentTile = game.getTile(target.tileID);
 
             if (parentTile) {
                 let _x = 0;
@@ -207,8 +208,9 @@ export default class Tile {
 
     set(x, y) {
         this.move(x, y);
-        this.fixed = true;
+        this.status = 'set';
         this.saveToBoard(x, y);
+        game.setTile(this.id);
     }
 
     saveToBoard(x, y) {
@@ -241,8 +243,7 @@ export default class Tile {
 
                 // Copy data
                 let boardCell = Object.assign({}, cell);
-                // boardCell.tileID = this.id;
-                boardCell.tileID = tileID;
+                boardCell.tileID = this.id;
                 boardCell.tileCell = {
                     x: i,
                     y: j
@@ -272,8 +273,6 @@ export default class Tile {
                 });
             }
         }
-
-        tileID++;
     }
 
     /**
@@ -321,7 +320,7 @@ export default class Tile {
             p5.blendMode(p5.MULTIPLY);
 
             // Background color depending on status
-            if (this.fixed) {
+            if (this.status === 'set') {
                 p5.fill('#f0f2ff');
             } else if (this.canBeSet) {
                 p5.fill('#e0ffe4');
@@ -422,16 +421,16 @@ export default class Tile {
 
             // Colored overlay depending on status
             p5.noStroke();
-            if (this.canBeSet && !this.fixed) {
+            if (this.canBeSet && this.status !== 'set') {
                 p5.fill(240, 255, 250, 100);
                 p5.rect(0, 0, 4 * size, 4 * size);
-            } else if (!this.canBeSet && !this.fixed) {
+            } else if (!this.canBeSet && this.status !== 'set') {
                 p5.fill(255, 240, 245, 180);
                 p5.rect(0, 0, 4 * size, 4 * size);
             }
         }
 
-        if (this.fixed) this.displayItems();
+        if (this.status === 'set') this.displayItems();
 
         p5.pop();
     }

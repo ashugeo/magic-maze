@@ -10,8 +10,7 @@ import p5 from 'p5';
 import sketch from './sketch';
 import Tile from './tile';
 
-window.tiles = [];
-window.json = [];
+let deck = [];
 window.socket = io({transports: ['websocket'], upgrade: false});
 window.role = [];
 
@@ -19,7 +18,7 @@ fetchJSON(0);
 
 function fetchJSON(i) {
     fetch('data/tile' + i + '.json').then(response => response.json()).then(data => {
-        window.json.push(data);
+        deck.push({id: i, data: data});
 
         if (i < config.tiles - 1) {
             fetchJSON(i + 1);
@@ -29,12 +28,12 @@ function fetchJSON(i) {
 
 function start(options) {
     new p5(sketch);
-    game.init(options);
+    game.init(deck, options);
     board.init();
     events.init();
     heroes.init();
     clock.init();
-    if (game.admin) ai.run();
+    if (game.isAdmin()) ai.run();
 }
 
 const $ui = document.getElementById('ui');
@@ -43,7 +42,7 @@ const $people = document.getElementById('people');
 const $spectator = document.getElementById('spectator');
 
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('spectator').addEventListener('mousedown', (e) => {
+    document.getElementById('spectator').addEventListener('mouseup', (e) => {
         const spectator = !e.srcElement.checked;
         socket.emit('spectator', spectator);
     });
@@ -109,10 +108,10 @@ socket.on('board', data => {
 });
 
 socket.on('tile', data => {
-    const tile = new Tile(data.tile.id);
+    const tile = game.getTile(data.tile.id);
     tile.rotation = data.tile.rotation;
-    window.tiles.push(tile);
     tile.set(data.x, data.y);
+    game.board.push(tile.id);
 });
 
 socket.on('invertClock', data => {
