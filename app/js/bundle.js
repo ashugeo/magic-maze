@@ -351,6 +351,8 @@
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__game__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__heroes__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__tiles__ = __webpack_require__(18);
+
 
 
 
@@ -489,8 +491,8 @@
                 // Ignore empty cells
                 if (cell.isEmpty()) continue;
 
-                // Find unexplored gates
-                if (item.type === 'gate' && !cell.isExplored()) {
+                // Find unexplored gates (if stock is not empty)
+                if (item.type === 'gate' && !cell.isExplored() && __WEBPACK_IMPORTED_MODULE_5__tiles__["a" /* default */].getStockSize()) {
                     objectives.push(cell);
                 }
 

@@ -3,6 +3,7 @@ import Bot from './bot';
 import config from './config';
 import game from './game';
 import heroes from './heroes';
+import tiles from './tiles';
 
 export default {
     canSolve: true,
@@ -136,8 +137,8 @@ export default {
                 // Ignore empty cells
                 if (cell.isEmpty()) continue;
 
-                // Find unexplored gates
-                if (item.type === 'gate' && !cell.isExplored()) {
+                // Find unexplored gates (if stock is not empty)
+                if (item.type === 'gate' && !cell.isExplored() && tiles.getStockSize()) {
                     objectives.push(cell);
                 }
 
