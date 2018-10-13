@@ -142,14 +142,13 @@ export default class Hero {
     /**
     * Check path legality
     * @param  {Object} target Target cell
-    * @param  {array}  role   Roles (for bots)
     */
-    checkPath(target, role) {
+    checkPath(target) {
         // No specified target, check for self position (current cell)
         if (!target) target = this.cell;
 
-        // No specified role, use player role
-        if (!role) role = window.role;
+        // Use player role
+        const role = window.role;
 
         const path = this.getPath(target);
         if (!path) return;
