@@ -19,6 +19,7 @@ fetchJSON(0);
 
 function fetchJSON(i) {
     fetch('data/tile' + i + '.json').then(response => response.json()).then(data => {
+        // TODO: tile selector (i given in array)
         deck.push({id: i, data: data});
 
         if (i < config.tiles - 1) {
@@ -84,7 +85,7 @@ socket.on('start', options => {
 });
 
 socket.on('role', roles => {
-    // Save my role
+    // Save my role in window.role
     role = roles;
 
     // Display role

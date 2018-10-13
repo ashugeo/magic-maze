@@ -838,7 +838,7 @@ class Tile {
         }
 
         const o = this.getOrientation();
-        const enter = this.getgate(x, y, o);
+        const enter = this.getGatePlusOne(x, y, o);
         const target = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].get(enter.x, enter.y);
 
         // Compute shift
@@ -909,7 +909,7 @@ class Tile {
         }
 
         // Make sure cell next to enter is a gate
-        const nextToEnter = this.getgate(x, y, this.getOrientation());
+        const nextToEnter = this.getGatePlusOne(x, y, this.getOrientation());
         const cellNextToEnter = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].get(nextToEnter.x, nextToEnter.y);
         if (!cellNextToEnter.isEmpty()) {
             if (cellNextToEnter.item.type !== 'gate') {
@@ -936,7 +936,7 @@ class Tile {
     */
     getOrientation() {
         // Find X coordinate of enter
-        const enter = this.findItem('enter')
+        const enter = this.findItem('enter');
         const i = enter ? enter.x : 0;
 
         // Determine rotation
@@ -948,13 +948,13 @@ class Tile {
     }
 
     /**
-    * Get tile gate coordinates (cell out of tile)
+    * Get tile "gate+1" coordinates (cell out of tile)
     * @param  {int}    x mouse X coordinate
     * @param  {int}    y mouse Y coordinate
     * @param  {int}    o tile orientation
-    * @return {Object}    {x, y}
+    * @return {Object}   {x, y}
     */
-    getgate(x, y, o) {
+    getGatePlusOne(x, y, o) {
         x += [2, 4, 1, -1][o];
         y += [-1, 2, 4, 1][o];
 
@@ -1090,7 +1090,9 @@ class Tile {
     */
     findItem(key) {
         for (let row in this.data) {
+            row = parseInt(row);
             for (let col in this.data[row]) {
+                col = parseInt(col);
                 const item = this.data[row][col].item;
                 if (item && item.type === key) {
                     const pos = {
@@ -73532,6 +73534,7 @@ fetchJSON(0);
 
 function fetchJSON(i) {
     fetch('data/tile' + i + '.json').then(response => response.json()).then(data => {
+        // TODO: tile selector (i given in array)
         deck.push({id: i, data: data});
 
         if (i < __WEBPACK_IMPORTED_MODULE_3__config__["a" /* default */].tiles - 1) {
@@ -73597,7 +73600,7 @@ socket.on('start', options => {
 });
 
 socket.on('role', roles => {
-    // Save my role
+    // Save my role in window.role
     role = roles;
 
     // Display role
