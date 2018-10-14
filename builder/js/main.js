@@ -84,10 +84,16 @@ function mousePressed() {
             tile.layout[p1.x][p1.y].escalator = {x: p2.x, y: p2.y};
             tile.layout[p2.x][p2.y].escalator = {x: p1.x, y: p1.y};
         } else {
-            tile.layout[p1.x][p1.y].escalator = false;
-            tile.layout[p2.x][p2.y].escalator = false;
-            p1 = {x: x, y: y};
-            p2 = false;
+            if (tile.layout[x][y].escalator) {
+                // Clicked on a cell with an escalator, remove it
+                const _x = tile.layout[x][y].escalator.x;
+                const _y = tile.layout[x][y].escalator.y;
+                tile.layout[_x][_y].escalator = false;
+                tile.layout[x][y].escalator = false;
+            } else {
+                p1 = {x: x, y: y};
+                p2 = false;
+            }
         }
     } else {
         // Enter, gate, vortex, exit & time
