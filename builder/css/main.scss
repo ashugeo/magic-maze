@@ -14,9 +14,9 @@ body {
 
 canvas {
     position: absolute;
-    top: 50%;
+    top: 168px;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translateX(-50%);
     border-radius: 16px;
 }
 
@@ -29,8 +29,10 @@ canvas {
         list-style: none;
         display: flex;
         justify-content: center;
+        counter-reset: tool;
 
         li {
+            position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -50,6 +52,18 @@ canvas {
             overflow: hidden;
             background-color: inherit;
             user-select: none;
+            overflow: visible;
+
+            &::after {
+                content: counter(tool);
+                counter-increment: tool;
+                position: absolute;
+                bottom: -18px;
+                left: 50%;
+                transform: translateX(-50%);
+                color: white;
+                border-radius: 50%;
+            }
 
             &:hover {
                 opacity: 1;
@@ -65,16 +79,26 @@ canvas {
         &.colors {
             opacity: 0;
             transition: opacity .2s ease;
+            margin-top: 16px;
 
             li {
-                width: 16px;
-                height: 16px;
+                width: 20px;
+                height: 20px;
                 border: none;
-                opacity: .6;
+                opacity: 1;
                 transition: all .1s ease;
 
+                &::after {
+                    content: attr(data-shortcut);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    bottom: auto;
+                    color: #345;
+                }
+
                 &.selected {
-                    opacity: 1;
+                    // opacity: 1;
                     transform: scale(2);
                 }
             }
@@ -122,7 +146,7 @@ button {
 .buttons {
     display: flex;
     position: absolute;
-    bottom: 64px;
+    top: 686px;
     left: 50%;
     transform: translate(-50%);
 }
