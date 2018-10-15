@@ -187,6 +187,13 @@ class Tile {
                         noStroke();
                         fill(config.colors[item.color]);
                         star(config.size / 2, config.size / 2, 10, 25, 5);
+                    } else if (item.type === 'crystal') {
+                        stroke(config.colors['purple']);
+                        star(config.size / 2, config.size / 2, 28, 32, 20);
+                    } else if (item.type === 'camera') {
+                        stroke(0, 0, 0);
+                        fill(255, 200, 0);
+                        polygon(config.size / 2, config.size / 2, 32, 6);
                     } else if (item.type === 'gate' || item.type === 'enter' || item.type === 'exit') {
                         // Set color (for gate & exit)
                         if (config.colors[item.color]) {
@@ -353,12 +360,31 @@ function arrow(type) {
 function star(x, y, r1, r2, n) {
     var angle = TWO_PI / n;
     beginShape();
-    for (let a = -18 * TWO_PI / 360; a <= TWO_PI; a += angle) {
+    for (let a = TWO_PI / (-n * 4); a <= TWO_PI; a += angle) {
         let sx = x + cos(a) * r2;
         let sy = y + sin(a) * r2;
         vertex(sx, sy);
         sx = x + cos(a + angle / 2) * r1;
         sy = y + sin(a + angle / 2) * r1;
+        vertex(sx, sy);
+    }
+    endShape(CLOSE);
+}
+
+/**
+* Draw a polygon
+* @param  {int} x X coordinate
+* @param  {int} y Y coordinate
+* @param  {int} r radius
+* @param  {int} n points (sides)
+*/
+function polygon(x, y, r, n) {
+    let angle = TWO_PI / n;
+    beginShape();
+
+    for (let a = 0; a < TWO_PI; a += angle) {
+        let sx = x + cos(a) * r;
+        let sy = y + sin(a) * r;
         vertex(sx, sy);
     }
     endShape(CLOSE);
