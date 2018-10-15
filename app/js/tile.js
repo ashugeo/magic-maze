@@ -33,7 +33,7 @@ export default class Tile {
         const target = board.get(enter.x, enter.y);
 
         // Compute shift
-        if (!config.debug && target) {
+        if (target) {
             const parentTile = tiles.getTile(target.tileID);
 
             if (parentTile) {
@@ -305,130 +305,24 @@ export default class Tile {
         const r = this.rotation;
         let _x = [x, y, - x - 4, - y - 4][r] * size;
         let _y = [y, - x - 4, - y - 4, x][r] * size;
-        if (config.debug) {
-            // Pixel adjustment for schemas
-            _x -= [0, 0, 1, 1][r];
-            _y -= [0, 1, 1, 0][r];
-        } else {
-            // Shift adjustment for images
-            const shift = this.shift;
-            _x += [shift.x, shift.y, -shift.x, -shift.y][r];
-            _y += [shift.y, -shift.x, -shift.y, shift.x][r];
-        }
+
+        // Shift adjustment for images
+        const shift = this.shift;
+        _x += [shift.x, shift.y, -shift.x, -shift.y][r];
+        _y += [shift.y, -shift.x, -shift.y, shift.x][r];
         p5.translate(_x, _y);
 
-        if (config.debug) { // Display schema of cell
-            p5.blendMode(p5.MULTIPLY);
+        // Display image of cell
+        p5.image(tilesImages[this.id], 0, 0, 4 * size, 4 * size);
 
-            // Background color depending on status
-            if (this.status === 'set') {
-                p5.fill('#f0f2ff');
-            } else if (this.canBeSet) {
-                p5.fill('#e0ffe4');
-            } else {
-                p5.fill('#ffe2e4');
-            }
-
-            p5.noStroke();
-            p5.rect(0, 0, size * 4, size * 4);
-
-            p5.noFill();
-            p5.stroke(0);
-
-            for (let j = 0; j < 4; j += 1) {
-                for (let i = 0; i < 4; i += 1) {
-                    // For each cell
-                    p5.push();
-                    p5.translate(i * size, j * size);
-
-                    // Draw basic gid
-                    p5.stroke(240);
-                    p5.rect(0, 0, size, size);
-                    p5.stroke(0);
-
-                    // Get cell data
-                    if (!this.data) return;
-                    let cell = this.data[j][i];
-
-                    // Add item to cell
-                    let item = cell.item;
-                    if (item) {
-                        if (item.type === 'vortex') {
-                            p5.blendMode('normal');
-                            p5.noFill();
-                            p5.stroke(config.colors[item.color]);
-                            p5.ellipse(size / 2, size / 2, size / 2, size / 2);
-                            p5.blendMode('multiply');
-                        } else if (item.type === 'gate' || item.type === 'enter') {
-                            // Set color (for gate)
-                            if (item.color) p5.stroke(config.colors[item.color]);
-
-                            // Rotate and draw item depending on cell coordinates
-                            p5.push();
-                            if (j === 0) {
-                                // Pointing up
-                                symbols.arrow(item.type);
-                            } else if (j === 3) {
-                                // Pointing bottom
-                                p5.translate(size, size);
-                                p5.rotate(p5.PI);
-                                symbols.arrow(item.type);
-                            } else if (i === 0) {
-                                // Pointing left
-                                p5.translate(0, size);
-                                p5.rotate(-p5.PI / 2);
-                                symbols.arrow(item.type);
-                            } else if (i === 3) {
-                                // Pointing right
-                                p5.translate(size, 0);
-                                p5.rotate(p5.PI / 2);
-                                symbols.arrow(item.type);
-                            }
-                            p5.pop();
-                        }
-                    }
-
-                    let esc = cell.escalator;
-                    if (esc) {
-                        p5.stroke(0,0,255);
-                        const x1 = size / 2;
-                        const y1 = size / 2;
-                        const x2 = size / 2 + (esc.x - i) * size;
-                        const y2 = size / 2 + (esc.y - j) * size;
-                        p5.line(x1, y1, x2, y2);
-                    }
-
-                    // Draw walls
-                    p5.blendMode(p5.MULTIPLY);
-                    p5.stroke(0);
-                    if (cell.walls.top) {
-                        p5.line(0, 0, size, 0);
-                    }
-                    if (cell.walls.right) {
-                        p5.line(size, 0, size, size);
-                    }
-                    if (cell.walls.bottom) {
-                        p5.line(0, size, size, size);
-                    }
-                    if (cell.walls.left) {
-                        p5.line(0, 0, 0, size);
-                    }
-
-                    p5.pop();
-                }
-            }
-        } else { // Display image of cell
-            p5.image(tilesImages[this.id], 0, 0, 4 * size, 4 * size);
-
-            // Colored overlay depending on status
-            p5.noStroke();
-            if (this.canBeSet && this.status !== 'set') {
-                p5.fill(240, 255, 250, 100);
-                p5.rect(0, 0, 4 * size, 4 * size);
-            } else if (!this.canBeSet && this.status !== 'set') {
-                p5.fill(255, 240, 245, 180);
-                p5.rect(0, 0, 4 * size, 4 * size);
-            }
+        // Colored overlay depending on status
+        p5.noStroke();
+        if (this.canBeSet && this.status !== 'set') {
+            p5.fill(240, 255, 250, 100);
+            p5.rect(0, 0, 4 * size, 4 * size);
+        } else if (!this.canBeSet && this.status !== 'set') {
+            p5.fill(255, 240, 245, 180);
+            p5.rect(0, 0, 4 * size, 4 * size);
         }
 
         if (this.status === 'set') this.displayItems();

@@ -54,21 +54,14 @@ export default class Hero {
         const tile = tiles.getTile(boardCell.tileID);
         const tileCell = boardCell.tileCell;
 
-        if (config.debug) {
-            this.target = {
-                x: x,
-                y: y
-            }
-        } else {
-            if (tile) {
-                x += [.25, .1, -.1, -.25][tileCell.x] + tile.shift.x / config.size;
-                y += [.25, .1, -.1, -.25][tileCell.y] + tile.shift.y / config.size;
-            }
+        if (tile) {
+            x += [.25, .1, -.1, -.25][tileCell.x] + tile.shift.x / config.size;
+            y += [.25, .1, -.1, -.25][tileCell.y] + tile.shift.y / config.size;
+        }
 
-            this.target = {
-                x: x,
-                y: y
-            }
+        this.target = {
+            x: x,
+            y: y
         }
 
         this.path = [];
