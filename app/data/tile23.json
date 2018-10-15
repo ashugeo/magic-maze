@@ -3,8 +3,8 @@
         "0": {
             "walls": {
                 "top": true,
-                "right": true,
-                "bottom": true,
+                "right": false,
+                "bottom": false,
                 "left": true
             },
             "item": false,
@@ -13,22 +13,19 @@
         "1": {
             "walls": {
                 "top": true,
-                "right": true,
+                "right": false,
                 "bottom": false,
-                "left": true
+                "left": false
             },
-            "item": {
-                "type": "vortex",
-                "color": "orange"
-            },
+            "item": false,
             "escalator": false
         },
         "2": {
             "walls": {
                 "top": true,
-                "right": true,
+                "right": false,
                 "bottom": true,
-                "left": true
+                "left": false
             },
             "item": false,
             "escalator": false
@@ -38,31 +35,35 @@
                 "top": true,
                 "right": true,
                 "bottom": true,
-                "left": true
+                "left": false
             },
-            "item": false,
+            "item": {
+                "type": "vortex",
+                "color": "yellow"
+            },
             "escalator": false
         }
     },
     "1": {
         "0": {
             "walls": {
-                "top": true,
-                "right": false,
-                "bottom": true,
+                "top": false,
+                "right": true,
+                "bottom": false,
                 "left": false
             },
             "item": {
-                "type": "enter"
+                "type": "gate",
+                "color": "orange"
             },
             "escalator": false
         },
         "1": {
             "walls": {
                 "top": false,
-                "right": false,
+                "right": true,
                 "bottom": false,
-                "left": false
+                "left": true
             },
             "item": false,
             "escalator": false
@@ -72,11 +73,9 @@
                 "top": true,
                 "right": true,
                 "bottom": true,
-                "left": false
+                "left": true
             },
-            "item": {
-                "type": "time"
-            },
+            "item": false,
             "escalator": false
         },
         "3": {
@@ -93,19 +92,22 @@
     "2": {
         "0": {
             "walls": {
-                "top": true,
+                "top": false,
                 "right": true,
                 "bottom": true,
                 "left": true
             },
-            "item": false,
+            "item": {
+                "type": "vortex",
+                "color": "green"
+            },
             "escalator": false
         },
         "1": {
             "walls": {
                 "top": false,
                 "right": false,
-                "bottom": false,
+                "bottom": true,
                 "left": true
             },
             "item": false,
@@ -114,8 +116,8 @@
         "2": {
             "walls": {
                 "top": true,
-                "right": false,
-                "bottom": true,
+                "right": true,
+                "bottom": false,
                 "left": false
             },
             "item": false,
@@ -126,7 +128,7 @@
                 "top": true,
                 "right": false,
                 "bottom": false,
-                "left": false
+                "left": true
             },
             "item": {
                 "type": "gate",
@@ -148,23 +150,22 @@
         },
         "1": {
             "walls": {
-                "top": false,
-                "right": true,
+                "top": true,
+                "right": false,
                 "bottom": false,
                 "left": true
             },
             "item": {
-                "type": "gate",
-                "color": "green"
+                "type": "enter"
             },
             "escalator": false
         },
         "2": {
             "walls": {
-                "top": true,
-                "right": true,
+                "top": false,
+                "right": false,
                 "bottom": true,
-                "left": true
+                "left": false
             },
             "item": false,
             "escalator": false
@@ -174,12 +175,9 @@
                 "top": false,
                 "right": true,
                 "bottom": true,
-                "left": true
+                "left": false
             },
-            "item": {
-                "type": "vortex",
-                "color": "yellow"
-            },
+            "item": false,
             "escalator": false
         }
     }

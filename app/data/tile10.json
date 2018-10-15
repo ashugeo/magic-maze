@@ -14,23 +14,23 @@
             "walls": {
                 "top": true,
                 "right": true,
-                "bottom": false,
-                "left": true
-            },
-            "item": {
-                "type": "vortex",
-                "color": "orange"
-            },
-            "escalator": false
-        },
-        "2": {
-            "walls": {
-                "top": true,
-                "right": true,
                 "bottom": true,
                 "left": true
             },
             "item": false,
+            "escalator": false
+        },
+        "2": {
+            "walls": {
+                "top": false,
+                "right": true,
+                "bottom": false,
+                "left": true
+            },
+            "item": {
+                "type": "gate",
+                "color": "yellow"
+            },
             "escalator": false
         },
         "3": {
@@ -48,43 +48,45 @@
         "0": {
             "walls": {
                 "top": true,
-                "right": false,
-                "bottom": true,
-                "left": false
+                "right": true,
+                "bottom": false,
+                "left": true
             },
             "item": {
-                "type": "enter"
+                "type": "vortex",
+                "color": "orange"
             },
             "escalator": false
         },
         "1": {
             "walls": {
-                "top": false,
-                "right": false,
-                "bottom": false,
-                "left": false
+                "top": true,
+                "right": true,
+                "bottom": true,
+                "left": true
             },
             "item": false,
             "escalator": false
         },
         "2": {
             "walls": {
-                "top": true,
-                "right": true,
+                "top": false,
+                "right": false,
                 "bottom": true,
-                "left": false
+                "left": true
             },
-            "item": {
-                "type": "time"
-            },
-            "escalator": false
+            "item": false,
+            "escalator": {
+                "x": 1,
+                "y": 2
+            }
         },
         "3": {
             "walls": {
                 "top": true,
                 "right": true,
-                "bottom": true,
-                "left": true
+                "bottom": false,
+                "left": false
             },
             "item": false,
             "escalator": false
@@ -93,16 +95,6 @@
     "2": {
         "0": {
             "walls": {
-                "top": true,
-                "right": true,
-                "bottom": true,
-                "left": true
-            },
-            "item": false,
-            "escalator": false
-        },
-        "1": {
-            "walls": {
                 "top": false,
                 "right": false,
                 "bottom": false,
@@ -111,26 +103,38 @@
             "item": false,
             "escalator": false
         },
+        "1": {
+            "walls": {
+                "top": true,
+                "right": true,
+                "bottom": false,
+                "left": false
+            },
+            "item": false,
+            "escalator": {
+                "x": 2,
+                "y": 1
+            }
+        },
         "2": {
             "walls": {
                 "top": true,
-                "right": false,
+                "right": true,
                 "bottom": true,
-                "left": false
+                "left": true
             },
             "item": false,
             "escalator": false
         },
         "3": {
             "walls": {
-                "top": true,
+                "top": false,
                 "right": false,
                 "bottom": false,
-                "left": false
+                "left": true
             },
             "item": {
-                "type": "gate",
-                "color": "purple"
+                "type": "enter"
             },
             "escalator": false
         }
@@ -138,12 +142,15 @@
     "3": {
         "0": {
             "walls": {
-                "top": true,
-                "right": true,
+                "top": false,
+                "right": false,
                 "bottom": true,
-                "left": true
+                "left": false
             },
-            "item": false,
+            "item": {
+                "type": "exit",
+                "color": "green"
+            },
             "escalator": false
         },
         "1": {
@@ -151,11 +158,11 @@
                 "top": false,
                 "right": true,
                 "bottom": false,
-                "left": true
+                "left": false
             },
             "item": {
                 "type": "gate",
-                "color": "green"
+                "color": "purple"
             },
             "escalator": false
         },
@@ -178,7 +185,7 @@
             },
             "item": {
                 "type": "vortex",
-                "color": "yellow"
+                "color": "green"
             },
             "escalator": false
         }

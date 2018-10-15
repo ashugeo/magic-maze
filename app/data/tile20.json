@@ -13,22 +13,19 @@
         "1": {
             "walls": {
                 "top": true,
-                "right": true,
+                "right": false,
                 "bottom": false,
                 "left": true
             },
-            "item": {
-                "type": "vortex",
-                "color": "orange"
-            },
+            "item": false,
             "escalator": false
         },
         "2": {
             "walls": {
                 "top": true,
                 "right": true,
-                "bottom": true,
-                "left": true
+                "bottom": false,
+                "left": false
             },
             "item": false,
             "escalator": false
@@ -49,19 +46,20 @@
             "walls": {
                 "top": true,
                 "right": false,
-                "bottom": true,
+                "bottom": false,
                 "left": false
             },
             "item": {
-                "type": "enter"
+                "type": "gate",
+                "color": "green"
             },
             "escalator": false
         },
         "1": {
             "walls": {
                 "top": false,
-                "right": false,
-                "bottom": false,
+                "right": true,
+                "bottom": true,
                 "left": false
             },
             "item": false,
@@ -69,22 +67,23 @@
         },
         "2": {
             "walls": {
-                "top": true,
-                "right": true,
+                "top": false,
+                "right": false,
                 "bottom": true,
-                "left": false
+                "left": true
             },
-            "item": {
-                "type": "time"
-            },
-            "escalator": false
+            "item": false,
+            "escalator": {
+                "x": 1,
+                "y": 2
+            }
         },
         "3": {
             "walls": {
                 "top": true,
                 "right": true,
-                "bottom": true,
-                "left": true
+                "bottom": false,
+                "left": false
             },
             "item": false,
             "escalator": false
@@ -93,8 +92,8 @@
     "2": {
         "0": {
             "walls": {
-                "top": true,
-                "right": true,
+                "top": false,
+                "right": false,
                 "bottom": true,
                 "left": true
             },
@@ -103,34 +102,37 @@
         },
         "1": {
             "walls": {
-                "top": false,
-                "right": false,
+                "top": true,
+                "right": true,
                 "bottom": false,
-                "left": true
+                "left": false
             },
             "item": false,
-            "escalator": false
+            "escalator": {
+                "x": 2,
+                "y": 1
+            }
         },
         "2": {
             "walls": {
                 "top": true,
-                "right": false,
+                "right": true,
                 "bottom": true,
-                "left": false
+                "left": true
             },
             "item": false,
             "escalator": false
         },
         "3": {
             "walls": {
-                "top": true,
+                "top": false,
                 "right": false,
                 "bottom": false,
-                "left": false
+                "left": true
             },
             "item": {
                 "type": "gate",
-                "color": "purple"
+                "color": "yellow"
             },
             "escalator": false
         }
@@ -154,8 +156,7 @@
                 "left": true
             },
             "item": {
-                "type": "gate",
-                "color": "green"
+                "type": "enter"
             },
             "escalator": false
         },
@@ -177,8 +178,8 @@
                 "left": true
             },
             "item": {
-                "type": "vortex",
-                "color": "yellow"
+                "type": "crystal",
+                "color": "green"
             },
             "escalator": false
         }

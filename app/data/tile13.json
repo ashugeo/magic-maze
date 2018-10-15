@@ -3,91 +3,75 @@
         "0": {
             "walls": {
                 "top": true,
-                "right": true,
-                "bottom": true,
+                "right": false,
+                "bottom": false,
                 "left": true
-            },
-            "item": false,
-            "escalator": false
+            }
         },
         "1": {
             "walls": {
                 "top": true,
                 "right": true,
                 "bottom": false,
-                "left": true
-            },
-            "item": {
-                "type": "vortex",
-                "color": "orange"
-            },
-            "escalator": false
+                "left": false
+            }
         },
         "2": {
             "walls": {
-                "top": true,
-                "right": true,
+                "top": false,
+                "right": false,
                 "bottom": true,
                 "left": true
             },
-            "item": false,
-            "escalator": false
+            "item": {
+                "type": "gate",
+                "color": "green"
+            }
         },
         "3": {
             "walls": {
                 "top": true,
                 "right": true,
-                "bottom": true,
-                "left": true
-            },
-            "item": false,
-            "escalator": false
+                "bottom": false,
+                "left": false
+            }
         }
     },
     "1": {
         "0": {
             "walls": {
-                "top": true,
-                "right": false,
+                "top": false,
+                "right": true,
                 "bottom": true,
                 "left": false
             },
             "item": {
                 "type": "enter"
-            },
-            "escalator": false
+            }
         },
         "1": {
             "walls": {
                 "top": false,
                 "right": false,
                 "bottom": false,
-                "left": false
-            },
-            "item": false,
-            "escalator": false
+                "left": true
+            }
         },
         "2": {
             "walls": {
                 "top": true,
-                "right": true,
+                "right": "orange",
                 "bottom": true,
                 "left": false
-            },
-            "item": {
-                "type": "time"
-            },
-            "escalator": false
+            }
         },
         "3": {
             "walls": {
-                "top": true,
+                "top": false,
                 "right": true,
-                "bottom": true,
-                "left": true
-            },
-            "item": false,
-            "escalator": false
+                "bottom": false,
+                "left": "orange"
+            }
         }
     },
     "2": {
@@ -97,42 +81,35 @@
                 "right": true,
                 "bottom": true,
                 "left": true
-            },
-            "item": false,
-            "escalator": false
+            }
         },
         "1": {
             "walls": {
                 "top": false,
-                "right": false,
+                "right": true,
                 "bottom": false,
                 "left": true
-            },
-            "item": false,
-            "escalator": false
+            }
         },
         "2": {
             "walls": {
                 "top": true,
                 "right": false,
                 "bottom": true,
-                "left": false
+                "left": true
             },
-            "item": false,
-            "escalator": false
+            "item": {
+                "type": "vortex",
+                "color": "purple"
+            }
         },
         "3": {
             "walls": {
-                "top": true,
-                "right": false,
+                "top": false,
+                "right": true,
                 "bottom": false,
                 "left": false
-            },
-            "item": {
-                "type": "gate",
-                "color": "purple"
-            },
-            "escalator": false
+            }
         }
     },
     "3": {
@@ -142,45 +119,35 @@
                 "right": true,
                 "bottom": true,
                 "left": true
-            },
-            "item": false,
-            "escalator": false
+            }
         },
         "1": {
             "walls": {
                 "top": false,
-                "right": true,
+                "right": false,
                 "bottom": false,
                 "left": true
             },
             "item": {
                 "type": "gate",
-                "color": "green"
-            },
-            "escalator": false
+                "color": "yellow"
+            }
         },
         "2": {
             "walls": {
                 "top": true,
-                "right": true,
+                "right": false,
                 "bottom": true,
-                "left": true
-            },
-            "item": false,
-            "escalator": false
+                "left": false
+            }
         },
         "3": {
             "walls": {
                 "top": false,
                 "right": true,
                 "bottom": true,
-                "left": true
-            },
-            "item": {
-                "type": "vortex",
-                "color": "yellow"
-            },
-            "escalator": false
+                "left": false
+            }
         }
     }
 }

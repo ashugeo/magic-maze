@@ -6,11 +6,17 @@
                 "right": true,
                 "bottom": true,
                 "left": true
-            },
-            "item": false,
-            "escalator": false
+            }
         },
         "1": {
+            "walls": {
+                "top": true,
+                "right": true,
+                "bottom": true,
+                "left": true
+            }
+        },
+        "2": {
             "walls": {
                 "top": true,
                 "right": true,
@@ -18,20 +24,9 @@
                 "left": true
             },
             "item": {
-                "type": "vortex",
-                "color": "orange"
-            },
-            "escalator": false
-        },
-        "2": {
-            "walls": {
-                "top": true,
-                "right": true,
-                "bottom": true,
-                "left": true
-            },
-            "item": false,
-            "escalator": false
+                "type": "article",
+                "color": "yellow"
+            }
         },
         "3": {
             "walls": {
@@ -39,9 +34,7 @@
                 "right": true,
                 "bottom": true,
                 "left": true
-            },
-            "item": false,
-            "escalator": false
+            }
         }
     },
     "1": {
@@ -53,31 +46,25 @@
                 "left": false
             },
             "item": {
-                "type": "enter"
-            },
-            "escalator": false
+                "type": "gate",
+                "color": "green"
+            }
         },
         "1": {
             "walls": {
-                "top": false,
+                "top": true,
                 "right": false,
                 "bottom": false,
                 "left": false
-            },
-            "item": false,
-            "escalator": false
+            }
         },
         "2": {
             "walls": {
-                "top": true,
+                "top": false,
                 "right": true,
-                "bottom": true,
+                "bottom": false,
                 "left": false
-            },
-            "item": {
-                "type": "time"
-            },
-            "escalator": false
+            }
         },
         "3": {
             "walls": {
@@ -85,9 +72,7 @@
                 "right": true,
                 "bottom": true,
                 "left": true
-            },
-            "item": false,
-            "escalator": false
+            }
         }
     },
     "2": {
@@ -97,29 +82,23 @@
                 "right": true,
                 "bottom": true,
                 "left": true
-            },
-            "item": false,
-            "escalator": false
+            }
         },
         "1": {
             "walls": {
                 "top": false,
-                "right": false,
+                "right": true,
                 "bottom": false,
                 "left": true
-            },
-            "item": false,
-            "escalator": false
+            }
         },
         "2": {
             "walls": {
-                "top": true,
+                "top": false,
                 "right": false,
                 "bottom": true,
-                "left": false
-            },
-            "item": false,
-            "escalator": false
+                "left": true
+            }
         },
         "3": {
             "walls": {
@@ -129,10 +108,8 @@
                 "left": false
             },
             "item": {
-                "type": "gate",
-                "color": "purple"
-            },
-            "escalator": false
+                "type": "enter"
+            }
         }
     },
     "3": {
@@ -142,9 +119,7 @@
                 "right": true,
                 "bottom": true,
                 "left": true
-            },
-            "item": false,
-            "escalator": false
+            }
         },
         "1": {
             "walls": {
@@ -155,9 +130,8 @@
             },
             "item": {
                 "type": "gate",
-                "color": "green"
-            },
-            "escalator": false
+                "color": "orange"
+            }
         },
         "2": {
             "walls": {
@@ -165,9 +139,7 @@
                 "right": true,
                 "bottom": true,
                 "left": true
-            },
-            "item": false,
-            "escalator": false
+            }
         },
         "3": {
             "walls": {
@@ -178,9 +150,8 @@
             },
             "item": {
                 "type": "vortex",
-                "color": "yellow"
-            },
-            "escalator": false
+                "color": "purple"
+            }
         }
     }
 }
