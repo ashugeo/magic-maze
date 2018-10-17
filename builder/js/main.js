@@ -489,9 +489,18 @@ function exportImage() {
 }
 
 /**
-* Save tile data in JSON file
+* Export tile as a compressed string
 */
-function exportJSON() {
+function exportString() {
+    const string = jsonToString(tileToJson(tile));
+    console.log(string);
+}
+
+/**
+* Convert tile data to JSON
+* @return {Object}  JSON
+*/
+function tileToJson() {
     let json = {};
 
     for (let i = 0; i < 4; i += 1) {
@@ -511,7 +520,83 @@ function exportJSON() {
         }
     }
 
-    save(json, 'tile.json');
+    return json;
+}
+
+/**
+* Convert tile json to compressed string
+* @param  {Object} json tile data
+* @return {string}      string
+*/
+function jsonToString(tile) {
+    // 64 characters
+    let string = '';
+
+    for (let x = 0; x < 4; x += 1) {
+        for (let y = 0; y < 4; y += 1) {
+
+            // Cell object
+            const cell = tile[x][y];
+
+            // 4 characters
+            let block = '';
+
+            // Walls
+            let base3 = '';
+            for (let wall of ['top', 'right', 'bottom', 'left']) {
+                if (cell.walls[wall] === 'orange') {
+                    base3 += 2;
+                } else if (cell.walls[wall]) {
+                    base3 += 1;
+                } else {
+                    base3 += 0;
+                }
+            }
+            block += parseInt(base3, 3);
+            block = block.length === 1 ? '0' + block : block;
+
+            // Item
+            let item = '0';
+
+            if (cell.item) {
+                if (cell.item.color) {
+                    let id = {
+                        'gate': 1,
+                        'vortex': 5,
+                        'article': 9,
+                        'exit': 13
+                    }[cell.item.type];
+
+                    id += ['green', 'orange', 'purple', 'yellow'].indexOf(cell.item.color);
+
+                    // Convert to base-36
+                    item = id.toString(36);
+                } else {
+                    item = {
+                        'enter': 'h',
+                        'time': 'i',
+                        'crystal': 'j',
+                        'camera': 'k'
+                    }[cell.item.type];
+                }
+            }
+            block += item;
+
+            // Escalator
+            let escalator = '0';
+
+            if (cell.escalator) {
+                escalator = cell.escalator.x * 4 + cell.escalator.y + 1;
+
+                // Convert to base-36
+                escalator = escalator.toString(36);
+            }
+            block += escalator;
+            string += block;
+        }
+    }
+
+    return string;
 }
 
 /**
@@ -540,7 +625,7 @@ $(document).on('click', 'button[name="random"]', () => {
 
 $(document).on('click', 'button[name="export"]', () => {
     exportImage();
-    exportJSON();
+    exportString();
 });
 
 /**

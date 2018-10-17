@@ -15,18 +15,9 @@ let deck = [];
 window.socket = io({transports: ['websocket'], upgrade: false});
 window.role = [];
 
-fetchJSON(0);
-
-function fetchJSON(i) {
-    fetch('data/tile' + i + '.json').then(response => response.json()).then(data => {
-        // TODO: tile selector (i given in array)
-        deck.push({id: i, data: data});
-
-        if (i < config.tiles - 1) {
-            fetchJSON(i + 1);
-        }
-    });
-}
+fetch('data/tiles.json').then(response => response.json()).then(data => {
+    deck = data;
+});
 
 function start(options) {
     new p5(sketch);

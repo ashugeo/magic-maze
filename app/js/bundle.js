@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 12);
+/******/ 	return __webpack_require__(__webpack_require__.s = 13);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -79,7 +79,7 @@
     boardRows: 32,
     boardCols: 32,
     size: 32,
-    tiles: 5,
+    tiles: 25,
     firstTile: {
         x: 14,
         y: 14
@@ -102,48 +102,10 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ai__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
-
-
-
-/* harmony default export */ __webpack_exports__["a"] = ({
-
-    scenario: 0,
-    admin: false,
-
-    init(options) {
-        if (options) {
-            this.admin = true;
-            this.scenario = options.scenario;
-            __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].init(options);
-        }
-    },
-
-    isAdmin() {
-        return this.admin;
-    },
-
-    // TODO: win and lose
-    win() {
-        console.log('game won!');
-    },
-
-    lose() {
-        console.log('game lost!');
-    }
-});
-
-
-/***/ }),
-/* 2 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__cell__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__cell__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__tile__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tiles__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__tiles__ = __webpack_require__(2);
 
 
 
@@ -184,15 +146,174 @@
 
 
 /***/ }),
+/* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__helpers__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tile__ = __webpack_require__(5);
+
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+    all: [], // Array of Tile objects
+    deck: [], // Array of IDs (growing order)
+    stock: [], // Array of IDs (to be mixed)
+    board: [], // Array of IDs (chronologically)
+    pickedTile: false, // ID or false
+
+    init(deck) {
+        for (let id in deck) {
+            id = parseInt(id);
+            this.deck.push(id);
+            this.stock.push(id);
+            const tile = this.stringToTile(id, deck[id]);
+            this.all.push(new __WEBPACK_IMPORTED_MODULE_1__tile__["a" /* default */](tile));
+        }
+
+        const firstTile = this.stock[0];
+        this.stock.shift();
+        this.stock = __WEBPACK_IMPORTED_MODULE_0__helpers__["a" /* default */].shuffleArray(this.stock);
+        this.stock.unshift(firstTile);
+    },
+
+    getFromStock(index) {
+        // Get next tile in mixed stock (if no index provided)
+        let id = index === undefined ? this.stock[0] : index;
+
+        // Take tile ID out of stock
+        this.stock.shift();
+
+        // Save picked tile ID
+        this.pickedTile = id;
+
+        // Change tile status to picked
+        this.getTile(id).status = 'picked';
+
+        if (!index) return this.getTile(id);
+    },
+
+    putBackInStock() {
+        this.getTile(this.pickedTile).status = 'stock';
+        this.stock.unshift(this.pickedTile);
+        this.pickedTile = false;
+    },
+
+    getPickedTile() {
+        const id = this.pickedTile;
+        return this.getTile(id);
+    },
+
+    getTile(id) {
+        return this.all.find(t => { return t.id === id; });
+    },
+
+    setTile(id) {
+        this.pickedTile = false;
+        this.board.push(id);
+    },
+
+    getLastTile() {
+        const id = this.board[this.board.length - 1];
+        return this.getTile(id);
+    },
+
+    getStockSize() {
+        return this.stock.length;
+    },
+
+    stringToTile(id, string) {
+        let json = {};
+        json.id = id;
+        json.data = {};
+
+        // Divide string into array of 4-character blocks
+        let blocks = [];
+        for (let i = 0; i < 16; i += 1) {
+            const block = string.substring(i * 4, i * 4 + 4);
+            blocks.push(block);
+        }
+
+        // Build each cell
+        for (let x = 0; x < 4; x += 1) {
+            json.data[x] = {};
+
+            for (let y = 0; y < 4; y += 1) {
+                json.data[x][y] = {};
+                const cell = json.data[x][y];
+
+                // Get corresponding block
+                const block = blocks[x * 4 + y];
+
+                // First two bits: walls
+                let bits = block.substring(0, 2);
+                let schema = parseInt(bits).toString(3);
+                while (schema.length < 4) {
+                    schema = '0' + schema;
+                }
+
+                cell.walls = {};
+                for (let i = 0; i < 4; i += 1) {
+                    const side = ['top', 'right', 'bottom', 'left'][i];
+
+                    if (schema[i] === '0') {
+                        cell.walls[side] = false;
+                    } else if (schema[i] === '1') {
+                        cell.walls[side] = true;
+                    } else if (schema[i] === '2') {
+                        cell.walls[side] = 'orange';
+                    }
+                }
+
+                // 3rd bit: item
+                let bit = block[2];
+                if (bit === '0') {
+                    // No item
+                    cell.item = false;
+                } else {
+                    cell.item = {};
+                    const index = parseInt(bit, 36) - 1;
+                    if (index < 16) {
+                        // Colored item
+                        cell.item.type = ['gate', 'vortex', 'article', 'exit'][Math.floor(index / 4)];
+                        const color = ['green', 'orange', 'purple', 'yellow'][index % 4];
+                        cell.item.color = color;
+                    } else {
+                        // No color item
+                        cell.item.type = {'h': 'enter', 'i': 'time', 'j': 'crystal', 'k': 'camera'}[bit];
+                    }
+                }
+
+                // 4th bit: escalator
+                bit = block[3];
+                if (bit === '0') {
+                    // No escalator
+                    cell.escalator = false;
+                } else {
+                    const index = parseInt(bit, 36) - 1;
+                    cell.escalator = {
+                        'x': Math.floor(index / 4),
+                        'y': index % 4
+                    };
+                }
+            }
+        }
+
+        return json;
+    }
+});
+
+
+/***/ }),
 /* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__camera__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__camera__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__hero__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__tiles__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__hero__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__tiles__ = __webpack_require__(2);
 
 
 
@@ -346,12 +467,12 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__bot__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__bot__ = __webpack_require__(16);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__game__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__game__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__heroes__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__tiles__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__tiles__ = __webpack_require__(2);
 
 
 
@@ -802,11 +923,11 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__heroes__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__symbols__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__tiles__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__symbols__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__tiles__ = __webpack_require__(2);
 
 
 
@@ -1166,15 +1287,15 @@ class Tile {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ai__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__clock__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__clock__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__game__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__hero__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__game__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__hero__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__heroes__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__tile__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__tiles__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__tiles__ = __webpack_require__(2);
 
 
 
@@ -1468,6 +1589,44 @@ class Tile {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ai__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
+
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+
+    scenario: 0,
+    admin: false,
+
+    init(options) {
+        if (options) {
+            this.admin = true;
+            this.scenario = options.scenario;
+            __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].init(options);
+        }
+    },
+
+    isAdmin() {
+        return this.admin;
+    },
+
+    // TODO: win and lose
+    win() {
+        console.log('game won!');
+    },
+
+    lose() {
+        console.log('game lost!');
+    }
+});
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
 
 
@@ -1549,16 +1708,16 @@ class Tile {
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ai__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__events__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__heroes__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__tiles__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__tiles__ = __webpack_require__(2);
 
 
 
@@ -1838,12 +1997,12 @@ class Hero {
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__game__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__game__ = __webpack_require__(7);
 
 
 
@@ -1900,7 +2059,7 @@ class Hero {
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1970,7 +2129,7 @@ const size = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].size;
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {var require;var require;/*! p5.js v0.5.16 October 11, 2017 */
@@ -73379,27 +73538,27 @@ module.exports = p5;
 
 },{"../core/core":55,"./p5.Geometry":102}]},{},[46])(46)
 });
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(15)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(17)))
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ai__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__clock__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__clock__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__events__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__game__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__hero__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__game__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__hero__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__heroes__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_p5__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_p5__ = __webpack_require__(12);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8_p5__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__sketch__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__sketch__ = __webpack_require__(18);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__tile__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__tiles__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__tiles__ = __webpack_require__(2);
 
 
 
@@ -73417,18 +73576,9 @@ let deck = [];
 window.socket = io({transports: ['websocket'], upgrade: false});
 window.role = [];
 
-fetchJSON(0);
-
-function fetchJSON(i) {
-    fetch('data/tile' + i + '.json').then(response => response.json()).then(data => {
-        // TODO: tile selector (i given in array)
-        deck.push({id: i, data: data});
-
-        if (i < __WEBPACK_IMPORTED_MODULE_3__config__["a" /* default */].tiles - 1) {
-            fetchJSON(i + 1);
-        }
-    });
-}
+fetch('data/tiles.json').then(response => response.json()).then(data => {
+    deck = data;
+});
 
 function start(options) {
     new __WEBPACK_IMPORTED_MODULE_8_p5___default.a(__WEBPACK_IMPORTED_MODULE_9__sketch__["a" /* default */]);
@@ -73533,11 +73683,11 @@ socket.on('ai', data => {
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(1);
 
 
 class Cell {
@@ -73605,17 +73755,35 @@ class Cell {
 
 
 /***/ }),
-/* 14 */
+/* 15 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony default export */ __webpack_exports__["a"] = ({
+    shuffleArray(a) {
+        for (let i = a.length - 1; i > 0; i--) {
+            let j = Math.floor(Math.random() * (i + 1));
+            let x = a[i];
+            a[i] = a[j];
+            a[j] = x;
+        }
+        return a;
+    }
+});
+
+
+/***/ }),
+/* 16 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ai__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__events__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__heroes__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__tile__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__tiles__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__tiles__ = __webpack_require__(2);
 
 
 
@@ -73698,7 +73866,7 @@ class Bot {
 
 
 /***/ }),
-/* 15 */
+/* 17 */
 /***/ (function(module, exports) {
 
 var g;
@@ -73725,19 +73893,19 @@ module.exports = g;
 
 
 /***/ }),
-/* 16 */
+/* 18 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(12);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__events__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__heroes__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__symbols__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__tiles__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__symbols__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__tiles__ = __webpack_require__(2);
 
 
 
@@ -73814,102 +73982,6 @@ function displayTiles() {
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (sketch);
-
-
-/***/ }),
-/* 17 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony default export */ __webpack_exports__["a"] = ({
-    shuffleArray(a) {
-        for (let i = a.length - 1; i > 0; i--) {
-            let j = Math.floor(Math.random() * (i + 1));
-            let x = a[i];
-            a[i] = a[j];
-            a[j] = x;
-        }
-        return a;
-    }
-});
-
-
-/***/ }),
-/* 18 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__helpers__ = __webpack_require__(17);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tile__ = __webpack_require__(5);
-
-
-
-/* harmony default export */ __webpack_exports__["a"] = ({
-    all: [], // Array of Tile objects
-    deck: [], // Array of IDs (growing order)
-    stock: [], // Array of IDs (to be mixed)
-    board: [], // Array of IDs (chronologically)
-    pickedTile: false, // ID or false
-
-    init(deck) {
-        for (let id in deck) {
-            id = parseInt(id);
-            this.deck.push(id);
-            this.stock.push(id);
-            this.all.push(new __WEBPACK_IMPORTED_MODULE_1__tile__["a" /* default */](deck[id]));
-        }
-
-        const firstTile = this.stock[0];
-        this.stock.shift();
-        this.stock = __WEBPACK_IMPORTED_MODULE_0__helpers__["a" /* default */].shuffleArray(this.stock);
-        this.stock.unshift(firstTile);
-    },
-
-    getFromStock(index) {
-        // Get next tile in mixed stock (if no index provided)
-        let id = index === undefined ? this.stock[0] : index;
-
-        // Take tile ID out of stock
-        this.stock.shift();
-
-        // Save picked tile ID
-        this.pickedTile = id;
-
-        // Change tile status to picked
-        this.getTile(id).status = 'picked';
-
-        if (!index) return this.getTile(id);
-    },
-
-    putBackInStock() {
-        this.getTile(this.pickedTile).status = 'stock';
-        this.stock.unshift(this.pickedTile);
-        this.pickedTile = false;
-    },
-
-    getPickedTile() {
-        const id = this.pickedTile;
-        return this.getTile(id);
-    },
-
-    getTile(id) {
-        return this.all.find(t => { return t.id === id; });
-    },
-
-    setTile(id) {
-        this.pickedTile = false;
-        this.board.push(id);
-    },
-
-    getLastTile() {
-        const id = this.board[this.board.length - 1];
-        return this.getTile(id);
-    },
-
-    getStockSize() {
-        return this.stock.length;
-    }
-});
 
 
 /***/ })

@@ -9,7 +9,7 @@ export default {
     boardRows: 32,
     boardCols: 32,
     size: 32,
-    tiles: 5,
+    tiles: 25,
     firstTile: {
         x: 14,
         y: 14
