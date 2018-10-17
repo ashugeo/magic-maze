@@ -127,8 +127,8 @@ function mousePressed() {
         // All gates and vortexes should have a color
         if ((tool === 'gate' || tool === 'vortex') && !color) return;
 
-        // Time and enter have no color
-        if (tool === 'time' || tool === 'enter') {
+        // Time, enter, crystal and camera have no color
+        if (tool === 'time' || tool === 'enter' || tool === 'crystal' || tool === 'camera') {
             cell.item = {
                 'type': tool
             }
