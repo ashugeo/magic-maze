@@ -163,7 +163,7 @@
     pickedTile: false, // ID or false
 
     init(deck) {
-        for (let id in deck) {
+        for (let id of Object.keys(deck)) {
             id = parseInt(id);
             this.deck.push(id);
             this.stock.push(id);
@@ -1600,9 +1600,10 @@ class Tile {
     admin: false,
 
     init(options) {
-        if (options) {
+        this.scenario = options.scenario;
+        
+        if (options.admin) {
             this.admin = true;
-            this.scenario = options.scenario;
             __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].init(options);
         }
     },
@@ -73572,23 +73573,40 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 
-let deck = [];
+let allTiles = [];
+let scenarios = [];
 window.socket = io({transports: ['websocket'], upgrade: false});
 window.role = [];
 
 fetch('data/tiles.json').then(response => response.json()).then(data => {
-    deck = data;
+    allTiles = data;
+});
+
+fetch('data/scenarios.json').then(response => response.json()).then(data => {
+    scenarios = data;
 });
 
 function start(options) {
     new __WEBPACK_IMPORTED_MODULE_8_p5___default.a(__WEBPACK_IMPORTED_MODULE_9__sketch__["a" /* default */]);
     __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].init(options);
+    const deck = buildDeck(options.scenario);
     __WEBPACK_IMPORTED_MODULE_11__tiles__["a" /* default */].init(deck);
     __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].init();
     __WEBPACK_IMPORTED_MODULE_4__events__["a" /* default */].init();
     __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].init();
     __WEBPACK_IMPORTED_MODULE_2__clock__["a" /* default */].init();
     if (__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].isAdmin()) __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].run();
+}
+
+function buildDeck(scenario) {
+    let deck = {};
+    const ids = scenarios[scenario].tiles;
+
+    for (let id of ids) {
+        deck[id] = allTiles[id];
+    }
+
+    return deck;
 }
 
 const $ui = document.getElementById('ui');
@@ -73630,7 +73648,7 @@ socket.on('admin', () => {
 socket.on('start', options => {
     start(options);
 
-    if (options) {
+    if (options.admin) {
         // Admin only
         document.getElementById('admin').remove();
     }

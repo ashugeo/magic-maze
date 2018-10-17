@@ -9,7 +9,7 @@ export default {
     pickedTile: false, // ID or false
 
     init(deck) {
-        for (let id in deck) {
+        for (let id of Object.keys(deck)) {
             id = parseInt(id);
             this.deck.push(id);
             this.stock.push(id);

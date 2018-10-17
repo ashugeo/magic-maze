@@ -11,23 +11,40 @@ import sketch from './sketch';
 import Tile from './tile';
 import tiles from './tiles';
 
-let deck = [];
+let allTiles = [];
+let scenarios = [];
 window.socket = io({transports: ['websocket'], upgrade: false});
 window.role = [];
 
 fetch('data/tiles.json').then(response => response.json()).then(data => {
-    deck = data;
+    allTiles = data;
+});
+
+fetch('data/scenarios.json').then(response => response.json()).then(data => {
+    scenarios = data;
 });
 
 function start(options) {
     new p5(sketch);
     game.init(options);
+    const deck = buildDeck(options.scenario);
     tiles.init(deck);
     board.init();
     events.init();
     heroes.init();
     clock.init();
     if (game.isAdmin()) ai.run();
+}
+
+function buildDeck(scenario) {
+    let deck = {};
+    const ids = scenarios[scenario].tiles;
+
+    for (let id of ids) {
+        deck[id] = allTiles[id];
+    }
+
+    return deck;
 }
 
 const $ui = document.getElementById('ui');
@@ -69,7 +86,7 @@ socket.on('admin', () => {
 socket.on('start', options => {
     start(options);
 
-    if (options) {
+    if (options.admin) {
         // Admin only
         document.getElementById('admin').remove();
     }

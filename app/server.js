@@ -104,9 +104,12 @@ io.sockets.on('connection', socket => {
         // Tell everyone to start game
         for (let person of people) {
             if (person.id === adminID) {
+                options.admin = true;
                 io.to(person.id).emit('start', options);
             } else {
-                io.to(person.id).emit('start');
+                io.to(person.id).emit('start', {
+                    'scenario': options.scenario
+                });
             }
         }
 
