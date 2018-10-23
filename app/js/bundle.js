@@ -359,10 +359,8 @@
             let deltaY = hero.target.y - hero.pos.y;
             let delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
             if (delta > 1 / 20) {
-                hero.selectable = false;
                 hero.move();
             } else if (!hero.selectable) {
-                hero.selectable = true;
                 hero.move(true);
             }
 
@@ -1229,7 +1227,7 @@ class Tile {
     display() {
         p5.push();
         // Rotate and translate tile
-        p5.rotate(this.rotation * p5.PI/2);
+        p5.rotate(this.rotation * p5.PI / 2);
         const x = this.x;
         const y = this.y;
         const r = this.rotation;
@@ -1255,18 +1253,19 @@ class Tile {
             p5.rect(0, 0, 4 * size, 4 * size);
         }
 
-        if (this.status === 'set') this.displayItems();
-
         p5.pop();
+
+        if (this.status === 'set') this.displayItems();
     }
 
     displayItems() {
-        for (let j = 0; j < Object.keys(this.data).length; j += 1) {
-            for (let i = 0; i < Object.keys(this.data[j]).length; i += 1) {
+        for (let j = 0; j < 4; j += 1) {
+            for (let i = 0; i < 4; i += 1) {
                 const cell = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].get(this.x + i, this.y + j);
                 if (cell.isUsed()) {
-                    let x = (i + 1 / 3 + [.25, .1, -.1, -.25][i]) * size;
-                    let y = (j + 1 / 3 + [.25, .1, -.1, -.25][j]) * size;
+                    const shift = this.shift;
+                    const x = (cell.coord.x + 1 / 3 + [.25, .1, -.1, -.25][i]) * size + shift.x;
+                    const y = (cell.coord.y + 1 / 3 + [.25, .1, -.1, -.25][j]) * size + shift.y;
 
                     p5.push();
                     p5.translate(x, y);
@@ -1517,13 +1516,13 @@ class Tile {
     },
 
     /**
-    * Check if there's a hero in this cell
+    * Check if there's a selectable hero in this cell
     * @param  {Object} cell cell to check
     * @return {Object|bool}
     */
     checkForHero(cell) {
         for (let hero of __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].all) {
-            if (hero.cell.x === cell.x && hero.cell.y === cell.y) return hero;
+            if (hero.cell.x === cell.x && hero.cell.y === cell.y && hero.selectable) return hero;
         }
         return false;
     },
@@ -1568,11 +1567,20 @@ class Tile {
                 y: cell.y
             });
         } else if (item.type === 'article' && item.color === hero.color) {
-            // Same color article
-            hero.steal();
+            // Same color article, check if heroes can steal
+            let canSteal = false;
 
-            // Article is now stolen
-            __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(cell.x, cell.y).setStolen();
+            for (let hero of __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].all) {
+                const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(hero.cell.x, hero.cell.y);
+                const item = cell.item;
+                if (!item || item.type !== 'article' || item.color !== hero.color) canSteal = false;
+            }
+
+            if (canSteal) {
+                for (let hero of __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].all) {
+                    hero.steal();
+                }
+            }
         } else if (item.type === 'exit' && hero.hasStolen() && (item.color === hero.color || __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].scenario === 1)) {
             // Same color exit or scenario 1 (only has purple exit)
             hero.exit();
@@ -1747,6 +1755,7 @@ class Hero {
     move(force = false) {
         if (force) {
             this.pos = {x: this.target.x, y: this.target.y};
+            this.selectable = true;
             __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].run();
             __WEBPACK_IMPORTED_MODULE_3__events__["a" /* default */].checkForEvents(this.cell, this);
         } else {
@@ -1756,6 +1765,7 @@ class Hero {
             let x = this.pos.x + deltaX / delta / __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].heroSpeed;
             let y = this.pos.y + deltaY / delta / __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].heroSpeed;
             this.pos = {x, y};
+            this.selectable = false;
         }
     }
 
@@ -1967,6 +1977,7 @@ class Hero {
 
     steal() {
         this.stolen = true;
+        __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].setStolen(this.cell.x, this.cell.y);
     }
 
     hasStolen() {
