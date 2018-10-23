@@ -12,10 +12,11 @@ app.get('/', (req, res) => {
 
 let people = [];
 let adminID = '';
+let options = {};
 
 io.sockets.on('connection', socket => {
     // New person entered the room
-    people.push({id: socket.id, spectator: false});
+    people.push({id: socket.id, spectator: undefined});
 
     // Tell everyone
     io.emit('people', people.length);
@@ -40,79 +41,30 @@ io.sockets.on('connection', socket => {
         }
     });
 
-    // Player toggled the spectator checkbox
-    socket.on('spectator', isSpectator => {
-        const person = people.find(p => { return p.id === socket.id; });
-        person.spectator = isSpectator;
-    });
-
-    socket.on('start', options => {
-        // Make sure the admin started the game
-        if (socket.id !== adminID) return;
-
-        // Build players array
-        const players = people.filter(p => { return !p.spectator });
-        let playersCount = players.length;
-
-        // This game has bots
-        if (options.bots > 0) {
-            // Add bots to players count
-            playersCount += options.bots;
-
-            options.botsRoles = [];
-        }
-
-        // A game can't start with no one playing
-        if (playersCount === 0) return;
-
-        // Get all actions for that number of players
-        let roles = [];
-        for (let i in actions) {
-            if (actions[i].players.indexOf(playersCount) > -1) {
-                roles.push(actions[i].roles);
-            }
-        }
-
-        if (playersCount === 1) {
-            // Only one player, merge roles together
-            let allRoles = [].concat(...roles);
-
-            if (players.length === 1) {
-                // Admin is the only player
-                io.to(players[0].id).emit('role', allRoles);
-            } else {
-                // Admin is watching one bot play
-                options.botsRoles.push(allRoles);
-            }
-        } else {
-            // Give actions to players randomly
-            shuffleArray(roles);
-
-            for (let i in roles) {
-                i = parseInt(i);
-
-                if (players[i]) {
-                    // Tell this player his role(s)
-                    io.to(players[i].id).emit('role', roles[i]);
-                } else {
-                    // Not a player but a bot, save in options
-                    options.botsRoles.push(roles[i]);
-                }
-            }
-        }
-
-        // Tell everyone to start game
+    socket.on('prestart', () => {
         for (let person of people) {
             if (person.id === adminID) {
-                options.admin = true;
-                io.to(person.id).emit('start', options);
+                io.to(person.id).emit('prestart', true);
             } else {
-                io.to(person.id).emit('start', {
-                    'scenario': options.scenario
-                });
+                io.to(person.id).emit('prestart');
             }
         }
+    });
 
+    socket.on('settings', settings => {
+        const person = people.find(p => { return p.id === socket.id; });
+        person.spectator = settings.spectator;
+
+        // If admin, build options object with additional data
+        if (socket.id === adminID) {
+            options = { bots: settings.bots, scenario: settings.scenario };
+        }
+
+        // When the spectator status of everyone is known, the game can start
+        for (let person of people) {
+            if (person.spectator === undefined) return false;
+        }
+        start(socket.id, options);
     });
 
     socket.on('hero', data => {
@@ -127,7 +79,7 @@ io.sockets.on('connection', socket => {
         socket.broadcast.emit('tile', data);
     });
 
-    socket.on('invertClock', data => {
+    socket.on('invertClock', () => {
         socket.broadcast.emit('invertClock');
     });
 
@@ -135,7 +87,8 @@ io.sockets.on('connection', socket => {
         socket.broadcast.emit('used', data);
     });
 
-    socket.on('ai', data => {
+    // TODO: admin could see ai-running events instead
+    socket.on('ai', () => {
         io.to(adminID).emit('ai');
     });
 });
@@ -148,5 +101,73 @@ function shuffleArray(a) {
         let x = a[i];
         a[i] = a[j];
         a[j] = x;
+    }
+}
+
+function start(id, options) {
+    // Make sure the admin started the game
+    if (id !== adminID) return;
+
+    // Build players array
+    const players = people.filter(p => { return !p.spectator });
+    let playersCount = players.length;
+
+    // This game has bots
+    if (options.bots > 0) {
+        // Add bots to players count
+        playersCount += options.bots;
+
+        options.botsRoles = [];
+    }
+
+    // A game can't start with no one playing
+    if (playersCount === 0) return;
+
+    // Get all actions for that number of players
+    let roles = [];
+    for (let i in actions) {
+        if (actions[i].players.indexOf(playersCount) > -1) {
+            roles.push(actions[i].roles);
+        }
+    }
+
+    if (playersCount === 1) {
+        // Only one player, merge roles together
+        let allRoles = [].concat(...roles);
+
+        if (players.length === 1) {
+            // Admin is the only player
+            io.to(players[0].id).emit('role', allRoles);
+        } else {
+            // Admin is watching one bot play
+            options.botsRoles.push(allRoles);
+        }
+    } else {
+        // Give actions to players randomly
+        shuffleArray(roles);
+
+        for (let i in roles) {
+            i = parseInt(i);
+
+            if (players[i]) {
+                // Tell this player his role(s)
+                io.to(players[i].id).emit('role', roles[i]);
+            } else {
+                // Not a player but a bot, save in options
+                options.botsRoles.push(roles[i]);
+            }
+        }
+    }
+
+    // Tell everyone to start game
+    for (let person of people) {
+        if (person.id === adminID) {
+            options.admin = true;
+            io.to(person.id).emit('start', options);
+        } else {
+            io.to(person.id).emit('start', {
+                'scenario': options.scenario
+            });
+        }
     }
 }

@@ -73614,13 +73614,6 @@ const $admin = document.getElementById('admin');
 const $people = document.getElementById('people');
 const $spectator = document.getElementById('spectator');
 
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('spectator').addEventListener('mouseup', (e) => {
-        const spectator = !e.srcElement.checked;
-        socket.emit('spectator', spectator);
-    });
-});
-
 // FIXME: why is this not reliable?
 socket.on('people', people => {
     $people.innerHTML = people;
@@ -73635,14 +73628,22 @@ socket.on('admin', () => {
         <p>Scénario <input type="number" id="scenario" value="1" min="1" max="15" /></p>
         <button id="start">Commencer la partie !</button>`;
 
-        document.getElementById('start').addEventListener('mousedown', () => {
-            socket.emit('start', {
-                bots: parseInt(document.getElementById('bots').value),
-                scenario: parseInt(document.getElementById('scenario').value)
-            });
+        document.getElementById('start').addEventListener('click', () => {
+            socket.emit('prestart');
         });
 
     }, 100);
+});
+
+socket.on('prestart', isAdmin => {
+    const spectator = $spectator.checked;
+    if (isAdmin) {
+        const bots = parseInt(document.getElementById('bots').value);
+        const scenario = parseInt(document.getElementById('scenario').value);
+        socket.emit('settings', { bots, scenario, spectator });
+    } else {
+        socket.emit('settings', { spectator });
+    }
 });
 
 socket.on('start', options => {
