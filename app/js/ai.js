@@ -310,7 +310,7 @@ export default {
         }
 
         // Enable vortex
-        if (origin.item && origin.item.type === 'vortex' && origin.item.color === color) {
+        if (origin.item && origin.item.type === 'vortex' && origin.item.color === color && game.isVortex()) {
             // Search whole board for vortexes
             for (let j = 0; j < config.boardCols; j += 1) {
                 for (let i = 0; i < config.boardRows; i += 1) {

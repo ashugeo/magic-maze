@@ -2,6 +2,7 @@ import ai from './ai';
 import board from './board';
 import config from './config';
 import events from './events';
+import game from './game';
 import heroes from './heroes';
 import tiles from './tiles';
 
@@ -91,7 +92,7 @@ export default class Hero {
                 const targetItem = board.get(target.x, target.y).item;
                 if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
                     path.push({x: hero.x, y: hero.y});
-                    path.push({x: target.x, y: target.y, reachable: true});
+                    path.push({x: target.x, y: target.y, reachable: game.isVortex()});
                     return path;
                 }
             }
@@ -150,7 +151,8 @@ export default class Hero {
 
         for (let i in path) {
             i = parseInt(i);
-            path[i].reachable = true;
+            if (path[i].reachable === undefined) path[i].reachable = true;
+
 
             // Out of set tiles (empty cell)
             if (board.get(path[i].x, path[i].y).isEmpty()) {
@@ -159,13 +161,13 @@ export default class Hero {
             }
 
             // Already marked as reachable (vortex and escalator)
-            if (path[i+1] && path[i+1].reachable) {
+            if (path[i + 1] && path[i + 1].reachable) {
 
                 // Make sure there is no other hero on target
                 for (let hero of heroes.all) {
-                    if (path[i+1].x === hero.cell.x && path[i+1].y === hero.cell.y) {
+                    if (path[i + 1].x === hero.cell.x && path[i + 1].y === hero.cell.y) {
                         // Another hero blocking the way
-                        path[i+1].reachable = false;
+                        path[i + 1].reachable = false;
                         return;
                     }
                 }
@@ -183,7 +185,7 @@ export default class Hero {
                     }
                 }
 
-                if (!path[i-1].reachable) {
+                if (!path[i - 1].reachable) {
                     // Previous cell in path is unreachable, this one should be as well
                     path[i].reachable = false;
                     return;

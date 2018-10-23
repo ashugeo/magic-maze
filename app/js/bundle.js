@@ -140,7 +140,7 @@
     },
 
     setStolen(x, y) {
-        this.layout[x][y].setStolen();
+        // this.layout[x][y].setStolen();
     }
 });
 
@@ -783,7 +783,7 @@
         }
 
         // Enable vortex
-        if (origin.item && origin.item.type === 'vortex' && origin.item.color === color) {
+        if (origin.item && origin.item.type === 'vortex' && origin.item.color === color && __WEBPACK_IMPORTED_MODULE_3__game__["a" /* default */].isVortex()) {
             // Search whole board for vortexes
             for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].boardCols; j += 1) {
                 for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].boardRows; i += 1) {
@@ -1325,7 +1325,7 @@ class Tile {
             } else if (e.which === 27) { // Esc: cancel current action
                 this.cancel();
             } else if (e.which === 66) { // B: run bots
-                __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].run();
+                this.steal();
             }
         });
 
@@ -1568,7 +1568,7 @@ class Tile {
             });
         } else if (item.type === 'article' && item.color === hero.color) {
             // Same color article, check if heroes can steal
-            let canSteal = false;
+            let canSteal = true;
 
             for (let hero of __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].all) {
                 const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(hero.cell.x, hero.cell.y);
@@ -1576,11 +1576,8 @@ class Tile {
                 if (!item || item.type !== 'article' || item.color !== hero.color) canSteal = false;
             }
 
-            if (canSteal) {
-                for (let hero of __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].all) {
-                    hero.steal();
-                }
-            }
+            if (canSteal) this.steal();
+
         } else if (item.type === 'exit' && hero.hasStolen() && (item.color === hero.color || __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].scenario === 1)) {
             // Same color exit or scenario 1 (only has purple exit)
             hero.exit();
@@ -1588,6 +1585,15 @@ class Tile {
                 __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].win();
             }
         }
+    },
+
+    steal() {
+        for (let hero of __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].all) {
+            hero.steal();
+        }
+
+        // Disable vortex system
+        __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].setVortex(false);
     }
 });
 
@@ -1605,11 +1611,12 @@ class Tile {
 /* harmony default export */ __webpack_exports__["a"] = ({
 
     scenario: 0,
+    vortex: true,
     admin: false,
 
     init(options) {
         this.scenario = options.scenario;
-        
+
         if (options.admin) {
             this.admin = true;
             __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].init(options);
@@ -1618,6 +1625,14 @@ class Tile {
 
     isAdmin() {
         return this.admin;
+    },
+
+    setVortex(value) {
+        this.vortex = value;
+    },
+
+    isVortex() {
+        return this.vortex;
     },
 
     // TODO: win and lose
@@ -1725,8 +1740,10 @@ class Tile {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__events__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__heroes__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__tiles__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__game__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__heroes__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__tiles__ = __webpack_require__(2);
+
 
 
 
@@ -1782,7 +1799,7 @@ class Hero {
 
 
         const boardCell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(x, y);
-        const tile = __WEBPACK_IMPORTED_MODULE_5__tiles__["a" /* default */].getTile(boardCell.tileID);
+        const tile = __WEBPACK_IMPORTED_MODULE_6__tiles__["a" /* default */].getTile(boardCell.tileID);
         const tileCell = boardCell.tileCell;
 
         if (tile) {
@@ -1820,7 +1837,7 @@ class Hero {
                 const targetItem = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(target.x, target.y).item;
                 if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
                     path.push({x: hero.x, y: hero.y});
-                    path.push({x: target.x, y: target.y, reachable: true});
+                    path.push({x: target.x, y: target.y, reachable: __WEBPACK_IMPORTED_MODULE_4__game__["a" /* default */].isVortex()});
                     return path;
                 }
             }
@@ -1879,7 +1896,8 @@ class Hero {
 
         for (let i in path) {
             i = parseInt(i);
-            path[i].reachable = true;
+            if (path[i].reachable === undefined) path[i].reachable = true;
+
 
             // Out of set tiles (empty cell)
             if (__WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(path[i].x, path[i].y).isEmpty()) {
@@ -1888,13 +1906,13 @@ class Hero {
             }
 
             // Already marked as reachable (vortex and escalator)
-            if (path[i+1] && path[i+1].reachable) {
+            if (path[i + 1] && path[i + 1].reachable) {
 
                 // Make sure there is no other hero on target
-                for (let hero of __WEBPACK_IMPORTED_MODULE_4__heroes__["a" /* default */].all) {
-                    if (path[i+1].x === hero.cell.x && path[i+1].y === hero.cell.y) {
+                for (let hero of __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].all) {
+                    if (path[i + 1].x === hero.cell.x && path[i + 1].y === hero.cell.y) {
                         // Another hero blocking the way
-                        path[i+1].reachable = false;
+                        path[i + 1].reachable = false;
                         return;
                     }
                 }
@@ -1904,7 +1922,7 @@ class Hero {
             }
 
             if (i > 0) {
-                for (let hero of __WEBPACK_IMPORTED_MODULE_4__heroes__["a" /* default */].all) {
+                for (let hero of __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].all) {
                     if (path[i].x === hero.cell.x && path[i].y === hero.cell.y) {
                         // Another hero blocking the way
                         path[i].reachable = false;
@@ -1912,7 +1930,7 @@ class Hero {
                     }
                 }
 
-                if (!path[i-1].reachable) {
+                if (!path[i - 1].reachable) {
                     // Previous cell in path is unreachable, this one should be as well
                     path[i].reachable = false;
                     return;
@@ -1991,7 +2009,7 @@ class Hero {
         const boardCell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(this.cell.x, this.cell.y);
         const tileCell = boardCell.tileCell;
         const tileID = boardCell.tileID;
-        const tile = __WEBPACK_IMPORTED_MODULE_5__tiles__["a" /* default */].getTile(tileID);
+        const tile = __WEBPACK_IMPORTED_MODULE_6__tiles__["a" /* default */].getTile(tileID);
         const exit = tile.getExitPlusOne(tileCell.x, tileCell.y);
 
         // Move out of board

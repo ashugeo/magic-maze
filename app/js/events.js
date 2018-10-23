@@ -28,7 +28,7 @@ export default {
             } else if (e.which === 27) { // Esc: cancel current action
                 this.cancel();
             } else if (e.which === 66) { // B: run bots
-                ai.run();
+                this.steal();
             }
         });
 
@@ -271,7 +271,7 @@ export default {
             });
         } else if (item.type === 'article' && item.color === hero.color) {
             // Same color article, check if heroes can steal
-            let canSteal = false;
+            let canSteal = true;
 
             for (let hero of heroes.all) {
                 const cell = board.get(hero.cell.x, hero.cell.y);
@@ -279,11 +279,8 @@ export default {
                 if (!item || item.type !== 'article' || item.color !== hero.color) canSteal = false;
             }
 
-            if (canSteal) {
-                for (let hero of heroes.all) {
-                    hero.steal();
-                }
-            }
+            if (canSteal) this.steal();
+
         } else if (item.type === 'exit' && hero.hasStolen() && (item.color === hero.color || game.scenario === 1)) {
             // Same color exit or scenario 1 (only has purple exit)
             hero.exit();
@@ -291,5 +288,14 @@ export default {
                 game.win();
             }
         }
+    },
+
+    steal() {
+        for (let hero of heroes.all) {
+            hero.steal();
+        }
+
+        // Disable vortex system
+        game.setVortex(false);
     }
 }

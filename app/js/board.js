@@ -32,6 +32,6 @@ export default {
     },
 
     setStolen(x, y) {
-        this.layout[x][y].setStolen();
+        // this.layout[x][y].setStolen();
     }
 }
