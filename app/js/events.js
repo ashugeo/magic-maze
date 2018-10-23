@@ -219,13 +219,13 @@ export default {
     },
 
     /**
-    * Check if there's a hero in this cell
+    * Check if there's a selectable hero in this cell
     * @param  {Object} cell cell to check
     * @return {Object|bool}
     */
     checkForHero(cell) {
         for (let hero of heroes.all) {
-            if (hero.cell.x === cell.x && hero.cell.y === cell.y) return hero;
+            if (hero.cell.x === cell.x && hero.cell.y === cell.y && hero.selectable) return hero;
         }
         return false;
     },
@@ -270,11 +270,20 @@ export default {
                 y: cell.y
             });
         } else if (item.type === 'article' && item.color === hero.color) {
-            // Same color article
-            hero.steal();
+            // Same color article, check if heroes can steal
+            let canSteal = false;
 
-            // Article is now stolen
-            board.get(cell.x, cell.y).setStolen();
+            for (let hero of heroes.all) {
+                const cell = board.get(hero.cell.x, hero.cell.y);
+                const item = cell.item;
+                if (!item || item.type !== 'article' || item.color !== hero.color) canSteal = false;
+            }
+
+            if (canSteal) {
+                for (let hero of heroes.all) {
+                    hero.steal();
+                }
+            }
         } else if (item.type === 'exit' && hero.hasStolen() && (item.color === hero.color || game.scenario === 1)) {
             // Same color exit or scenario 1 (only has purple exit)
             hero.exit();

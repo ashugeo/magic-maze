@@ -26,6 +26,7 @@ export default class Hero {
     move(force = false) {
         if (force) {
             this.pos = {x: this.target.x, y: this.target.y};
+            this.selectable = true;
             ai.run();
             events.checkForEvents(this.cell, this);
         } else {
@@ -35,6 +36,7 @@ export default class Hero {
             let x = this.pos.x + deltaX / delta / config.heroSpeed;
             let y = this.pos.y + deltaY / delta / config.heroSpeed;
             this.pos = {x, y};
+            this.selectable = false;
         }
     }
 
@@ -246,6 +248,7 @@ export default class Hero {
 
     steal() {
         this.stolen = true;
+        board.setStolen(this.cell.x, this.cell.y);
     }
 
     hasStolen() {

@@ -43,10 +43,8 @@ export default {
             let deltaY = hero.target.y - hero.pos.y;
             let delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
             if (delta > 1 / 20) {
-                hero.selectable = false;
                 hero.move();
             } else if (!hero.selectable) {
-                hero.selectable = true;
                 hero.move(true);
             }
 
