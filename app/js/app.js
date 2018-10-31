@@ -55,16 +55,16 @@ const $spectator = document.getElementById('spectator');
 // FIXME: why is this not reliable?
 socket.on('people', people => {
     $people.innerHTML = people;
-    $people.innerHTML += people > 1 ? ' joueurs connectés' : ' joueur connecté';
+    $people.innerHTML += people > 1 ? ' players online' : ' player online';
 });
 
 socket.on('admin', () => {
     // Timeout needed to give time for 'players' event
     setTimeout(() => {
-        $admin.innerHTML += `<h3>Maître du jeu</h3>
+        $admin.innerHTML += `<h3>Game admin</h3>
         <p>Bot(s) <input type="number" id="bots" value="0" min="0" max="7" /></p>
-        <p>Scénario <input type="number" id="scenario" value="1" min="1" max="15" /></p>
-        <button id="start">Commencer la partie !</button>`;
+        <p>Scenario <input type="number" id="scenario" value="1" min="1" max="15" /></p>
+        <button id="start">Start game!</button>`;
 
         document.getElementById('start').addEventListener('click', () => {
             socket.emit('prestart');
@@ -98,7 +98,7 @@ socket.on('role', roles => {
     role = roles;
 
     // Display role
-    let text = '<p>Actions autorisées : ';
+    let text = '<p>Authorized actions: ';
     for (let i in roles) {
         i = parseInt(i);
         text += roles[i];

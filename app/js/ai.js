@@ -60,6 +60,7 @@ export default {
             }
 
             // If hero sits on an unexplored gate with same color
+            // TODO: fix hero moving in and out of this cell
             if (cell.item && item.type === 'gate' && item.color === hero.color && !cell.isExplored() && canExplore) {
                 // Place new tile
                 actions.push({
@@ -133,6 +134,7 @@ export default {
 
                 // TODO: add time cells as objectives when remaining time is low
                 // TODO: add priority to cost (time cell priority would increase over time)
+                // TODO: first explore, when all articles and exits are shown, exit
 
                 // Ignore empty cells
                 if (cell.isEmpty()) continue;

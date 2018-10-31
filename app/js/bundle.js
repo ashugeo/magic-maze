@@ -468,7 +468,7 @@
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__bot__ = __webpack_require__(16);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__game__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__game__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__heroes__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__tiles__ = __webpack_require__(2);
 
@@ -533,6 +533,7 @@
             }
 
             // If hero sits on an unexplored gate with same color
+            // TODO: fix hero moving in and out of this cell
             if (cell.item && item.type === 'gate' && item.color === hero.color && !cell.isExplored() && canExplore) {
                 // Place new tile
                 actions.push({
@@ -606,6 +607,7 @@
 
                 // TODO: add time cells as objectives when remaining time is low
                 // TODO: add priority to cost (time cell priority would increase over time)
+                // TODO: first explore, when all articles and exits are shown, exit
 
                 // Ignore empty cells
                 if (cell.isEmpty()) continue;
@@ -1286,11 +1288,59 @@ class Tile {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ai__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
+
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+
+    scenario: 0,
+    vortex: true,
+    admin: false,
+
+    init(options) {
+        this.scenario = options.scenario;
+
+        if (options.admin) {
+            this.admin = true;
+            __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].init(options);
+        }
+    },
+
+    isAdmin() {
+        return this.admin;
+    },
+
+    setVortex(value) {
+        this.vortex = value;
+    },
+
+    isVortex() {
+        return this.vortex;
+    },
+
+    // TODO: win and lose
+    win() {
+        console.log('game won!');
+    },
+
+    lose() {
+        console.log('game lost!');
+    }
+});
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ai__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__clock__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__game__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__game__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__hero__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__heroes__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__tile__ = __webpack_require__(5);
@@ -1599,54 +1649,6 @@ class Tile {
 
 
 /***/ }),
-/* 7 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ai__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
-
-
-
-/* harmony default export */ __webpack_exports__["a"] = ({
-
-    scenario: 0,
-    vortex: true,
-    admin: false,
-
-    init(options) {
-        this.scenario = options.scenario;
-
-        if (options.admin) {
-            this.admin = true;
-            __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].init(options);
-        }
-    },
-
-    isAdmin() {
-        return this.admin;
-    },
-
-    setVortex(value) {
-        this.vortex = value;
-    },
-
-    isVortex() {
-        return this.vortex;
-    },
-
-    // TODO: win and lose
-    win() {
-        console.log('game won!');
-    },
-
-    lose() {
-        console.log('game lost!');
-    }
-});
-
-
-/***/ }),
 /* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -1739,8 +1741,8 @@ class Tile {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ai__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__events__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__game__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__events__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__game__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__heroes__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__tiles__ = __webpack_require__(2);
 
@@ -2032,7 +2034,7 @@ class Hero {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__game__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__game__ = __webpack_require__(6);
 
 
 
@@ -73580,8 +73582,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__clock__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__events__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__game__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__events__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__game__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__hero__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__heroes__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_p5__ = __webpack_require__(12);
@@ -73646,16 +73648,16 @@ const $spectator = document.getElementById('spectator');
 // FIXME: why is this not reliable?
 socket.on('people', people => {
     $people.innerHTML = people;
-    $people.innerHTML += people > 1 ? ' joueurs connectés' : ' joueur connecté';
+    $people.innerHTML += people > 1 ? ' players online' : ' player online';
 });
 
 socket.on('admin', () => {
     // Timeout needed to give time for 'players' event
     setTimeout(() => {
-        $admin.innerHTML += `<h3>Maître du jeu</h3>
+        $admin.innerHTML += `<h3>Game admin</h3>
         <p>Bot(s) <input type="number" id="bots" value="0" min="0" max="7" /></p>
-        <p>Scénario <input type="number" id="scenario" value="1" min="1" max="15" /></p>
-        <button id="start">Commencer la partie !</button>`;
+        <p>Scenario <input type="number" id="scenario" value="1" min="1" max="15" /></p>
+        <button id="start">Start game!</button>`;
 
         document.getElementById('start').addEventListener('click', () => {
             socket.emit('prestart');
@@ -73689,7 +73691,7 @@ socket.on('role', roles => {
     role = roles;
 
     // Display role
-    let text = '<p>Actions autorisées : ';
+    let text = '<p>Authorized actions: ';
     for (let i in roles) {
         i = parseInt(i);
         text += roles[i];
@@ -73828,7 +73830,7 @@ class Cell {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ai__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__events__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__events__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__heroes__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__tile__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__tiles__ = __webpack_require__(2);
@@ -73950,7 +73952,7 @@ module.exports = g;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__events__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__events__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__heroes__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__symbols__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__tiles__ = __webpack_require__(2);
