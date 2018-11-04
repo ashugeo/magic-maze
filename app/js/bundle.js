@@ -1295,11 +1295,13 @@ class Tile {
 /* harmony default export */ __webpack_exports__["a"] = ({
 
     scenario: 0,
+    players: 0,
     vortex: true,
     admin: false,
 
     init(options) {
         this.scenario = options.scenario;
+        this.players = options.players;
 
         if (options.admin) {
             this.admin = true;
@@ -73604,10 +73606,19 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 
+const $ui = document.getElementById('ui');
+const $admin = document.getElementById('admin');
+const $people = document.getElementById('people');
+const $spectator = document.getElementById('spectator');
+
+let $currentAction;
+
 let allTiles = [];
 let scenarios = [];
 window.socket = io({transports: ['websocket'], upgrade: false});
 window.role = [];
+
+let allActions = [];
 
 fetch('data/tiles.json').then(response => response.json()).then(data => {
     allTiles = data;
@@ -73620,6 +73631,7 @@ fetch('data/scenarios.json').then(response => response.json()).then(data => {
 function start(options) {
     new __WEBPACK_IMPORTED_MODULE_8_p5___default.a(__WEBPACK_IMPORTED_MODULE_9__sketch__["a" /* default */]);
     __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].init(options);
+    if (options.roles) setRoles(options.roles);
     const deck = buildDeck(options.scenario);
     __WEBPACK_IMPORTED_MODULE_11__tiles__["a" /* default */].init(deck);
     __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].init();
@@ -73640,11 +73652,6 @@ function buildDeck(scenario) {
     return deck;
 }
 
-const $ui = document.getElementById('ui');
-const $admin = document.getElementById('admin');
-const $people = document.getElementById('people');
-const $spectator = document.getElementById('spectator');
-
 // FIXME: why is this not reliable?
 socket.on('people', people => {
     $people.innerHTML = people;
@@ -73658,6 +73665,8 @@ socket.on('admin', () => {
         <p>Bot(s) <input type="number" id="bots" value="0" min="0" max="7" /></p>
         <p>Scenario <input type="number" id="scenario" value="1" min="1" max="15" /></p>
         <button id="start">Start game!</button>`;
+
+        // FIXME: double click on start button moves purple hero…
 
         document.getElementById('start').addEventListener('click', () => {
             socket.emit('prestart');
@@ -73686,7 +73695,7 @@ socket.on('start', options => {
     }
 });
 
-socket.on('role', roles => {
+function setRoles(roles) {
     // Save my role in window.role
     role = roles;
 
@@ -73700,7 +73709,32 @@ socket.on('role', roles => {
     text += '.</p>'
 
     $ui.innerHTML += text;
-});
+
+    if (__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].players === 1) {
+        allActions = roles;
+        // First role in shuffled array
+        role = role[0];
+
+        text = `<p>Current action: <span id="currentAction">${role}</span></p>
+        <button id="nextAction">Next action</button>`;
+        $ui.innerHTML += text;
+
+        document.getElementById('nextAction').addEventListener('click', () => {
+            nextAction();
+        });
+
+        $currentAction = document.getElementById('currentAction');
+    }
+}
+
+// TODO: shuffle actions when timer is flipped
+function nextAction() {
+    let i = allActions.indexOf(role);
+    i = i + 1 === allActions.length ? 0 : i + 1;
+    role = allActions[i];
+
+    $currentAction.innerHTML = role;
+}
 
 socket.on('hero', data => {
     const hero = __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].all[data.id];

@@ -4,11 +4,13 @@ import config from './config';
 export default {
 
     scenario: 0,
+    players: 0,
     vortex: true,
     admin: false,
 
     init(options) {
         this.scenario = options.scenario;
+        this.players = options.players;
 
         if (options.admin) {
             this.admin = true;
