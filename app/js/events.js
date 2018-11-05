@@ -200,10 +200,8 @@ export default {
         if (canAddTile) {
             this.action = 'placing';
 
-            // Make sure last tile is fixed to prevent multiple tiles picking
-            const lastTile = tiles.getLastTile();
-
-            if (lastTile.status === 'set') {
+            // Make sure no tile is already picked
+            if (!tiles.isPickedTile()) {
                 tiles.getFromStock();
             }
         }

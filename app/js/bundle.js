@@ -213,9 +213,8 @@
         this.board.push(id);
     },
 
-    getLastTile() {
-        const id = this.board[this.board.length - 1];
-        return this.getTile(id);
+    isPickedTile() {
+        return this.pickedTile;
     },
 
     getStockSize() {
@@ -1549,10 +1548,8 @@ class Tile {
         if (canAddTile) {
             this.action = 'placing';
 
-            // Make sure last tile is fixed to prevent multiple tiles picking
-            const lastTile = __WEBPACK_IMPORTED_MODULE_9__tiles__["a" /* default */].getLastTile();
-
-            if (lastTile.status === 'set') {
+            // Make sure no tile is already picked
+            if (!__WEBPACK_IMPORTED_MODULE_9__tiles__["a" /* default */].isPickedTile()) {
                 __WEBPACK_IMPORTED_MODULE_9__tiles__["a" /* default */].getFromStock();
             }
         }
