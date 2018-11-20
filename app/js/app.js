@@ -114,7 +114,8 @@ function setRoles(roles) {
         <button id="nextAction">Next action</button>`;
         $ui.innerHTML += text;
 
-        document.getElementById('nextAction').addEventListener('click', () => {
+        document.getElementById('nextAction').addEventListener('click', (e) => {
+            if (e.path[0].classList.contains('disabled')) return;
             nextAction();
         });
 

@@ -1288,6 +1288,8 @@ class Tile {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ai__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__events__ = __webpack_require__(7);
+
 
 
 
@@ -1297,6 +1299,7 @@ class Tile {
     players: 0,
     vortex: true,
     admin: false,
+    ended: false,
 
     init(options) {
         this.scenario = options.scenario;
@@ -1320,13 +1323,25 @@ class Tile {
         return this.vortex;
     },
 
+    isEnded() {
+        return this.ended;
+    },
+
     // TODO: win and lose
     win() {
         console.log('game won!');
+        this.ended = true;
     },
 
     lose() {
         console.log('game lost!');
+        this.ended = true;
+
+        // Cancel current action
+        if (__WEBPACK_IMPORTED_MODULE_2__events__["a" /* default */].action !== '') __WEBPACK_IMPORTED_MODULE_2__events__["a" /* default */].cancel();
+
+        // Disable nextAction button
+        document.getElementById('nextAction').classList.add('disabled');
     }
 });
 
@@ -1370,28 +1385,28 @@ class Tile {
         */
         document.addEventListener('keydown', e => {
             if (e.which === 67) { // C: engage tile placing
-                this.newTile();
+                if (!__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].isEnded()) this.newTile();
             } else if (e.which === 82) { // R: rotate tile counterclockwise
-                this.rotateTile(-1);
+                if (!__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].isEnded()) this.rotateTile(-1);
             } else if (e.which === 84) { // T: rotate tile clockwise
-                this.rotateTile(1);
+                if (!__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].isEnded()) this.rotateTile(1);
             } else if (e.which === 27) { // Esc: cancel current action
-                this.cancel();
-            } else if (e.which === 66) { // B: run bots
-                this.steal();
+                if (!__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].isEnded()) this.cancel();
+            } else if (e.which === 66) { // B
+                // this.steal();
             }
         });
 
         document.addEventListener('mousedown', () => {
-            this.mouseDown();
+            if (!__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].isEnded()) this.mouseDown();
         });
 
         document.addEventListener('mouseup', () => {
-            this.mouseUp();
+            if (!__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].isEnded()) this.mouseUp();
         });
 
         document.addEventListener('mousemove', () => {
-            this.mouseMove();
+            if (!__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].isEnded()) this.mouseMove();
         });
 
         document.getElementById('canvas-wrap').addEventListener('mouseleave', () => {
@@ -1403,7 +1418,7 @@ class Tile {
         });
 
         window.oncontextmenu = () => {
-            this.rotateTile(1);
+            if (!__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].isEnded()) this.rotateTile(1);
             return false;
         }
     },
@@ -73713,7 +73728,8 @@ function setRoles(roles) {
         <button id="nextAction">Next action</button>`;
         $ui.innerHTML += text;
 
-        document.getElementById('nextAction').addEventListener('click', () => {
+        document.getElementById('nextAction').addEventListener('click', (e) => {
+            if (e.path[0].classList.contains('disabled')) return;
             nextAction();
         });
 

@@ -64,10 +64,17 @@ button {
     font-size: .8em;
     letter-spacing: .05em;
 
-    &:hover,
     &:focus {
         outline: none;
+    }
+
+    &:not(.disabled):hover,
+    &:not(.disabled):focus {
         background-color: rgba(0,0,0,.3);
+    }
+
+    &.disabled {
+        opacity: .6;
     }
 }
 

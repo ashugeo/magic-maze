@@ -21,28 +21,28 @@ export default {
         */
         document.addEventListener('keydown', e => {
             if (e.which === 67) { // C: engage tile placing
-                this.newTile();
+                if (!game.isEnded()) this.newTile();
             } else if (e.which === 82) { // R: rotate tile counterclockwise
-                this.rotateTile(-1);
+                if (!game.isEnded()) this.rotateTile(-1);
             } else if (e.which === 84) { // T: rotate tile clockwise
-                this.rotateTile(1);
+                if (!game.isEnded()) this.rotateTile(1);
             } else if (e.which === 27) { // Esc: cancel current action
-                this.cancel();
-            } else if (e.which === 66) { // B: run bots
-                this.steal();
+                if (!game.isEnded()) this.cancel();
+            } else if (e.which === 66) { // B
+                // this.steal();
             }
         });
 
         document.addEventListener('mousedown', () => {
-            this.mouseDown();
+            if (!game.isEnded()) this.mouseDown();
         });
 
         document.addEventListener('mouseup', () => {
-            this.mouseUp();
+            if (!game.isEnded()) this.mouseUp();
         });
 
         document.addEventListener('mousemove', () => {
-            this.mouseMove();
+            if (!game.isEnded()) this.mouseMove();
         });
 
         document.getElementById('canvas-wrap').addEventListener('mouseleave', () => {
@@ -54,7 +54,7 @@ export default {
         });
 
         window.oncontextmenu = () => {
-            this.rotateTile(1);
+            if (!game.isEnded()) this.rotateTile(1);
             return false;
         }
     },
