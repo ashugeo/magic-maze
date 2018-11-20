@@ -73692,6 +73692,8 @@ socket.on('prestart', isAdmin => {
 socket.on('start', options => {
     start(options);
 
+    document.getElementById('spectator-ui').remove();
+
     if (options.admin) {
         // Admin only
         document.getElementById('admin').remove();
