@@ -1343,9 +1343,11 @@ class Tile {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__game__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__hero__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__heroes__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__tile__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__tiles__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__helpers__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__heroes__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__tile__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__tiles__ = __webpack_require__(2);
+
 
 
 
@@ -1489,7 +1491,7 @@ class Tile {
     */
     cancel() {
         if (this.action === 'placing') {
-            __WEBPACK_IMPORTED_MODULE_9__tiles__["a" /* default */].putBackInStock();
+            __WEBPACK_IMPORTED_MODULE_10__tiles__["a" /* default */].putBackInStock();
         }
         this.action = '';
     },
@@ -1500,7 +1502,7 @@ class Tile {
     */
     setTile(cell) {
         // Select picked tile
-        const tile = __WEBPACK_IMPORTED_MODULE_9__tiles__["a" /* default */].getPickedTile();
+        const tile = __WEBPACK_IMPORTED_MODULE_10__tiles__["a" /* default */].getPickedTile();
         const o = tile.getOrientation();
 
         if (tile.canBeSet && tile.status === 'picked') {
@@ -1530,10 +1532,10 @@ class Tile {
     */
     newTile() {
         if (role.indexOf('explore') === -1) return;
-        if (__WEBPACK_IMPORTED_MODULE_9__tiles__["a" /* default */].getStockSize() === 0) return;
+        if (__WEBPACK_IMPORTED_MODULE_10__tiles__["a" /* default */].getStockSize() === 0) return;
         let canAddTile = false;
 
-        for (let hero of __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].all) {
+        for (let hero of __WEBPACK_IMPORTED_MODULE_8__heroes__["a" /* default */].all) {
             const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(hero.cell.x, hero.cell.y);
             if (cell.item && cell.item.type === 'gate' && cell.item.color === hero.color) {
                 this.gateCell = cell;
@@ -1549,8 +1551,8 @@ class Tile {
             this.action = 'placing';
 
             // Make sure no tile is already picked
-            if (!__WEBPACK_IMPORTED_MODULE_9__tiles__["a" /* default */].isPickedTile()) {
-                __WEBPACK_IMPORTED_MODULE_9__tiles__["a" /* default */].getFromStock();
+            if (!__WEBPACK_IMPORTED_MODULE_10__tiles__["a" /* default */].isPickedTile()) {
+                __WEBPACK_IMPORTED_MODULE_10__tiles__["a" /* default */].getFromStock();
             }
         }
     },
@@ -1560,7 +1562,7 @@ class Tile {
     * @param  {int} dir direction (1 for clockwise, -1 for counterclockwise)
     */
     rotateTile(dir) {
-        const pickedTile = __WEBPACK_IMPORTED_MODULE_9__tiles__["a" /* default */].getPickedTile();
+        const pickedTile = __WEBPACK_IMPORTED_MODULE_10__tiles__["a" /* default */].getPickedTile();
         if (pickedTile) pickedTile.rotate(dir);
     },
 
@@ -1570,7 +1572,7 @@ class Tile {
     * @return {Object|bool}
     */
     checkForHero(cell) {
-        for (let hero of __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].all) {
+        for (let hero of __WEBPACK_IMPORTED_MODULE_8__heroes__["a" /* default */].all) {
             if (hero.cell.x === cell.x && hero.cell.y === cell.y && hero.selectable) return hero;
         }
         return false;
@@ -1581,7 +1583,7 @@ class Tile {
     * @param  {Object} hero hero to select
     */
     toggleHero(hero) {
-        for (let h of __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].all) {
+        for (let h of __WEBPACK_IMPORTED_MODULE_8__heroes__["a" /* default */].all) {
             // Prevent selection of multiple heroes
             if (h.status === 'selected' && h.id !== hero.id) return;
         }
@@ -1609,6 +1611,11 @@ class Tile {
             __WEBPACK_IMPORTED_MODULE_3__clock__["a" /* default */].invert();
             socket.emit('invertClock');
 
+            if (__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].players === 1 && __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].bots.length === 0) {
+                // Admin is the only player, shuffle roles
+                allActions = __WEBPACK_IMPORTED_MODULE_7__helpers__["a" /* default */].shuffleArray(allActions);
+            }
+
             // Time cell is now used
             __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].setUsed(cell.x, cell.y);
             socket.emit('used', {
@@ -1619,7 +1626,7 @@ class Tile {
             // Same color article, check if heroes can steal
             let canSteal = true;
 
-            for (let hero of __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].all) {
+            for (let hero of __WEBPACK_IMPORTED_MODULE_8__heroes__["a" /* default */].all) {
                 const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(hero.cell.x, hero.cell.y);
                 const item = cell.item;
                 if (!item || item.type !== 'article' || item.color !== hero.color) canSteal = false;
@@ -1637,7 +1644,7 @@ class Tile {
     },
 
     steal() {
-        for (let hero of __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].all) {
+        for (let hero of __WEBPACK_IMPORTED_MODULE_8__heroes__["a" /* default */].all) {
             hero.steal();
         }
 
@@ -73614,8 +73621,7 @@ let allTiles = [];
 let scenarios = [];
 window.socket = io({transports: ['websocket'], upgrade: false});
 window.role = [];
-
-let allActions = [];
+window.allActions = [];
 
 fetch('data/tiles.json').then(response => response.json()).then(data => {
     allTiles = data;
@@ -73696,23 +73702,12 @@ function setRoles(roles) {
     // Save my role in window.role
     role = roles;
 
-    // Display role
-    let text = '<p>Authorized actions: ';
-    for (let i in roles) {
-        i = parseInt(i);
-        text += roles[i];
-        if (roles[i + 1]) text += ', ';
-    }
-    text += '.</p>'
-
-    $ui.innerHTML += text;
-
     if (__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].players === 1) {
         allActions = roles;
         // First role in shuffled array
         role = role[0];
 
-        text = `<p>Current action: <span id="currentAction">${role}</span></p>
+        let text = `<p>Current action: <span id="currentAction">${role}</span></p>
         <button id="nextAction">Next action</button>`;
         $ui.innerHTML += text;
 
@@ -73721,10 +73716,20 @@ function setRoles(roles) {
         });
 
         $currentAction = document.getElementById('currentAction');
+    } else {
+        // Display role
+        let text = '<p>Authorized actions: ';
+        for (let i in roles) {
+            i = parseInt(i);
+            text += roles[i];
+            if (roles[i + 1]) text += ', ';
+        }
+        text += '.</p>'
+
+        $ui.innerHTML += text;
     }
 }
 
-// TODO: shuffle actions when timer is flipped
 function nextAction() {
     let i = allActions.indexOf(role);
     i = i + 1 === allActions.length ? 0 : i + 1;

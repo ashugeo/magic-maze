@@ -22,8 +22,7 @@ let allTiles = [];
 let scenarios = [];
 window.socket = io({transports: ['websocket'], upgrade: false});
 window.role = [];
-
-let allActions = [];
+window.allActions = [];
 
 fetch('data/tiles.json').then(response => response.json()).then(data => {
     allTiles = data;
@@ -104,23 +103,12 @@ function setRoles(roles) {
     // Save my role in window.role
     role = roles;
 
-    // Display role
-    let text = '<p>Authorized actions: ';
-    for (let i in roles) {
-        i = parseInt(i);
-        text += roles[i];
-        if (roles[i + 1]) text += ', ';
-    }
-    text += '.</p>'
-
-    $ui.innerHTML += text;
-
     if (game.players === 1) {
         allActions = roles;
         // First role in shuffled array
         role = role[0];
 
-        text = `<p>Current action: <span id="currentAction">${role}</span></p>
+        let text = `<p>Current action: <span id="currentAction">${role}</span></p>
         <button id="nextAction">Next action</button>`;
         $ui.innerHTML += text;
 
@@ -129,10 +117,20 @@ function setRoles(roles) {
         });
 
         $currentAction = document.getElementById('currentAction');
+    } else {
+        // Display role
+        let text = '<p>Authorized actions: ';
+        for (let i in roles) {
+            i = parseInt(i);
+            text += roles[i];
+            if (roles[i + 1]) text += ', ';
+        }
+        text += '.</p>'
+
+        $ui.innerHTML += text;
     }
 }
 
-// TODO: shuffle actions when timer is flipped
 function nextAction() {
     let i = allActions.indexOf(role);
     i = i + 1 === allActions.length ? 0 : i + 1;

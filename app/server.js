@@ -87,7 +87,6 @@ io.sockets.on('connection', socket => {
         socket.broadcast.emit('used', data);
     });
 
-    // TODO: admin could see ai-running events instead
     socket.on('ai', () => {
         io.to(adminID).emit('ai');
     });

@@ -5,7 +5,8 @@ import clock from './clock';
 import config from './config';
 import game from './game';
 import Hero from './hero';
-import heroes from './heroes'
+import helpers from './helpers';
+import heroes from './heroes';
 import Tile from './tile';
 import tiles from './tiles';
 
@@ -260,6 +261,11 @@ export default {
             // Time cell, invert clock
             clock.invert();
             socket.emit('invertClock');
+
+            if (game.players === 1 && ai.bots.length === 0) {
+                // Admin is the only player, shuffle roles
+                allActions = helpers.shuffleArray(allActions);
+            }
 
             // Time cell is now used
             board.setUsed(cell.x, cell.y);
