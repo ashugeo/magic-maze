@@ -581,8 +581,6 @@
 
                 // TODO: add time cells as objectives when remaining time is low
                 // TODO: add priority to cost (time cell priority would increase over time)
-                // TODO: first explore, when all articles and exits are shown, exit
-                // FIXME: not all heroes reach exit
 
                 // Ignore empty cells
                 if (cell.isEmpty()) continue;
@@ -771,9 +769,15 @@
         origin = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].get(origin.x, origin.y);
 
         // Enable escalators
-        // FIXME: check that the opposite end doesn't have a hero! (else they overlap)
         if (origin.escalator) {
-            neighbors.push({
+            // Make sure target doesn't hold a hero
+            let canGo = true;
+            for (let hero of __WEBPACK_IMPORTED_MODULE_4__heroes__["a" /* default */].all) {
+                if (hero.cell.x === origin.escalator.x && hero.cell.y === origin.escalator.y) {
+                    canGo = false;
+                }
+            }
+            if (canGo) neighbors.push({
                 x: origin.escalator.x,
                 y: origin.escalator.y,
                 escalator: origin.escalator
@@ -793,7 +797,14 @@
                         cell.item.color === color &&
                         !(cell.coord.x === origin.coord.x && cell.coord.y === origin.coord.y)
                     ) {
-                        neighbors.push({
+                        // Make sure target doesn't hold a hero
+                        let canGo = true;
+                        for (let hero of __WEBPACK_IMPORTED_MODULE_4__heroes__["a" /* default */].all) {
+                            if (hero.cell.x === cell.coord.x && hero.cell.y === cell.coord.y) {
+                                canGo = false;
+                            }
+                        }
+                        if (canGo) neighbors.push({
                             x: cell.coord.x,
                             y: cell.coord.y,
                             item: {
@@ -818,20 +829,20 @@
 
             if (!neighbor) continue;
 
-            let canGoTo = true;
+            let canGo = true;
 
             // Make sure neighbor isn't empty
-            if (neighbor.isEmpty()) canGoTo = false;
+            if (neighbor.isEmpty()) canGo = false;
 
-            // Make sure neighbor doesn't hold another hero
+            // Make sure neighbor doesn't hold a hero
             // TODO: move a hero that's blocking another (good luck for this one)
             for (let hero of __WEBPACK_IMPORTED_MODULE_4__heroes__["a" /* default */].all) {
                 if (hero.cell.x === neighbor.coord.x && hero.cell.y === neighbor.coord.y) {
-                    canGoTo = false;
+                    canGo = false;
                 }
             }
 
-            if (!canGoTo) continue;
+            if (!canGo) continue;
 
             // Make sure no wall is blocking the way
             if (
