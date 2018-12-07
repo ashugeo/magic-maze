@@ -28,8 +28,12 @@ export default class Hero {
         if (force) {
             this.pos = {x: this.target.x, y: this.target.y};
             this.selectable = true;
-            ai.run();
+
+            // Check for events on this cell
             events.checkForEvents(this.cell, this);
+
+            // Run AI again
+            ai.run();
         } else {
             let deltaX = this.target.x - this.pos.x;
             let deltaY = this.target.y - this.pos.y;
@@ -92,7 +96,7 @@ export default class Hero {
                 const targetItem = board.get(target.x, target.y).item;
                 if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
                     path.push({x: hero.x, y: hero.y});
-                    path.push({x: target.x, y: target.y, reachable: game.isVortex()});
+                    path.push({x: target.x, y: target.y, reachable: game.isPhase(1)});
                     return path;
                 }
             }
@@ -262,6 +266,9 @@ export default class Hero {
         const x = this.cell.x + exit.x;
         const y = this.cell.y + exit.y;
         this.set(x, y);
+
+        // Run AI again
+        ai.run();
     }
 
     hasExited() {

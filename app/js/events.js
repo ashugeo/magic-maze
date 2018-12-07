@@ -283,8 +283,10 @@ export default {
                 if (!item || item.type !== 'article' || item.color !== hero.color) canSteal = false;
             }
 
+            // All heroes can steal, engage game phase 2
+            if (canSteal) game.setPhase(2);
 
-        } else if (item.type === 'exit' && hero.hasStolen() && (item.color === hero.color || game.scenario === 1)) {
+        } else if (item.type === 'exit' && game.isPhase(2) && (item.color === hero.color || game.scenario === 1)) {
             // Same color exit or scenario 1 (only has purple exit)
             hero.exit();
             if (ai.checkForWin()) {
