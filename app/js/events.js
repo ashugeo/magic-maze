@@ -283,7 +283,6 @@ export default {
                 if (!item || item.type !== 'article' || item.color !== hero.color) canSteal = false;
             }
 
-            if (canSteal) this.steal();
 
         } else if (item.type === 'exit' && hero.hasStolen() && (item.color === hero.color || game.scenario === 1)) {
             // Same color exit or scenario 1 (only has purple exit)
@@ -292,14 +291,5 @@ export default {
                 game.win();
             }
         }
-    },
-
-    steal() {
-        for (let hero of heroes.all) {
-            hero.steal();
-        }
-
-        // Disable vortex system
-        game.setVortex(false);
     }
 }

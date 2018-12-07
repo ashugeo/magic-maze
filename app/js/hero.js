@@ -248,15 +248,6 @@ export default class Hero {
         return true;
     }
 
-    steal() {
-        this.stolen = true;
-        board.setStolen(this.cell.x, this.cell.y);
-    }
-
-    hasStolen() {
-        return this.stolen;
-    }
-
     exit() {
         this.status = 'exited';
 

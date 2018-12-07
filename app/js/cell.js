@@ -51,12 +51,4 @@ export default class Cell {
     isExplored() {
         return this.item.explored;
     }
-
-    setStolen() {
-        this.item.stolen = true;
-    }
-
-    isStolen() {
-        return this.item.stolen;
-    }
 }

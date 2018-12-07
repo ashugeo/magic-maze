@@ -6,9 +6,7 @@ export default {
 
     scenario: 0,
     players: 0,
-    vortex: true,
     admin: false,
-    ended: false,
 
     init(options) {
         this.scenario = options.scenario;
@@ -24,12 +22,8 @@ export default {
         return this.admin;
     },
 
-    setVortex(value) {
-        this.vortex = value;
     },
 
-    isVortex() {
-        return this.vortex;
     },
 
     isEnded() {
