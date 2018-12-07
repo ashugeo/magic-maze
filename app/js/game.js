@@ -1,4 +1,5 @@
 import ai from './ai';
+import clock from './clock';
 import config from './config';
 import events from './events';
 
@@ -43,19 +44,21 @@ export default {
     // TODO: win and lose
     win() {
         console.log('game won!');
-        this.ended = true;
+        clock.stop();
         this.phase = 3;
     },
 
     lose() {
         console.log('game lost!');
-        this.ended = true;
+        clock.stop();
         this.phase = 4;
 
         // Cancel current action
         if (events.action !== '') events.cancel();
 
-        // Disable nextAction button
-        document.getElementById('nextAction').classList.add('disabled');
+        if (this.players === 1 && ai.bots.length === 0) {
+            // Admin is the only player, disable nextAction button
+            document.getElementById('nextAction').classList.add('disabled');
+        }
     }
 }
