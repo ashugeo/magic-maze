@@ -40,29 +40,40 @@ export default {
     },
 
     solve() {
-        // console.log('Solving at', new Date().getSeconds());
         let actions = [];
 
+        // Find possible explorations
+        actions = this.findExplorations(actions);
+
+        // Find objectives
+        const objectives = this.findObjectives();
+
+        // Find possible moves for every hero
+        actions = this.findHeroesMoves(actions, objectives);
+
+        console.log(actions);
+
+        this.playRandomAction(actions);
+    },
+
+    /**
+    * Check for possible explorations (setting down a new tile)
+    * @param {Array} actions array to add possible explorations to
+    */
+    findExplorations(actions) {
         for (let hero of heroes.all) {
             // Hero has already exited board
             if (hero.hasExited()) continue;
 
-            // Check for possible explorations
             const cell = board.get(hero.cell.x, hero.cell.y);
             const item = cell.item;
+            if (!item) continue;
 
-            // Prevent two explorations at once
-            let canExplore = true;
-            for (let i in actions) {
-                if (actions[i].role === 'explore') {
-                    canExplore = false;
-                }
-            }
 
             // If hero sits on an unexplored gate with same color
             // TODO: fix hero moving in and out of this cell
-            if (cell.item && item.type === 'gate' && item.color === hero.color && !cell.isExplored() && canExplore) {
-                // Place new tile
+            if (item.type === 'gate' && item.color === hero.color && !cell.isExplored()) {
+                // Allow to set new tile
                 actions.push({
                     role: 'explore',
                     cell: {
@@ -72,57 +83,14 @@ export default {
                     cost: 0,
                     hero: hero
                 });
+
+                // Prevent two explorations at once
+                return actions;
             }
         }
 
-        // Find objectives
-        const objectives = this.findObjectives();
-
-        // Find hero for each objective
-        for (let objective of objectives) {
-            let hero;
-            if (objective.item.type === 'exit' && game.scenario === 1) {
-                // All heroes exit through the purple exit
-                for (let h of heroes.all) {
-                    if (h.hasStolen()) hero = h;
-                }
-            } else {
-                hero = heroes.findByColor(objective.item.color);
-            }
-
-            // Hero has already exited board
-            if (hero.hasExited()) continue;
-
-            // Find path
-            const path = this.findPath(objective.coord, hero);
-            if (!path) continue;
-
-            // Find target
-            const move = this.findMove(path);
-
-            let canMove = true;
-            for (let i in actions) {
-                if (actions[i].hero && actions[i].hero.id === hero.id) {
-                    // Prevent exploration + move from gate at once
-                    if (actions[i].role === 'explore' && actions[i].hero.id === hero.id) {
-                        canMove = false;
-                    }
-
-                    // Prioritize lowest cost action for each hero
-                    if (actions[i].cost <= path.length) {
-                        canMove = false;
-                    } else {
-                        actions.splice(i, 1);
-                    }
-                }
-            }
-
-            if (canMove) {
-                actions.push({type: 'move', role: move.role, target: move.target, cost: path.length, hero: hero});
-            }
-        }
-
-        this.playRandomAction(actions);
+        // No possible exploration has been found
+        return actions;
     },
 
     findObjectives() {
@@ -131,40 +99,61 @@ export default {
             for (let i = 0; i < config.boardRows; i += 1) {
                 const cell = board.get(i, j);
                 const item = cell.item;
+                if (!item) continue;
 
                 // TODO: add time cells as objectives when remaining time is low
                 // TODO: add priority to cost (time cell priority would increase over time)
                 // TODO: first explore, when all articles and exits are shown, exit
+                // FIXME: not all heroes reach exit
 
                 // Ignore empty cells
                 if (cell.isEmpty()) continue;
 
-                // Find unexplored gates (if stock is not empty)
-                if (item.type === 'gate' && !cell.isExplored() && tiles.getStockSize()) {
+                // Find unexplored gates (if stock is not empty, only during phase 1, and if some articles/exits remain unrevealed)
+                if (
+                    item.type === 'gate' &&
+                    !cell.isExplored() &&
+                    tiles.getStockSize() > 0 &&
+                    game.isPhase(1) &&
+                    (
+                        board.count('article') < 4 ||
+                        (
+                            (game.isScenario(1) && board.count('exit') < 1) ||
+                            board.count('exit') < 4
+                        )
+                    )
+                ) {
                     objectives.push(cell);
                 }
 
-                // Find articles to steal
-                if (item.type === 'article' && !cell.isStolen()) {
+                // Find articles (only during phase 1, and when all articles/exits are revealed)
+                if (
+                    item.type === 'article' &&
+                    game.isPhase(1) &&
+                    board.count('article') === 4 &&
+                    (
+                        (game.isScenario(1) && board.count('exit') === 1) ||
+                        board.count('exit') === 4
+                    )
+                ) {
                     objectives.push(cell);
                 }
 
-                // Find exits (if hero has stolen article)
-                if (item.type === 'exit') {
-                    for (let hero of heroes.all) {
-                        if (hero.hasStolen()) objectives.push(cell);
-                    }
+                // Find exits (only during phase 2)
+                if (item.type === 'exit' && game.isPhase(2)) {
+                    objectives.push(cell);
                 }
             }
         }
 
+        console.log(objectives);
         return objectives;
     },
 
     /**
     * Pathfinder function
     * @param  {Object} target {x: y:}
-    * @param  {Object} hero  {x: y:}
+    * @param  {Object} hero   {x: y:}
     * @return {Object/bool}   path (or false if none)
     */
     findPath(objective, hero) {
@@ -303,6 +292,8 @@ export default {
         let neighbors = [];
         origin = board.get(origin.x, origin.y);
 
+        // Enable escalators
+        // FIXME: check that the opposite end doesn't have a hero! (else they overlap)
         if (origin.escalator) {
             neighbors.push({
                 x: origin.escalator.x,
@@ -311,8 +302,8 @@ export default {
             });
         }
 
-        // Enable vortex
-        if (origin.item && origin.item.type === 'vortex' && origin.item.color === color && game.isVortex()) {
+        // Enable vortexes
+        if (origin.item && origin.item.type === 'vortex' && origin.item.color === color && game.isPhase(1)) {
             // Search whole board for vortexes
             for (let j = 0; j < config.boardCols; j += 1) {
                 for (let i = 0; i < config.boardRows; i += 1) {
@@ -407,15 +398,77 @@ export default {
         return distStart + distTarget;
     },
 
-    checkForWin() {
-        for (let hero of heroes.all) {
-            // Has every hero stolen their article?
-            if (!hero.hasStolen()) return false;
-
-            // Is every hero out?
-            if (!hero.hasExited()) return false;
+    /**
+    * Find possible moves for every hero
+    * @param  {Array} actions    actions
+    * @param  {Array} objectives objectives cells
+    * @return {Array}            new actions
+    */
+    findHeroesMoves(actions, objectives) {
+        // Find hero for each objective
+        for (let objective of objectives) {
+            let hero;
+            if (objective.item.type === 'exit' && game.isScenario(1)) {
+                // All heroes exit through the purple exit
+                for (let h of heroes.all) {
+                    hero = h;
+                    actions = this.findHeroMove(actions, objective, hero);
+                }
+            } else {
+                hero = heroes.findByColor(objective.item.color);
+                actions = this.findHeroMove(actions, objective, hero);
+            }
         }
-        return true;
+
+        return actions;
+    },
+
+    /**
+    * Find possible move for a given hero
+    * @param  {Array}  actions   actions
+    * @param  {Array}  objective objective cell
+    * @param  {Object} hero      given hero
+    * @return {Array}            new actions
+    */
+    findHeroMove(actions, objective, hero) {
+        // Hero has already exited board
+        if (hero.hasExited()) return actions;
+
+        // Find path
+        const path = this.findPath(objective.coord, hero);
+        if (!path) return actions;
+
+        // Find target
+        const move = this.findMove(path);
+
+        let canMove = true;
+        for (let i in actions) {
+            if (actions[i].hero && actions[i].hero.id === hero.id) {
+                // Prevent exploration + move from gate at once
+                if (actions[i].role === 'explore' && actions[i].hero.id === hero.id) {
+                    canMove = false;
+                }
+
+                // Prioritize lowest cost action for each hero
+                if (actions[i].cost <= path.length) {
+                    canMove = false;
+                } else {
+                    actions.splice(i, 1);
+                }
+            }
+        }
+
+        if (canMove) {
+            actions.push({
+                type: 'move',
+                role: move.role,
+                target: move.target,
+                cost: path.length,
+                hero: hero
+            });
+        }
+
+        return actions;
     },
 
     playRandomAction(actions) {
@@ -441,5 +494,13 @@ export default {
                 this.playRandomAction(actions);
             }
         }
+    },
+
+    checkForWin() {
+        for (let hero of heroes.all) {
+            // Is every hero out?
+            if (!hero.hasExited()) return false;
+        }
+        return true;
     }
 }
