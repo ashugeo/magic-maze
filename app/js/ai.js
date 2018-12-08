@@ -1,5 +1,6 @@
 import board from './board';
 import Bot from './bot';
+import clock from './clock';
 import config from './config';
 import game from './game';
 import heroes from './heroes';
@@ -17,6 +18,9 @@ export default {
     },
 
     run() {
+        // Only run AI if game is not ended
+        if (game.isEnded()) return;
+
         // Only run AI if there are bots
         if (this.bots.length === 0) return;
 
@@ -27,6 +31,9 @@ export default {
         if (this.canSolve) {
             this.canSolve = false;
             setTimeout(() => {
+                // Only run AI if game is not ended (check again after timeout)
+                if (game.isEnded()) return;
+
                 this.solve();
                 this.canSolve = true;
                 if (this.pausedRun) {
@@ -51,8 +58,6 @@ export default {
         // Find possible moves for every hero
         actions = this.findHeroesMoves(actions, objectives);
 
-        console.log(actions);
-
         this.playRandomAction(actions);
     },
 
@@ -71,7 +76,7 @@ export default {
 
 
             // If hero sits on an unexplored gate with same color
-            // TODO: fix hero moving in and out of this cell
+            // FIXME: fix hero moving in and out of this cell
             if (item.type === 'gate' && item.color === hero.color && !cell.isExplored()) {
                 // Allow to set new tile
                 actions.push({
@@ -101,11 +106,17 @@ export default {
                 const item = cell.item;
                 if (!item) continue;
 
-                // TODO: add time cells as objectives when remaining time is low
-                // TODO: add priority to cost (time cell priority would increase over time)
-
                 // Ignore empty cells
                 if (cell.isEmpty()) continue;
+
+                // Add time cells as objectives (when timer is below half)
+                if (
+                    item.type === 'time' &&
+                    !cell.isUsed() &&
+                    clock.remaining < config.timer / 2
+                ) {
+                    objectives.push(cell);
+                }
 
                 // Find unexplored gates (if stock is not empty, only during phase 1, and if some articles/exits remain unrevealed)
                 if (
@@ -144,7 +155,6 @@ export default {
             }
         }
 
-        console.log(objectives);
         return objectives;
     },
 
@@ -419,8 +429,10 @@ export default {
         // Find hero for each objective
         for (let objective of objectives) {
             let hero;
-            if (objective.item.type === 'exit' && game.isScenario(1)) {
-                // All heroes exit through the purple exit
+
+            // All heroes exit through the purple exit on scenario 1
+            // All heroes can go on time cells
+            if ((objective.item.type === 'exit' && game.isScenario(1)) || objective.item.type === 'time') {
                 for (let h of heroes.all) {
                     hero = h;
                     actions = this.findHeroMove(actions, objective, hero);
