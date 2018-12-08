@@ -160,9 +160,9 @@ export default {
 
     /**
     * Pathfinder function
-    * @param  {Object} target {x: y:}
-    * @param  {Object} hero   {x: y:}
-    * @return {Object/bool}   path (or false if none)
+    * @param  {Object}         target {x: y:}
+    * @param  {Object}         hero   {x: y:}
+    * @return {Object|Boolean}        path (or false if none)
     */
     findPath(objective, hero) {
         const start = hero.cell;
@@ -284,7 +284,7 @@ export default {
     * Checks if cell is in array
     * @param  {Object}  cell  {x: y:}
     * @param  {array}   array array to check in
-    * @return {bool}
+    * @return {Boolean}
     */
     isInArray(cell, array) {
         return array.some(a => { return (a.x === cell.x && a.y === cell.y)});

@@ -472,10 +472,12 @@
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__bot__ = __webpack_require__(16);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__game__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__heroes__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__tiles__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__clock__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__config__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__game__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__heroes__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__tiles__ = __webpack_require__(2);
+
 
 
 
@@ -495,23 +497,29 @@
     },
 
     run() {
+        // Only run AI if game is not ended
+        if (__WEBPACK_IMPORTED_MODULE_4__game__["a" /* default */].isEnded()) return;
+
         // Only run AI if there are bots
         if (this.bots.length === 0) return;
 
         // Only the admin runs the AI
-        if (!__WEBPACK_IMPORTED_MODULE_3__game__["a" /* default */].admin) return;
+        if (!__WEBPACK_IMPORTED_MODULE_4__game__["a" /* default */].admin) return;
 
         // Prevent more than one call per second (let the bots time to think!)
         if (this.canSolve) {
             this.canSolve = false;
             setTimeout(() => {
+                // Only run AI if game is not ended (check again after timeout)
+                if (__WEBPACK_IMPORTED_MODULE_4__game__["a" /* default */].isEnded()) return;
+
                 this.solve();
                 this.canSolve = true;
                 if (this.pausedRun) {
                     this.pausedRun = false;
                     this.run();
                 }
-            }, __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].botsInterval);
+            }, __WEBPACK_IMPORTED_MODULE_3__config__["a" /* default */].botsInterval);
         } else {
             this.pausedRun = true;
         }
@@ -529,8 +537,6 @@
         // Find possible moves for every hero
         actions = this.findHeroesMoves(actions, objectives);
 
-        console.log(actions);
-
         this.playRandomAction(actions);
     },
 
@@ -539,7 +545,7 @@
     * @param {Array} actions array to add possible explorations to
     */
     findExplorations(actions) {
-        for (let hero of __WEBPACK_IMPORTED_MODULE_4__heroes__["a" /* default */].all) {
+        for (let hero of __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].all) {
             // Hero has already exited board
             if (hero.hasExited()) continue;
 
@@ -549,7 +555,7 @@
 
 
             // If hero sits on an unexplored gate with same color
-            // TODO: fix hero moving in and out of this cell
+            // FIXME: fix hero moving in and out of this cell
             if (item.type === 'gate' && item.color === hero.color && !cell.isExplored()) {
                 // Allow to set new tile
                 actions.push({
@@ -573,28 +579,34 @@
 
     findObjectives() {
         let objectives = [];
-        for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].boardCols; j += 1) {
-            for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].boardRows; i += 1) {
+        for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_3__config__["a" /* default */].boardCols; j += 1) {
+            for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_3__config__["a" /* default */].boardRows; i += 1) {
                 const cell = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].get(i, j);
                 const item = cell.item;
                 if (!item) continue;
 
-                // TODO: add time cells as objectives when remaining time is low
-                // TODO: add priority to cost (time cell priority would increase over time)
-
                 // Ignore empty cells
                 if (cell.isEmpty()) continue;
+
+                // Add time cells as objectives (when timer is below half)
+                if (
+                    item.type === 'time' &&
+                    !cell.isUsed() &&
+                    __WEBPACK_IMPORTED_MODULE_2__clock__["a" /* default */].remaining < __WEBPACK_IMPORTED_MODULE_3__config__["a" /* default */].timer / 2
+                ) {
+                    objectives.push(cell);
+                }
 
                 // Find unexplored gates (if stock is not empty, only during phase 1, and if some articles/exits remain unrevealed)
                 if (
                     item.type === 'gate' &&
                     !cell.isExplored() &&
-                    __WEBPACK_IMPORTED_MODULE_5__tiles__["a" /* default */].getStockSize() > 0 &&
-                    __WEBPACK_IMPORTED_MODULE_3__game__["a" /* default */].isPhase(1) &&
+                    __WEBPACK_IMPORTED_MODULE_6__tiles__["a" /* default */].getStockSize() > 0 &&
+                    __WEBPACK_IMPORTED_MODULE_4__game__["a" /* default */].isPhase(1) &&
                     (
                         __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].count('article') < 4 ||
                         (
-                            (__WEBPACK_IMPORTED_MODULE_3__game__["a" /* default */].isScenario(1) && __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].count('exit') < 1) ||
+                            (__WEBPACK_IMPORTED_MODULE_4__game__["a" /* default */].isScenario(1) && __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].count('exit') < 1) ||
                             __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].count('exit') < 4
                         )
                     )
@@ -605,10 +617,10 @@
                 // Find articles (only during phase 1, and when all articles/exits are revealed)
                 if (
                     item.type === 'article' &&
-                    __WEBPACK_IMPORTED_MODULE_3__game__["a" /* default */].isPhase(1) &&
+                    __WEBPACK_IMPORTED_MODULE_4__game__["a" /* default */].isPhase(1) &&
                     __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].count('article') === 4 &&
                     (
-                        (__WEBPACK_IMPORTED_MODULE_3__game__["a" /* default */].isScenario(1) && __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].count('exit') === 1) ||
+                        (__WEBPACK_IMPORTED_MODULE_4__game__["a" /* default */].isScenario(1) && __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].count('exit') === 1) ||
                         __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].count('exit') === 4
                     )
                 ) {
@@ -616,21 +628,20 @@
                 }
 
                 // Find exits (only during phase 2)
-                if (item.type === 'exit' && __WEBPACK_IMPORTED_MODULE_3__game__["a" /* default */].isPhase(2)) {
+                if (item.type === 'exit' && __WEBPACK_IMPORTED_MODULE_4__game__["a" /* default */].isPhase(2)) {
                     objectives.push(cell);
                 }
             }
         }
 
-        console.log(objectives);
         return objectives;
     },
 
     /**
     * Pathfinder function
-    * @param  {Object} target {x: y:}
-    * @param  {Object} hero   {x: y:}
-    * @return {Object/bool}   path (or false if none)
+    * @param  {Object}         target {x: y:}
+    * @param  {Object}         hero   {x: y:}
+    * @return {Object|Boolean}        path (or false if none)
     */
     findPath(objective, hero) {
         const start = hero.cell;
@@ -752,7 +763,7 @@
     * Checks if cell is in array
     * @param  {Object}  cell  {x: y:}
     * @param  {array}   array array to check in
-    * @return {bool}
+    * @return {Boolean}
     */
     isInArray(cell, array) {
         return array.some(a => { return (a.x === cell.x && a.y === cell.y)});
@@ -772,7 +783,7 @@
         if (origin.escalator) {
             // Make sure target doesn't hold a hero
             let canGo = true;
-            for (let hero of __WEBPACK_IMPORTED_MODULE_4__heroes__["a" /* default */].all) {
+            for (let hero of __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].all) {
                 if (hero.cell.x === origin.escalator.x && hero.cell.y === origin.escalator.y) {
                     canGo = false;
                 }
@@ -785,10 +796,10 @@
         }
 
         // Enable vortexes
-        if (origin.item && origin.item.type === 'vortex' && origin.item.color === color && __WEBPACK_IMPORTED_MODULE_3__game__["a" /* default */].isPhase(1)) {
+        if (origin.item && origin.item.type === 'vortex' && origin.item.color === color && __WEBPACK_IMPORTED_MODULE_4__game__["a" /* default */].isPhase(1)) {
             // Search whole board for vortexes
-            for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].boardCols; j += 1) {
-                for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].boardRows; i += 1) {
+            for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_3__config__["a" /* default */].boardCols; j += 1) {
+                for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_3__config__["a" /* default */].boardRows; i += 1) {
                     const cell = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].get(i, j);
                     if (cell.isEmpty()) continue;
 
@@ -799,7 +810,7 @@
                     ) {
                         // Make sure target doesn't hold a hero
                         let canGo = true;
-                        for (let hero of __WEBPACK_IMPORTED_MODULE_4__heroes__["a" /* default */].all) {
+                        for (let hero of __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].all) {
                             if (hero.cell.x === cell.coord.x && hero.cell.y === cell.coord.y) {
                                 canGo = false;
                             }
@@ -836,7 +847,7 @@
 
             // Make sure neighbor doesn't hold a hero
             // TODO: move a hero that's blocking another (good luck for this one)
-            for (let hero of __WEBPACK_IMPORTED_MODULE_4__heroes__["a" /* default */].all) {
+            for (let hero of __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].all) {
                 if (hero.cell.x === neighbor.coord.x && hero.cell.y === neighbor.coord.y) {
                     canGo = false;
                 }
@@ -897,14 +908,16 @@
         // Find hero for each objective
         for (let objective of objectives) {
             let hero;
-            if (objective.item.type === 'exit' && __WEBPACK_IMPORTED_MODULE_3__game__["a" /* default */].isScenario(1)) {
-                // All heroes exit through the purple exit
-                for (let h of __WEBPACK_IMPORTED_MODULE_4__heroes__["a" /* default */].all) {
+
+            // All heroes exit through the purple exit on scenario 1
+            // All heroes can go on time cells
+            if ((objective.item.type === 'exit' && __WEBPACK_IMPORTED_MODULE_4__game__["a" /* default */].isScenario(1)) || objective.item.type === 'time') {
+                for (let h of __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].all) {
                     hero = h;
                     actions = this.findHeroMove(actions, objective, hero);
                 }
             } else {
-                hero = __WEBPACK_IMPORTED_MODULE_4__heroes__["a" /* default */].findByColor(objective.item.color);
+                hero = __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].findByColor(objective.item.color);
                 actions = this.findHeroMove(actions, objective, hero);
             }
         }
@@ -986,7 +999,7 @@
     },
 
     checkForWin() {
-        for (let hero of __WEBPACK_IMPORTED_MODULE_4__heroes__["a" /* default */].all) {
+        for (let hero of __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].all) {
             // Is every hero out?
             if (!hero.hasExited()) return false;
         }
@@ -1437,6 +1450,9 @@ class Tile {
     },
 
     mouseDown() {
+        // Spectator can't click
+        if (role.length === 0) return;
+        
         const cell = this.getHoveredCell();
 
         if (this.action === 'placing') {
@@ -1596,8 +1612,8 @@ class Tile {
 
     /**
     * Check if there's a selectable hero in this cell
-    * @param  {Object} cell cell to check
-    * @return {Object|bool}
+    * @param  {Object}         cell cell to check
+    * @return {Object|Boolean}
     */
     checkForHero(cell) {
         for (let hero of __WEBPACK_IMPORTED_MODULE_8__heroes__["a" /* default */].all) {
@@ -2079,8 +2095,8 @@ class Hero {
 
     /**
     * Check if hero can go to target cell
-    * @param  {Object} target Target cell
-    * @return {bool}
+    * @param  {Object}  target Target cell
+    * @return {Boolean}
     */
     canGoTo(target) {
         const path = this.path;
@@ -2138,16 +2154,17 @@ class Hero {
 
 
 /* harmony default export */ __webpack_exports__["a"] = ({
-    init() {
-        this.$clock = document.getElementById('clock');
-        this.ticker();
-        this.interval = setInterval(() => { this.ticker() }, 1000);
-    },
-
     tick: 0,
     inverted: false,
     elapsed: 0,
-    remaining: __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].timer,
+    remaining: 0,
+
+    init() {
+        this.$clock = document.getElementById('clock');
+        this.remaining = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].timer;
+        this.ticker();
+        this.interval = setInterval(() => { this.ticker() }, 1000);
+    },
 
     ticker() {
         this.display();

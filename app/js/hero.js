@@ -231,8 +231,8 @@ export default class Hero {
 
     /**
     * Check if hero can go to target cell
-    * @param  {Object} target Target cell
-    * @return {bool}
+    * @param  {Object}  target Target cell
+    * @return {Boolean}
     */
     canGoTo(target) {
         const path = this.path;

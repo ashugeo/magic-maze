@@ -222,8 +222,8 @@ export default {
 
     /**
     * Check if there's a selectable hero in this cell
-    * @param  {Object} cell cell to check
-    * @return {Object|bool}
+    * @param  {Object}         cell cell to check
+    * @return {Object|Boolean}
     */
     checkForHero(cell) {
         for (let hero of heroes.all) {
