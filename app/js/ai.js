@@ -58,7 +58,15 @@ export default {
         // Find possible moves for every hero
         actions = this.findHeroesMoves(actions, objectives);
 
-        this.playRandomAction(actions);
+        console.log('---');
+        console.log(actions);
+
+        if (actions.length === 0) {
+            actions = this.unblockHeroes(objectives);
+        } else {
+            this.playRandomAction(actions);
+        }
+
     },
 
     /**
@@ -160,9 +168,9 @@ export default {
 
     /**
     * Pathfinder function
-    * @param  {Object} target {x: y:}
-    * @param  {Object} hero   {x: y:}
-    * @return {Object/bool}   path (or false if none)
+    * @param  {Object}         target {x: y:}
+    * @param  {Object}         hero   hero instance
+    * @return {Object|Boolean}        path (or false if none)
     */
     findPath(objective, hero) {
         const start = hero.cell;
@@ -217,6 +225,17 @@ export default {
         if (!end) return false;
 
         // Find parent for each cell in path
+        const path = this.buildPath(end);
+
+        return path;
+    },
+
+    /**
+    * Find parent for each cell in path
+    * @param  {Object} end path end
+    * @return {Object}     path
+    */
+    buildPath(end) {
         let path = [];
         path.push(end);
         while (end.parent) {
@@ -284,7 +303,7 @@ export default {
     * Checks if cell is in array
     * @param  {Object}  cell  {x: y:}
     * @param  {array}   array array to check in
-    * @return {bool}
+    * @return {Boolean}
     */
     isInArray(cell, array) {
         return array.some(a => { return (a.x === cell.x && a.y === cell.y)});
@@ -367,16 +386,16 @@ export default {
             if (neighbor.isEmpty()) canGo = false;
 
             // Make sure neighbor doesn't hold a hero
-            // TODO: move a hero that's blocking another (good luck for this one)
-            for (let hero of heroes.all) {
-                if (hero.cell.x === neighbor.coord.x && hero.cell.y === neighbor.coord.y) {
-                    canGo = false;
-                }
-            }
+            // for (let hero of heroes.all) {
+            //     if (hero.cell.x === neighbor.coord.x && hero.cell.y === neighbor.coord.y) {
+            //         canGo = false;
+            //     }
+            // }
 
             if (!canGo) continue;
 
             // Make sure no wall is blocking the way
+            // TODO: this can be written better: ['top', 'right', …][i]
             if (
                 (i === 0 &&
                     (!origin.walls.top && !neighbor.walls.bottom) ||
@@ -405,7 +424,7 @@ export default {
     /**
     * Compute cost for a cell
     * @param  {Object} cell   {x: y:}
-    * @param  {Object} hero  {x: y:}
+    * @param  {Object} hero   {x: y:}
     * @param  {Object} target {x: y:}
     * @return {int}           cost
     */
@@ -421,11 +440,12 @@ export default {
 
     /**
     * Find possible moves for every hero
-    * @param  {Array} actions    actions
-    * @param  {Array} objectives objectives cells
-    * @return {Array}            new actions
+    * @param  {Array}   actions        actions
+    * @param  {Array}   objectives     objectives cells
+    * @param  {Boolean} [noclip=false] consider paths that go through other heroes
+    * @return {Array}                  new actions
     */
-    findHeroesMoves(actions, objectives) {
+    findHeroesMoves(actions, objectives, noclip = false) {
         // Find hero for each objective
         for (let objective of objectives) {
             let hero;
@@ -435,11 +455,11 @@ export default {
             if ((objective.item.type === 'exit' && game.isScenario(1)) || objective.item.type === 'time') {
                 for (let h of heroes.all) {
                     hero = h;
-                    actions = this.findHeroMove(actions, objective, hero);
+                    actions = this.findHeroMove(actions, objective, hero, noclip);
                 }
             } else {
                 hero = heroes.findByColor(objective.item.color);
-                actions = this.findHeroMove(actions, objective, hero);
+                actions = this.findHeroMove(actions, objective, hero, noclip);
             }
         }
 
@@ -448,18 +468,33 @@ export default {
 
     /**
     * Find possible move for a given hero
-    * @param  {Array}  actions   actions
-    * @param  {Array}  objective objective cell
-    * @param  {Object} hero      given hero
-    * @return {Array}            new actions
+    * @param  {Array}   actions   actions
+    * @param  {Array}   objective objective cell
+    * @param  {Object}  hero      given hero
+    * @param  {Boolean} noclip    consider paths that go through other heroes
+    * @return {Array}             new actions
     */
-    findHeroMove(actions, objective, hero) {
+    findHeroMove(actions, objective, hero, noclip) {
         // Hero has already exited board
         if (hero.hasExited()) return actions;
 
         // Find path
         const path = this.findPath(objective.coord, hero);
         if (!path) return actions;
+
+        // Check that no hero block the path
+        let heroBlock = false;
+
+        for (let cell of path) {
+            for (let h of heroes.all) {
+                if (hero.id !== h.id && h.cell.x === cell.x && h.cell.y === cell.y) {
+                    // console.log(h.color, 'hero blocking');
+                    heroBlock = true;
+                }
+            }
+        }
+
+        if (heroBlock && !noclip) return actions;
 
         // Find target
         const move = this.findMove(path);
@@ -492,6 +527,106 @@ export default {
         }
 
         return actions;
+    },
+
+    unblockHeroes(objectives) {
+        let actions = this.findHeroesMoves([], objectives, true);
+        // console.log(actions);
+        for (let action of actions) {
+            const path = this.buildPath(action.target);
+
+            this.unblockHero(action, path);
+        }
+
+        for (let objective of objectives) {
+            // console.log(objective);
+            // this.unblockHero(objective);
+        }
+    },
+
+    unblockHero(action, path) {
+        const hero = action.hero;
+        console.log(hero.color, 'to', action.target);
+
+        let extraLength = 0;
+
+        for (let cell of path) {
+
+            for (let h of heroes.all) {
+                if (hero.id !== h.id && h.cell.x === cell.x && h.cell.y === cell.y) {
+                    console.log(h.color, 'is blocking');
+                    // Try to move hero to the closest possible cell that's out of path
+                    // Add cost to go to that cell to original path
+                    // Add new objective for blocking hero
+
+                    let stop = false;
+                    let delta = 1;
+                    while (!stop) {
+                        let smallestPath = [];
+                        for (let y = h.cell.y - delta; y <= h.cell.y + delta; y += 1) {
+                            for (let x = h.cell.x - delta; x <= h.cell.x + delta; x += 1) {
+                                if (!(x === h.cell.x && y === h.cell.y)) {
+                                    let isInPath = false;
+                                    for (let cell of path) {
+                                        if (x === cell.x && y === cell.y) {
+                                            isInPath = true;
+                                            break;
+                                        }
+                                    }
+                                    if (isInPath) continue;
+
+                                    const p = this.findPath({x, y}, h);
+                                    if (!p) continue;
+
+                                    let noGo = false;
+                                    for (let c of p) {
+                                        console.log(c);
+
+                                        for (let o of heroes.all) {
+                                            if (o.id !== h.id && c.x === o.cell.x === c.y === o.cell.y) {
+                                                noGo = true;
+                                            }
+                                        }
+                                    }
+                                    if (noGo) continue;
+
+                                    if (smallestPath.length === 0 || p.length < smallestPath.length) {
+                                        smallestPath = p;
+                                    }
+
+                                }
+                            }
+                        }
+
+                        extraLength += smallestPath.length;
+
+                        if (smallestPath.length > 0 || delta === 3) {
+                            stop = true;
+                        } else {
+                            delta += 1;
+                            // console.log('delta', delta);
+                        }
+                        console.log(smallestPath, 'to unblock', hero.color);
+                        const move = this.findMove(smallestPath);
+
+                        const action = {
+                            type: 'move',
+                            role: move.role,
+                            target: move.target,
+                            cost: smallestPath.length,
+                            hero: h
+                        };
+
+                        this.playRandomAction([action]);
+                        return;
+                    }
+                }
+            }
+        }
+
+
+        if (extraLength === 0) this.playRandomAction([action]);
+        return;
     },
 
     playRandomAction(actions) {
