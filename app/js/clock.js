@@ -2,16 +2,17 @@ import config from './config';
 import game from './game';
 
 export default {
-    init() {
-        this.$clock = document.getElementById('clock');
-        this.ticker();
-        this.interval = setInterval(() => { this.ticker() }, 1000);
-    },
-
     tick: 0,
     inverted: false,
     elapsed: 0,
-    remaining: config.timer,
+    remaining: 0,
+
+    init() {
+        this.$clock = document.getElementById('clock');
+        this.remaining = config.timer;
+        this.ticker();
+        this.interval = setInterval(() => { this.ticker() }, 1000);
+    },
 
     ticker() {
         this.display();
