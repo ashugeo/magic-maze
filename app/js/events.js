@@ -60,6 +60,9 @@ export default {
     },
 
     mouseDown() {
+        // Spectator can't click
+        if (role.length === 0) return;
+        
         const cell = this.getHoveredCell();
 
         if (this.action === 'placing') {
