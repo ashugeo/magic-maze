@@ -55,8 +55,14 @@ const sketch = p5 => {
 function displayTiles() {
     for (let tile of tiles.all) {
         // Don't display stock tiles
-        if (tile.status === 'stock') continue;
+        if (tile.status === 'stock' || tile.status === 'picked') continue;
 
+        // Display tile
+        tile.display();
+    }
+
+    // Picked tile overlaps board so its display has to be called after
+    for (let tile of tiles.all) {
         // Tiles is being placed, move it along cursor position
         if (tile.status === 'picked') {
             // Hovered cell
@@ -66,10 +72,9 @@ function displayTiles() {
             // Place cursor on enter cell depending on orientation
             const origin = tile.getOrigin(cell.x, cell.y, o);
             tile.move(origin.x, origin.y);
+            // Display tile
+            tile.display();
         }
-
-        // Display tile
-        tile.display();
     }
 }
 
