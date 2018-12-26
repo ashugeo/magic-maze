@@ -1594,7 +1594,6 @@ class Tile {
 
         if (!(cell.x === this.oldHeroCell.x && cell.y === this.oldHeroCell.y)) {
             if (this.action === 'hero' && hero.canGoTo(cell)) {
-                // FIXME: hero will sometimes go to a cell it shouldn't if spammed/timed correctly
                 hero.set(cell.x, cell.y);
                 socket.emit('hero', {
                     id: hero.id,
@@ -2283,9 +2282,11 @@ class Hero {
         const path = this.path;
 
         // No path, no go
-        if (path.length === 0) {
-            return false;
-        }
+        if (path.length === 0) return false;
+        
+        // Make sure last cell in path is the target (anti-spam security)
+        const last = path[path.length - 1];
+        if (last.x !== target.x || last.y !== target.y) return false;
 
         // Get first unreachable cell in this path
         for (let i in path) {

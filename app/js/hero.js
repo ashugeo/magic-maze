@@ -238,9 +238,11 @@ export default class Hero {
         const path = this.path;
 
         // No path, no go
-        if (path.length === 0) {
-            return false;
-        }
+        if (path.length === 0) return false;
+        
+        // Make sure last cell in path is the target (anti-spam security)
+        const last = path[path.length - 1];
+        if (last.x !== target.x || last.y !== target.y) return false;
 
         // Get first unreachable cell in this path
         for (let i in path) {
