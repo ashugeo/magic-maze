@@ -503,6 +503,11 @@ export default {
         const move = this.findMove(path);
 
         let canMove = true;
+
+        // Prevent a hero from leaving an unexplored gate
+        const cell = board.get(hero.cell.x, hero.cell.y);
+        if (cell.item && cell.item.type === 'gate' && cell.item.color === hero.color && !cell.isExplored()) canMove = false;
+
         for (let i in actions) {
             if (actions[i].hero && actions[i].hero.id === hero.id) {
                 // Prevent exploration + move from gate at once
