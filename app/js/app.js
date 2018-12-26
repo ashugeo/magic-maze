@@ -70,8 +70,6 @@ socket.on('admin', () => {
         <p>Scenario <input type="number" id="scenario" value="1" min="1" max="15" /></p>
         <button id="start">Start game!</button>`;
 
-        // FIXME: double click on start button moves purple hero…
-
         document.getElementById('start').addEventListener('click', () => {
             socket.emit('prestart');
         });

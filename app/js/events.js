@@ -13,6 +13,7 @@ import tiles from './tiles';
 export default {
 
     action: '',
+    mouseIn: false,
 
     init() {
         /**
@@ -34,22 +35,24 @@ export default {
         });
 
         document.addEventListener('mousedown', () => {
-            if (!game.isEnded()) this.mouseDown();
+            if (!game.isEnded() && this.mouseIn) this.mouseDown();
         });
 
         document.addEventListener('mouseup', () => {
-            if (!game.isEnded()) this.mouseUp();
+            if (!game.isEnded() && this.mouseIn) this.mouseUp();
         });
 
         document.addEventListener('mousemove', () => {
-            if (!game.isEnded()) this.mouseMove();
+            if (!game.isEnded() && this.mouseIn) this.mouseMove();
         });
 
         document.getElementById('canvas-wrap').addEventListener('mouseleave', () => {
+            this.mouseIn = false;
             camera.mouseIn = false;
         });
 
         document.getElementById('canvas-wrap').addEventListener('mouseenter', () => {
+            this.mouseIn = true;
             camera.mouseIn = true;
         });
 
@@ -62,7 +65,7 @@ export default {
     mouseDown() {
         // Spectator can't click
         if (role.length === 0) return;
-        
+
         const cell = this.getHoveredCell();
 
         if (this.action === 'placing') {

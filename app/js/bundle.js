@@ -1518,6 +1518,7 @@ class Tile {
 /* harmony default export */ __webpack_exports__["a"] = ({
 
     action: '',
+    mouseIn: false,
 
     init() {
         /**
@@ -1539,22 +1540,24 @@ class Tile {
         });
 
         document.addEventListener('mousedown', () => {
-            if (!__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].isEnded()) this.mouseDown();
+            if (!__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].isEnded() && this.mouseIn) this.mouseDown();
         });
 
         document.addEventListener('mouseup', () => {
-            if (!__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].isEnded()) this.mouseUp();
+            if (!__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].isEnded() && this.mouseIn) this.mouseUp();
         });
 
         document.addEventListener('mousemove', () => {
-            if (!__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].isEnded()) this.mouseMove();
+            if (!__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].isEnded() && this.mouseIn) this.mouseMove();
         });
 
         document.getElementById('canvas-wrap').addEventListener('mouseleave', () => {
+            this.mouseIn = false;
             __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].mouseIn = false;
         });
 
         document.getElementById('canvas-wrap').addEventListener('mouseenter', () => {
+            this.mouseIn = true;
             __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].mouseIn = true;
         });
 
@@ -1567,7 +1570,7 @@ class Tile {
     mouseDown() {
         // Spectator can't click
         if (role.length === 0) return;
-        
+
         const cell = this.getHoveredCell();
 
         if (this.action === 'placing') {
@@ -73911,8 +73914,6 @@ socket.on('admin', () => {
         <p>Bot(s) <input type="number" id="bots" value="0" min="0" max="7" /></p>
         <p>Scenario <input type="number" id="scenario" value="1" min="1" max="15" /></p>
         <button id="start">Start game!</button>`;
-
-        // FIXME: double click on start button moves purple hero…
 
         document.getElementById('start').addEventListener('click', () => {
             socket.emit('prestart');
