@@ -58,6 +58,10 @@ export default {
         // Find possible moves for every hero
         actions = this.findHeroesMoves(actions, objectives);
 
+        if (actions.length === 0) {
+            actions = this.findHeroesMoves(actions, objectives, true);
+        }
+
         this.playRandomAction(actions);
     },
 
@@ -73,7 +77,6 @@ export default {
             const cell = board.get(hero.cell.x, hero.cell.y);
             const item = cell.item;
             if (!item) continue;
-
 
             // If hero sits on an unexplored gate with same color
             // FIXME: fix hero moving in and out of this cell
@@ -115,7 +118,15 @@ export default {
                     !cell.isUsed() &&
                     clock.remaining < config.timer / 2
                 ) {
-                    objectives.push(cell);
+                    objectives.push({
+                        coord: {
+                            x: cell.coord.x,
+                            y: cell.coord.y
+                        },
+                        item: {
+                            type: cell.item.type
+                        }
+                    });
                 }
 
                 // Find unexplored gates (if stock is not empty, only during phase 1, and if some articles/exits remain unrevealed)
@@ -132,7 +143,16 @@ export default {
                         )
                     )
                 ) {
-                    objectives.push(cell);
+                    objectives.push({
+                        coord: {
+                            x: cell.coord.x,
+                            y: cell.coord.y
+                        },
+                        item: {
+                            type: cell.item.type
+                        },
+                        hero: heroes.findByColor(cell.item.color)
+                    });
                 }
 
                 // Find articles (only during phase 1, and when all articles/exits are revealed)
@@ -145,12 +165,30 @@ export default {
                         board.count('exit') === 4
                     )
                 ) {
-                    objectives.push(cell);
+                    objectives.push({
+                        coord: {
+                            x: cell.coord.x,
+                            y: cell.coord.y
+                        },
+                        item: {
+                            type: cell.item.type
+                        },
+                        hero: heroes.findByColor(cell.item.color)
+                    });
                 }
 
                 // Find exits (only during phase 2)
                 if (item.type === 'exit' && game.isPhase(2)) {
-                    objectives.push(cell);
+                    objectives.push({
+                        coord: {
+                            x: cell.coord.x,
+                            y: cell.coord.y
+                        },
+                        item: {
+                            type: cell.item.type
+                        },
+                        hero: heroes.findByColor(cell.item.color)
+                    });
                 }
             }
         }
@@ -161,7 +199,7 @@ export default {
     /**
     * Pathfinder function
     * @param  {Object}         target {x: y:}
-    * @param  {Object}         hero   {x: y:}
+    * @param  {Object}         hero   hero object
     * @return {Object|Boolean}        path (or false if none)
     */
     findPath(objective, hero) {
@@ -200,7 +238,7 @@ export default {
                 if (this.isInArray(neighbor, closed)) continue;
 
                 // Compute new cost
-                let newCost = this.getCost(neighbor, start, objective);
+                const newCost = this.getCost(neighbor, start, objective);
 
                 // If new cost is lower, or neighbor hasn't been evaluated
                 if (newCost < neighbor.cost || !this.isInArray(neighbor, open)) {
@@ -359,24 +397,11 @@ export default {
                 origin.coord.y + [-1, 0, 1, 0][i]
             );
 
-            if (!neighbor) continue;
-
-            let canGo = true;
-
             // Make sure neighbor isn't empty
-            if (neighbor.isEmpty()) canGo = false;
-
-            // Make sure neighbor doesn't hold a hero
-            // TODO: move a hero that's blocking another (good luck for this one)
-            for (let hero of heroes.all) {
-                if (hero.cell.x === neighbor.coord.x && hero.cell.y === neighbor.coord.y) {
-                    canGo = false;
-                }
-            }
-
-            if (!canGo) continue;
+            if (!neighbor || neighbor.isEmpty()) continue;
 
             // Make sure no wall is blocking the way
+            // TODO: make this sexier
             if (
                 (i === 0 &&
                     (!origin.walls.top && !neighbor.walls.bottom) ||
@@ -405,7 +430,7 @@ export default {
     /**
     * Compute cost for a cell
     * @param  {Object} cell   {x: y:}
-    * @param  {Object} hero  {x: y:}
+    * @param  {Object} hero   {x: y:}
     * @param  {Object} target {x: y:}
     * @return {int}           cost
     */
@@ -421,25 +446,22 @@ export default {
 
     /**
     * Find possible moves for every hero
-    * @param  {Array} actions    actions
-    * @param  {Array} objectives objectives cells
-    * @return {Array}            new actions
+    * @param  {Array}  actions         actions
+    * @param  {Array}  objectives      objectives cells
+    * @param  {Boolan} [unblock=false] unblock hero or not
+    * @return {Array}                  new actions
     */
-    findHeroesMoves(actions, objectives) {
+    findHeroesMoves(actions, objectives, unblock = false) {
         // Find hero for each objective
         for (let objective of objectives) {
-            let hero;
-
             // All heroes exit through the purple exit on scenario 1
             // All heroes can go on time cells
-            if ((objective.item.type === 'exit' && game.isScenario(1)) || objective.item.type === 'time') {
+            if (objective.item && ((objective.item.type === 'exit' && game.isScenario(1)) || objective.item.type === 'time')) {
                 for (let h of heroes.all) {
-                    hero = h;
-                    actions = this.findHeroMove(actions, objective, hero);
+                    actions = this.findHeroMove(actions, objective, h, unblock);
                 }
             } else {
-                hero = heroes.findByColor(objective.item.color);
-                actions = this.findHeroMove(actions, objective, hero);
+                actions = this.findHeroMove(actions, objective, false, unblock);
             }
         }
 
@@ -448,18 +470,34 @@ export default {
 
     /**
     * Find possible move for a given hero
-    * @param  {Array}  actions   actions
-    * @param  {Array}  objective objective cell
-    * @param  {Object} hero      given hero
-    * @return {Array}            new actions
+    * @param  {Array}   actions   actions
+    * @param  {Array}   objective objective cell
+    * @param  {Object}  hero      given hero
+    * @param  {Boolean} unblock   unblock hero or not
+    * @return {Array}             new actions
     */
-    findHeroMove(actions, objective, hero) {
+    findHeroMove(actions, objective, hero, unblock) {
+        if (!hero) hero = objective.hero;
+
         // Hero has already exited board
         if (hero.hasExited()) return actions;
 
         // Find path
         const path = this.findPath(objective.coord, hero);
         if (!path) return actions;
+
+        // Check for other heroes blocking the way
+        for (let cell of path) {
+            for (let h of heroes.all) {
+                // Ignore self
+                if (h.id === hero.id) continue;
+
+                if (h.cell.x === cell.x && h.cell.y === cell.y) {
+                    if (unblock) actions = this.unblockHero(objective, path, hero, h);
+                    return actions;
+                }
+            }
+        }
 
         // Find target
         const move = this.findMove(path);
@@ -491,6 +529,79 @@ export default {
             });
         }
 
+        return actions;
+    },
+
+    /**
+    * Unblock hero by moving blocking hero out of the way
+    * @param  {Object} objective objective cell
+    * @param  {Array}  path      path
+    * @param  {Object} hero      moving hero
+    * @param  {Object} h         blocking hero
+    * @return {Object}           new actions
+    */
+    unblockHero(objective, path, hero, h) {
+        // Already analyzed cells
+        let closed = [];
+
+        // Possible targets to move out of the way
+        let targets = [];
+
+        // Possible paths to move out of the way
+        let paths = [];
+
+        // Radius to look for empty cells within (capped for safety reasons)
+        let delta = 0;
+
+        while (paths.length === 0 && delta < 8) {
+            delta += 1;
+            for (let y = h.cell.y - delta; y <= h.cell.y + delta; y += 1) {
+                for (let x = h.cell.x - delta; x <= h.cell.x + delta; x += 1) {
+                    // Ignore previous candidate cells
+                    if (this.isInArray({x, y}, closed)) continue;
+
+                    // Save candidate cell
+                    closed.push({x, y});
+
+                    // Ignore self position
+                    if (x === h.cell.x && y === h.cell.y) continue;
+
+                    // Ignore cells in path
+                    if (this.isInArray({x, y}, path)) continue;
+
+                    // Ignore cells occupied by another hero
+                    if (heroes.all.some(h => h.cell.x === x && h.cell.y === y)) continue;
+
+                    const cell = board.get(x, y);
+                    // Ignore empty cells
+                    if (cell.isEmpty()) continue;
+                    targets.push(cell);
+                }
+            }
+
+            // Find path to objective
+            for (let target of targets) {
+                const path = this.findPath(target.coord, h);
+                if (path) paths.push(path);
+            }
+        }
+
+        // Shouldn't happend but let's prevent an error
+        if (paths.length === 0) return [];
+
+        // Find closest cell to get out of the way
+        const shortestPath = paths.reduce((a, b) => { return a.length <= b.length ? a : b; });
+
+        const objectives = [{
+            coord: {
+                x: shortestPath[shortestPath.length - 1].x,
+                y: shortestPath[shortestPath.length - 1].y
+            },
+            hero: h
+        }];
+
+        // Rerun moves
+        const actions = this.findHeroesMoves([], objectives);
         return actions;
     },
 
