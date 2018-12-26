@@ -558,7 +558,6 @@
             if (!item) continue;
 
             // If hero sits on an unexplored gate with same color
-            // FIXME: fix hero moving in and out of this cell
             if (item.type === 'gate' && item.color === hero.color && !cell.isExplored()) {
                 // Allow to set new tile
                 actions.push({
