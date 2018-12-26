@@ -31,7 +31,13 @@ export default {
         this.layout[x][y].setUsed();
     },
 
-    setStolen(x, y) {
-        // this.layout[x][y].setStolen();
+    count(item) {
+        let count = 0;
+        for (let i = 0; i < config.boardCols; i += 1) {
+            for (let j = 0; j < config.boardRows; j += 1) {
+                if (this.layout[i][j] && this.layout[i][j].item && this.layout[i][j].item.type === item) count += 1;
+            }
+        }
+        return count;
     }
 }

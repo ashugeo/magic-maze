@@ -64,7 +64,7 @@ io.sockets.on('connection', socket => {
         for (let person of people) {
             if (person.spectator === undefined) return false;
         }
-        start(socket.id, options);
+        start(options);
     });
 
     socket.on('hero', data => {
@@ -87,7 +87,6 @@ io.sockets.on('connection', socket => {
         socket.broadcast.emit('used', data);
     });
 
-    // TODO: admin could see ai-running events instead
     socket.on('ai', () => {
         io.to(adminID).emit('ai');
     });
@@ -102,12 +101,10 @@ function shuffleArray(a) {
         a[i] = a[j];
         a[j] = x;
     }
+    return a;
 }
 
-function start(id, options) {
-    // Make sure the admin started the game
-    if (id !== adminID) return;
-
+function start(options) {
     // Build players array
     const players = people.filter(p => { return !p.spectator });
     let playersCount = players.length;
@@ -123,6 +120,9 @@ function start(id, options) {
     // A game can't start with no one playing
     if (playersCount === 0) return;
 
+    // Save players count in options
+    options.players = playersCount;
+
     // Get all actions for that number of players
     let roles = [];
     for (let i in actions) {
@@ -131,27 +131,29 @@ function start(id, options) {
         }
     }
 
+    let playersRoles = {};
+
     if (playersCount === 1) {
         // Only one player, merge roles together
         let allRoles = [].concat(...roles);
 
         if (players.length === 1) {
             // Admin is the only player
-            io.to(players[0].id).emit('role', allRoles);
+            playersRoles[players[0].id] = shuffleArray(allRoles);
         } else {
             // Admin is watching one bot play
             options.botsRoles.push(allRoles);
         }
     } else {
         // Give actions to players randomly
-        shuffleArray(roles);
+        roles = shuffleArray(roles);
 
         for (let i in roles) {
             i = parseInt(i);
 
             if (players[i]) {
-                // Tell this player his role(s)
-                io.to(players[i].id).emit('role', roles[i]);
+                // Save this player's role(s)
+                playersRoles[players[i].id] = roles[i];
             } else {
                 // Not a player but a bot, save in options
                 options.botsRoles.push(roles[i]);
@@ -163,10 +165,13 @@ function start(id, options) {
     for (let person of people) {
         if (person.id === adminID) {
             options.admin = true;
+            options.roles = playersRoles[person.id];
             io.to(person.id).emit('start', options);
         } else {
             io.to(person.id).emit('start', {
-                'scenario': options.scenario
+                'roles': playersRoles[person.id],
+                'scenario': options.scenario,
+                'players': options.players
             });
         }
     }

@@ -5,7 +5,8 @@ import clock from './clock';
 import config from './config';
 import game from './game';
 import Hero from './hero';
-import heroes from './heroes'
+import helpers from './helpers';
+import heroes from './heroes';
 import Tile from './tile';
 import tiles from './tiles';
 
@@ -20,28 +21,28 @@ export default {
         */
         document.addEventListener('keydown', e => {
             if (e.which === 67) { // C: engage tile placing
-                this.newTile();
+                if (!game.isEnded()) this.newTile();
             } else if (e.which === 82) { // R: rotate tile counterclockwise
-                this.rotateTile(-1);
+                if (!game.isEnded()) this.rotateTile(-1);
             } else if (e.which === 84) { // T: rotate tile clockwise
-                this.rotateTile(1);
+                if (!game.isEnded()) this.rotateTile(1);
             } else if (e.which === 27) { // Esc: cancel current action
-                this.cancel();
-            } else if (e.which === 66) { // B: run bots
-                this.steal();
+                if (!game.isEnded()) this.cancel();
+            } else if (e.which === 66) { // B
+                // this.steal();
             }
         });
 
         document.addEventListener('mousedown', () => {
-            this.mouseDown();
+            if (!game.isEnded()) this.mouseDown();
         });
 
         document.addEventListener('mouseup', () => {
-            this.mouseUp();
+            if (!game.isEnded()) this.mouseUp();
         });
 
         document.addEventListener('mousemove', () => {
-            this.mouseMove();
+            if (!game.isEnded()) this.mouseMove();
         });
 
         document.getElementById('canvas-wrap').addEventListener('mouseleave', () => {
@@ -53,12 +54,15 @@ export default {
         });
 
         window.oncontextmenu = () => {
-            this.rotateTile(1);
+            if (!game.isEnded()) this.rotateTile(1);
             return false;
         }
     },
 
     mouseDown() {
+        // Spectator can't click
+        if (role.length === 0) return;
+        
         const cell = this.getHoveredCell();
 
         if (this.action === 'placing') {
@@ -200,10 +204,8 @@ export default {
         if (canAddTile) {
             this.action = 'placing';
 
-            // Make sure last tile is fixed to prevent multiple tiles picking
-            const lastTile = tiles.getLastTile();
-
-            if (lastTile.status === 'set') {
+            // Make sure no tile is already picked
+            if (!tiles.isPickedTile()) {
                 tiles.getFromStock();
             }
         }
@@ -220,8 +222,8 @@ export default {
 
     /**
     * Check if there's a selectable hero in this cell
-    * @param  {Object} cell cell to check
-    * @return {Object|bool}
+    * @param  {Object}         cell cell to check
+    * @return {Object|Boolean}
     */
     checkForHero(cell) {
         for (let hero of heroes.all) {
@@ -263,6 +265,11 @@ export default {
             clock.invert();
             socket.emit('invertClock');
 
+            if (game.players === 1 && ai.bots.length === 0) {
+                // Admin is the only player, shuffle roles
+                allActions = helpers.shuffleArray(allActions);
+            }
+
             // Time cell is now used
             board.setUsed(cell.x, cell.y);
             socket.emit('used', {
@@ -279,23 +286,15 @@ export default {
                 if (!item || item.type !== 'article' || item.color !== hero.color) canSteal = false;
             }
 
-            if (canSteal) this.steal();
+            // All heroes can steal, engage game phase 2
+            if (canSteal) game.setPhase(2);
 
-        } else if (item.type === 'exit' && hero.hasStolen() && (item.color === hero.color || game.scenario === 1)) {
+        } else if (item.type === 'exit' && game.isPhase(2) && (item.color === hero.color || game.scenario === 1)) {
             // Same color exit or scenario 1 (only has purple exit)
             hero.exit();
             if (ai.checkForWin()) {
                 game.win();
             }
         }
-    },
-
-    steal() {
-        for (let hero of heroes.all) {
-            hero.steal();
-        }
-
-        // Disable vortex system
-        game.setVortex(false);
     }
 }

@@ -59,9 +59,8 @@ export default {
         this.board.push(id);
     },
 
-    getLastTile() {
-        const id = this.board[this.board.length - 1];
-        return this.getTile(id);
+    isPickedTile() {
+        return this.pickedTile;
     },
 
     getStockSize() {
