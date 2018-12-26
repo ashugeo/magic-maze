@@ -42,7 +42,7 @@ export default {
             let deltaX = hero.target.x - hero.pos.x;
             let deltaY = hero.target.y - hero.pos.y;
             let delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-            if (delta > 1 / 20) {
+            if (delta > 1 / config.heroSpeed) {
                 hero.move();
             } else if (!hero.selectable) {
                 hero.move(true);
