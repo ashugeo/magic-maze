@@ -315,9 +315,9 @@
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__camera__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__camera__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__hero__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__hero__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__tiles__ = __webpack_require__(2);
 
 
@@ -363,7 +363,7 @@
             let deltaX = hero.target.x - hero.pos.x;
             let deltaY = hero.target.y - hero.pos.y;
             let delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-            if (delta > 1 / 20) {
+            if (delta > 1 / __WEBPACK_IMPORTED_MODULE_2__config__["a" /* default */].heroSpeed) {
                 hero.move();
             } else if (!hero.selectable) {
                 hero.move(true);
@@ -472,7 +472,7 @@
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__board__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__bot__ = __webpack_require__(16);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__clock__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__clock__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__game__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__heroes__ = __webpack_require__(3);
@@ -537,6 +537,10 @@
         // Find possible moves for every hero
         actions = this.findHeroesMoves(actions, objectives);
 
+        if (actions.length === 0) {
+            actions = this.findHeroesMoves(actions, objectives, true);
+        }
+
         this.playRandomAction(actions);
     },
 
@@ -552,7 +556,6 @@
             const cell = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].get(hero.cell.x, hero.cell.y);
             const item = cell.item;
             if (!item) continue;
-
 
             // If hero sits on an unexplored gate with same color
             // FIXME: fix hero moving in and out of this cell
@@ -594,7 +597,15 @@
                     !cell.isUsed() &&
                     __WEBPACK_IMPORTED_MODULE_2__clock__["a" /* default */].remaining < __WEBPACK_IMPORTED_MODULE_3__config__["a" /* default */].timer / 2
                 ) {
-                    objectives.push(cell);
+                    objectives.push({
+                        coord: {
+                            x: cell.coord.x,
+                            y: cell.coord.y
+                        },
+                        item: {
+                            type: cell.item.type
+                        }
+                    });
                 }
 
                 // Find unexplored gates (if stock is not empty, only during phase 1, and if some articles/exits remain unrevealed)
@@ -611,7 +622,16 @@
                         )
                     )
                 ) {
-                    objectives.push(cell);
+                    objectives.push({
+                        coord: {
+                            x: cell.coord.x,
+                            y: cell.coord.y
+                        },
+                        item: {
+                            type: cell.item.type
+                        },
+                        hero: __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].findByColor(cell.item.color)
+                    });
                 }
 
                 // Find articles (only during phase 1, and when all articles/exits are revealed)
@@ -624,12 +644,30 @@
                         __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].count('exit') === 4
                     )
                 ) {
-                    objectives.push(cell);
+                    objectives.push({
+                        coord: {
+                            x: cell.coord.x,
+                            y: cell.coord.y
+                        },
+                        item: {
+                            type: cell.item.type
+                        },
+                        hero: __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].findByColor(cell.item.color)
+                    });
                 }
 
                 // Find exits (only during phase 2)
                 if (item.type === 'exit' && __WEBPACK_IMPORTED_MODULE_4__game__["a" /* default */].isPhase(2)) {
-                    objectives.push(cell);
+                    objectives.push({
+                        coord: {
+                            x: cell.coord.x,
+                            y: cell.coord.y
+                        },
+                        item: {
+                            type: cell.item.type
+                        },
+                        hero: __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].findByColor(cell.item.color)
+                    });
                 }
             }
         }
@@ -640,7 +678,7 @@
     /**
     * Pathfinder function
     * @param  {Object}         target {x: y:}
-    * @param  {Object}         hero   {x: y:}
+    * @param  {Object}         hero   hero object
     * @return {Object|Boolean}        path (or false if none)
     */
     findPath(objective, hero) {
@@ -679,7 +717,7 @@
                 if (this.isInArray(neighbor, closed)) continue;
 
                 // Compute new cost
-                let newCost = this.getCost(neighbor, start, objective);
+                const newCost = this.getCost(neighbor, start, objective);
 
                 // If new cost is lower, or neighbor hasn't been evaluated
                 if (newCost < neighbor.cost || !this.isInArray(neighbor, open)) {
@@ -838,24 +876,11 @@
                 origin.coord.y + [-1, 0, 1, 0][i]
             );
 
-            if (!neighbor) continue;
-
-            let canGo = true;
-
             // Make sure neighbor isn't empty
-            if (neighbor.isEmpty()) canGo = false;
-
-            // Make sure neighbor doesn't hold a hero
-            // TODO: move a hero that's blocking another (good luck for this one)
-            for (let hero of __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].all) {
-                if (hero.cell.x === neighbor.coord.x && hero.cell.y === neighbor.coord.y) {
-                    canGo = false;
-                }
-            }
-
-            if (!canGo) continue;
+            if (!neighbor || neighbor.isEmpty()) continue;
 
             // Make sure no wall is blocking the way
+            // TODO: make this sexier
             if (
                 (i === 0 &&
                     (!origin.walls.top && !neighbor.walls.bottom) ||
@@ -884,7 +909,7 @@
     /**
     * Compute cost for a cell
     * @param  {Object} cell   {x: y:}
-    * @param  {Object} hero  {x: y:}
+    * @param  {Object} hero   {x: y:}
     * @param  {Object} target {x: y:}
     * @return {int}           cost
     */
@@ -900,25 +925,22 @@
 
     /**
     * Find possible moves for every hero
-    * @param  {Array} actions    actions
-    * @param  {Array} objectives objectives cells
-    * @return {Array}            new actions
+    * @param  {Array}  actions         actions
+    * @param  {Array}  objectives      objectives cells
+    * @param  {Boolan} [unblock=false] unblock hero or not
+    * @return {Array}                  new actions
     */
-    findHeroesMoves(actions, objectives) {
+    findHeroesMoves(actions, objectives, unblock = false) {
         // Find hero for each objective
         for (let objective of objectives) {
-            let hero;
-
             // All heroes exit through the purple exit on scenario 1
             // All heroes can go on time cells
-            if ((objective.item.type === 'exit' && __WEBPACK_IMPORTED_MODULE_4__game__["a" /* default */].isScenario(1)) || objective.item.type === 'time') {
+            if (objective.item && ((objective.item.type === 'exit' && __WEBPACK_IMPORTED_MODULE_4__game__["a" /* default */].isScenario(1)) || objective.item.type === 'time')) {
                 for (let h of __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].all) {
-                    hero = h;
-                    actions = this.findHeroMove(actions, objective, hero);
+                    actions = this.findHeroMove(actions, objective, h, unblock);
                 }
             } else {
-                hero = __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].findByColor(objective.item.color);
-                actions = this.findHeroMove(actions, objective, hero);
+                actions = this.findHeroMove(actions, objective, false, unblock);
             }
         }
 
@@ -927,12 +949,15 @@
 
     /**
     * Find possible move for a given hero
-    * @param  {Array}  actions   actions
-    * @param  {Array}  objective objective cell
-    * @param  {Object} hero      given hero
-    * @return {Array}            new actions
+    * @param  {Array}   actions   actions
+    * @param  {Array}   objective objective cell
+    * @param  {Object}  hero      given hero
+    * @param  {Boolean} unblock   unblock hero or not
+    * @return {Array}             new actions
     */
-    findHeroMove(actions, objective, hero) {
+    findHeroMove(actions, objective, hero, unblock) {
+        if (!hero) hero = objective.hero;
+
         // Hero has already exited board
         if (hero.hasExited()) return actions;
 
@@ -940,10 +965,28 @@
         const path = this.findPath(objective.coord, hero);
         if (!path) return actions;
 
+        // Check for other heroes blocking the way
+        for (let cell of path) {
+            for (let h of __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].all) {
+                // Ignore self
+                if (h.id === hero.id) continue;
+
+                if (h.cell.x === cell.x && h.cell.y === cell.y) {
+                    if (unblock) actions = this.unblockHero(objective, path, hero, h);
+                    return actions;
+                }
+            }
+        }
+
         // Find target
         const move = this.findMove(path);
 
         let canMove = true;
+
+        // Prevent a hero from leaving an unexplored gate
+        const cell = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].get(hero.cell.x, hero.cell.y);
+        if (cell.item && cell.item.type === 'gate' && cell.item.color === hero.color && !cell.isExplored()) canMove = false;
+
         for (let i in actions) {
             if (actions[i].hero && actions[i].hero.id === hero.id) {
                 // Prevent exploration + move from gate at once
@@ -970,6 +1013,79 @@
             });
         }
 
+        return actions;
+    },
+
+    /**
+    * Unblock hero by moving blocking hero out of the way
+    * @param  {Object} objective objective cell
+    * @param  {Array}  path      path
+    * @param  {Object} hero      moving hero
+    * @param  {Object} h         blocking hero
+    * @return {Object}           new actions
+    */
+    unblockHero(objective, path, hero, h) {
+        // Already analyzed cells
+        let closed = [];
+
+        // Possible targets to move out of the way
+        let targets = [];
+
+        // Possible paths to move out of the way
+        let paths = [];
+
+        // Radius to look for empty cells within (capped for safety reasons)
+        let delta = 0;
+
+        while (paths.length === 0 && delta < 8) {
+            delta += 1;
+            for (let y = h.cell.y - delta; y <= h.cell.y + delta; y += 1) {
+                for (let x = h.cell.x - delta; x <= h.cell.x + delta; x += 1) {
+                    // Ignore previous candidate cells
+                    if (this.isInArray({x, y}, closed)) continue;
+
+                    // Save candidate cell
+                    closed.push({x, y});
+
+                    // Ignore self position
+                    if (x === h.cell.x && y === h.cell.y) continue;
+
+                    // Ignore cells in path
+                    if (this.isInArray({x, y}, path)) continue;
+
+                    // Ignore cells occupied by another hero
+                    if (__WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].all.some(h => h.cell.x === x && h.cell.y === y)) continue;
+
+                    const cell = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].get(x, y);
+                    // Ignore empty cells
+                    if (cell.isEmpty()) continue;
+                    targets.push(cell);
+                }
+            }
+
+            // Find path to objective
+            for (let target of targets) {
+                const path = this.findPath(target.coord, h);
+                if (path) paths.push(path);
+            }
+        }
+
+        // Shouldn't happend but let's prevent an error
+        if (paths.length === 0) return [];
+
+        // Find closest cell to get out of the way
+        const shortestPath = paths.reduce((a, b) => { return a.length <= b.length ? a : b; });
+
+        const objectives = [{
+            coord: {
+                x: shortestPath[shortestPath.length - 1].x,
+                y: shortestPath[shortestPath.length - 1].y
+            },
+            hero: h
+        }];
+
+        // Rerun moves
+        const actions = this.findHeroesMoves([], objectives);
         return actions;
     },
 
@@ -1379,11 +1495,11 @@ class Tile {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ai__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__clock__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__clock__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__game__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__hero__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__hero__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__helpers__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__heroes__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__tile__ = __webpack_require__(5);
@@ -1696,7 +1812,7 @@ class Tile {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ai__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__clock__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__clock__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__events__ = __webpack_require__(6);
 
@@ -1767,6 +1883,69 @@ class Tile {
 
 /***/ }),
 /* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__game__ = __webpack_require__(7);
+
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+    tick: 0,
+    inverted: false,
+    elapsed: 0,
+    remaining: 0,
+
+    init() {
+        this.$clock = document.getElementById('clock');
+        this.remaining = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].timer;
+        this.ticker();
+        this.interval = setInterval(() => { this.ticker() }, 1000);
+    },
+
+    ticker() {
+        this.display();
+
+        // No time left
+        if (this.remaining === 0) {
+            this.stop();
+            __WEBPACK_IMPORTED_MODULE_1__game__["a" /* default */].lose();
+            return;
+        }
+
+        this.tick += 1;
+        this.elapsed += 1;
+        this.remaining -= 1;
+    },
+
+    stop() {
+        clearInterval(this.interval);
+    },
+
+    invert() {
+        this.inverted = !this.inverted;
+        let r = this.remaining;
+        this.remaining = this.elapsed;
+        this.elapsed = r;
+    },
+
+    toString(time) {
+        let minutes = Math.floor(time / 60);
+        let seconds = time % 60;
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+        // let string = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+        return `${minutes}m ${seconds}s`;
+    },
+
+    display() {
+        this.$clock.innerHTML = this.toString(this.remaining);
+    }
+});
+
+
+/***/ }),
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1851,7 +2030,7 @@ class Tile {
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2141,69 +2320,6 @@ class Hero {
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Hero;
 
-
-
-/***/ }),
-/* 10 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__game__ = __webpack_require__(7);
-
-
-
-/* harmony default export */ __webpack_exports__["a"] = ({
-    tick: 0,
-    inverted: false,
-    elapsed: 0,
-    remaining: 0,
-
-    init() {
-        this.$clock = document.getElementById('clock');
-        this.remaining = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].timer;
-        this.ticker();
-        this.interval = setInterval(() => { this.ticker() }, 1000);
-    },
-
-    ticker() {
-        this.display();
-
-        // No time left
-        if (this.remaining === 0) {
-            this.stop();
-            __WEBPACK_IMPORTED_MODULE_1__game__["a" /* default */].lose();
-            return;
-        }
-
-        this.tick += 1;
-        this.elapsed += 1;
-        this.remaining -= 1;
-    },
-
-    stop() {
-        clearInterval(this.interval);
-    },
-
-    invert() {
-        this.inverted = !this.inverted;
-        let r = this.remaining;
-        this.remaining = this.elapsed;
-        this.elapsed = r;
-    },
-
-    toString(time) {
-        let minutes = Math.floor(time / 60);
-        let seconds = time % 60;
-        seconds = seconds < 10 ? '0' + seconds : seconds;
-        // let string = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
-        return `${minutes}m ${seconds}s`;
-    },
-
-    display() {
-        this.$clock.innerHTML = this.toString(this.remaining);
-    }
-});
 
 
 /***/ }),
@@ -73714,11 +73830,11 @@ module.exports = p5;
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ai__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__clock__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__clock__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__events__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__game__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__hero__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__hero__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__heroes__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_p5__ = __webpack_require__(13);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8_p5__);
@@ -73929,13 +74045,17 @@ class Cell {
             const _x = [-1, 0, 0, 1][data.tileCell.x];
             const _y = [0, 1, -1, 0][data.tileCell.x];
             const cell = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].get(this.coord.x + _x, this.coord.y + _y);
-            if (!cell) return;
-            if (!cell.isEmpty()) this.setExplored();
+            if (!cell || cell.isEmpty()) return;
+            this.setExplored();
+        }
 
-            // gate goes into unexplored gate, set it as explored as well
-            if (cell.item && cell.item.type === 'gate') {
-                cell.setExplored();
-            }
+        // If tile is set next to unexplored gate, it can be considered as explored
+        const _x = [-1, 0, 0, 1][data.tileCell.x];
+        const _y = [-1, 0, 0, 1][data.tileCell.y];
+        const neighbor = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].get(this.coord.x + _x, this.coord.y + _y);
+        if (!neighbor || neighbor.isEmpty()) return;
+        if (neighbor.item && neighbor.item.type === 'gate' && !neighbor.isExplored()) {
+            neighbor.setExplored();
         }
     }
 
@@ -74091,7 +74211,7 @@ module.exports = g;
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5__ = __webpack_require__(13);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_p5__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__camera__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__events__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__heroes__ = __webpack_require__(3);
@@ -74154,8 +74274,14 @@ const sketch = p5 => {
 function displayTiles() {
     for (let tile of __WEBPACK_IMPORTED_MODULE_7__tiles__["a" /* default */].all) {
         // Don't display stock tiles
-        if (tile.status === 'stock') continue;
+        if (tile.status === 'stock' || tile.status === 'picked') continue;
 
+        // Display tile
+        tile.display();
+    }
+
+    // Picked tile overlaps board so its display has to be called after
+    for (let tile of __WEBPACK_IMPORTED_MODULE_7__tiles__["a" /* default */].all) {
         // Tiles is being placed, move it along cursor position
         if (tile.status === 'picked') {
             // Hovered cell
@@ -74165,10 +74291,9 @@ function displayTiles() {
             // Place cursor on enter cell depending on orientation
             const origin = tile.getOrigin(cell.x, cell.y, o);
             tile.move(origin.x, origin.y);
+            // Display tile
+            tile.display();
         }
-
-        // Display tile
-        tile.display();
     }
 }
 

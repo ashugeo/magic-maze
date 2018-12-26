@@ -22,13 +22,17 @@ export default class Cell {
             const _x = [-1, 0, 0, 1][data.tileCell.x];
             const _y = [0, 1, -1, 0][data.tileCell.x];
             const cell = board.get(this.coord.x + _x, this.coord.y + _y);
-            if (!cell) return;
-            if (!cell.isEmpty()) this.setExplored();
+            if (!cell || cell.isEmpty()) return;
+            this.setExplored();
+        }
 
-            // gate goes into unexplored gate, set it as explored as well
-            if (cell.item && cell.item.type === 'gate') {
-                cell.setExplored();
-            }
+        // If tile is set next to unexplored gate, it can be considered as explored
+        const _x = [-1, 0, 0, 1][data.tileCell.x];
+        const _y = [-1, 0, 0, 1][data.tileCell.y];
+        const neighbor = board.get(this.coord.x + _x, this.coord.y + _y);
+        if (!neighbor || neighbor.isEmpty()) return;
+        if (neighbor.item && neighbor.item.type === 'gate' && !neighbor.isExplored()) {
+            neighbor.setExplored();
         }
     }
 
