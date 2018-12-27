@@ -270,6 +270,9 @@ export default {
             if (game.players === 1 && ai.bots.length === 0) {
                 // Admin is the only player, shuffle roles
                 allActions = helpers.shuffleArray(allActions);
+            } else if (game.players >= 2 && game.scenario >= 3) {
+                // Scenario 3 or greater: swap roles when clock is inverted
+                socket.emit('swap');
             }
 
             // Time cell is now used

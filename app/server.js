@@ -11,6 +11,7 @@ app.get('/', (req, res) => {
 });
 
 let people = [];
+let players = [];
 let adminID = '';
 let options = {};
 
@@ -19,38 +20,53 @@ io.sockets.on('connection', socket => {
     people.push({id: socket.id, spectator: undefined});
 
     // Tell everyone
-    io.emit('people', people.length);
+    io.emit('people', {
+        all: people.length,
+        bots: people.filter(p => { return p.bot }).length
+    });
 
     // First person, make it admin
     if (people.length === 1) {
+        people[0].admin = true;
         adminID = socket.id;
         socket.emit('admin');
     }
 
+    // User disconnected
     socket.on('disconnect', () => {
         // This person left the room, remove it from people array
         people = people.filter(p => { return (p.id !== socket.id); });
         // Tell everyone
-        io.emit('people', people.length);
+        io.emit('people', {
+            all: people.length,
+            bots: people.filter(p => { return p.bot }).length
+        });
 
         // It was the admin, set a new admin
-        if (people.length > 0 && !people.some(p => {return p.id === adminID})) {
+        if (people.length > 0 && !people.some(p => { return p.id === adminID })) {
+            people[0].admin = true;
             adminID = people[0].id;
             // Tell him
             io.to(adminID).emit('admin');
         }
+
+        if (people.every(p => p.bot)) people = [];
     });
 
+    // Admin has clicked start, get each player's settings
     socket.on('prestart', () => {
         for (let person of people) {
             if (person.id === adminID) {
+                // Ask admin if he's a spectator + game parameters
                 io.to(person.id).emit('prestart', true);
             } else {
+                // Ask player if he's a spectator
                 io.to(person.id).emit('prestart');
             }
         }
     });
 
+    // Getting player settings (wait for everyone then start with options)
     socket.on('settings', settings => {
         const person = people.find(p => { return p.id === socket.id; });
         person.spectator = settings.spectator;
@@ -83,6 +99,36 @@ io.sockets.on('connection', socket => {
         socket.broadcast.emit('invertClock');
     });
 
+    socket.on('swap', () => {
+        // Get role of last player
+        let lastPlayersRoles = players[players.length - 1].roles;
+
+        // Set role of previous player for
+        for (let i = players.length - 1; i >= 0; i -= 1) {
+            if (i > 0) {
+                players[i].roles = players[i - 1].roles;
+            } else {
+                players[i].roles = lastPlayersRoles;
+            }
+        }
+
+        // Tell everyon his new roles
+        for (let person of people) {
+            // Can't emit to bots
+            if (person.bot) return;
+
+            // Tell this player his new roles
+            if (person.id === adminID) {
+                io.to(person.id).emit('roles', {
+                    self: person.roles,
+                    bots: people.filter(p => { return p.bot })
+                });
+            } else {
+                io.to(person.id).emit('roles', { self: person.roles });
+            }
+        }
+    });
+
     socket.on('used', data => {
         socket.broadcast.emit('used', data);
     });
@@ -95,7 +141,7 @@ io.sockets.on('connection', socket => {
 http.listen(3000);
 
 function shuffleArray(a) {
-    for (let i = a.length - 1; i > 0; i--) {
+    for (let i = a.length - 1; i > 0; i -= 1) {
         let j = Math.floor(Math.random() * (i + 1));
         let x = a[i];
         a[i] = a[j];
@@ -105,73 +151,73 @@ function shuffleArray(a) {
 }
 
 function start(options) {
-    // Build players array
-    const players = people.filter(p => { return !p.spectator });
-    let playersCount = players.length;
-
-    // This game has bots
-    if (options.bots > 0) {
-        // Add bots to players count
-        playersCount += options.bots;
-
-        options.botsRoles = [];
+    // Add bots to players
+    for (let i = 0; i < options.bots; i += 1) {
+        people.push({id: 'bot' + i, bot: true});
     }
 
+    // Build array of players (exclude spectators)
+    players = people.filter(p => { return !p.spectator });
+
     // A game can't start with no one playing
-    if (playersCount === 0) return;
+    if (players.length === 0) return;
 
-    // Save players count in options
-    options.players = playersCount;
+    // Update players count with bots
+    io.emit('people', {
+        all: people.length,
+        bots: people.filter(p => { return p.bot }).length
+    });
 
+    // Give each player a role
+    giveRoles();
+
+    // Tell everyone to start game
+    emitStart();
+}
+
+function giveRoles() {
     // Get all actions for that number of players
     let roles = [];
     for (let i in actions) {
-        if (actions[i].players.indexOf(playersCount) > -1) {
+        if (actions[i].players.indexOf(players.length) > -1) {
             roles.push(actions[i].roles);
         }
     }
 
-    let playersRoles = {};
-
-    if (playersCount === 1) {
-        // Only one player, merge roles together
-        let allRoles = [].concat(...roles);
-
-        if (players.length === 1) {
-            // Admin is the only player
-            playersRoles[players[0].id] = shuffleArray(allRoles);
-        } else {
-            // Admin is watching one bot play
-            options.botsRoles.push(allRoles);
-        }
+    // Set roles to players
+    if (players.length === 1) {
+        // Admin alone or admin spectating a single bot, merge roles together
+        const allRoles = [].concat(...roles);
+        players[0].roles = shuffleArray(allRoles);
     } else {
         // Give actions to players randomly
         roles = shuffleArray(roles);
 
         for (let i in roles) {
             i = parseInt(i);
-
-            if (players[i]) {
-                // Save this player's role(s)
-                playersRoles[players[i].id] = roles[i];
-            } else {
-                // Not a player but a bot, save in options
-                options.botsRoles.push(roles[i]);
-            }
+            players[i].roles = roles[i];
         }
     }
+}
 
-    // Tell everyone to start game
+function emitStart() {
     for (let person of people) {
+        // Can't emit to bots
+        if (person.bot) return;
+
         if (person.id === adminID) {
-            options.admin = true;
-            options.roles = playersRoles[person.id];
-            io.to(person.id).emit('start', options);
+            io.to(person.id).emit('start', {
+                roles: person.roles,
+                scenario: options.scenario,
+                players: players.length,
+                admin: true,
+                bots: people.filter(p => { return p.bot })
+            });
         } else {
             io.to(person.id).emit('start', {
-                'roles': playersRoles[person.id],
-                'scenario': options.scenario,
-                'players': options.players
+                roles: person.roles,
+                scenario: options.scenario,
+                players: players.length
             });
         }
     }

@@ -15,6 +15,7 @@ const $ui = document.getElementById('ui');
 const $admin = document.getElementById('admin');
 const $people = document.getElementById('people');
 const $spectator = document.getElementById('spectator');
+const $roles = document.getElementById('roles');
 
 let $currentAction;
 
@@ -58,8 +59,9 @@ function buildDeck(scenario) {
 
 // FIXME: why is this not reliable?
 socket.on('people', people => {
-    $people.innerHTML = people;
-    $people.innerHTML += people > 1 ? ' players online' : ' player online';
+    $people.innerHTML = people.all - people.bots;
+    $people.innerHTML += people.all - people.bots > 1 ? ' players online' : ' player online';
+    if (people.bots) $people.innerHTML += people.bots > 1 ? ` (and ${people.bots} bots)` : ' (and 1 bot)';
 });
 
 socket.on('admin', () => {
@@ -67,7 +69,7 @@ socket.on('admin', () => {
     setTimeout(() => {
         $admin.innerHTML += `<h3>Game admin</h3>
         <p>Bot(s) <input type="number" id="bots" value="0" min="0" max="7" /></p>
-        <p>Scenario <input type="number" id="scenario" value="1" min="1" max="15" /></p>
+        <p>Scenario <input type="number" id="scenario" value="3" min="1" max="15" /></p>
         <button id="start">Start game!</button>`;
 
         document.getElementById('start').addEventListener('click', () => {
@@ -79,7 +81,9 @@ socket.on('admin', () => {
 
 socket.on('prestart', isAdmin => {
     const spectator = $spectator.checked;
+
     if (isAdmin) {
+        // Ask admin for game parameters
         const bots = parseInt(document.getElementById('bots').value);
         const scenario = parseInt(document.getElementById('scenario').value);
         socket.emit('settings', { bots, scenario, spectator });
@@ -99,6 +103,11 @@ socket.on('start', options => {
     }
 });
 
+socket.on('roles', roles => {
+    setRoles(roles.self);
+    if (game.isAdmin() && ai.bots.length > 0) ai.setRoles(roles.bots);
+});
+
 function setRoles(roles) {
     // Save my role in window.role
     role = roles;
@@ -110,7 +119,7 @@ function setRoles(roles) {
 
         let text = `<p>Current action: <span id="currentAction">${role}</span></p>
         <button id="nextAction">Next action</button>`;
-        $ui.innerHTML += text;
+        $roles.innerHTML = text;
 
         document.getElementById('nextAction').addEventListener('click', (e) => {
             if (e.path[0].classList.contains('disabled')) return;
@@ -128,7 +137,7 @@ function setRoles(roles) {
         }
         text += '.</p>'
 
-        $ui.innerHTML += text;
+        $roles.innerHTML = text;
     }
 }
 

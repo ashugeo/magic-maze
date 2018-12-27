@@ -12,8 +12,14 @@ export default {
     bots: [],
 
     init(options) {
-        for (let i = 0; i < options.bots; i += 1) {
-            this.bots.push(new Bot(i, options.botsRoles[i]));
+        for (let i = 0; i < options.bots.length; i += 1) {
+            this.bots.push(new Bot(i, options.bots[i].roles));
+        }
+    },
+
+    setRoles(bots) {
+        for (let i = 0; i < this.bots.length; i += 1) {
+            this.bots[i].roles = bots[i].roles;
         }
     },
 
