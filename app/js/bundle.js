@@ -73920,18 +73920,14 @@ socket.on('people', people => {
 });
 
 socket.on('admin', () => {
-    // Timeout needed to give time for 'players' event
-    setTimeout(() => {
-        $admin.innerHTML += `<h3>Game admin</h3>
-        <p>Bot(s) <input type="number" id="bots" value="0" min="0" max="7" /></p>
-        <p>Scenario <input type="number" id="scenario" value="3" min="1" max="15" /></p>
-        <button id="start">Start game!</button>`;
+    $admin.innerHTML = `<h3>Game admin</h3>
+    <p>Bot(s) <input type="number" id="bots" value="0" min="0" max="7" /></p>
+    <p>Scenario <input type="number" id="scenario" value="3" min="1" max="15" /></p>
+    <button id="start">Start game!</button>`;
 
-        document.getElementById('start').addEventListener('click', () => {
-            socket.emit('prestart');
-        });
-
-    }, 100);
+    document.getElementById('start').addEventListener('click', () => {
+        socket.emit('prestart');
+    });
 });
 
 socket.on('prestart', isAdmin => {
