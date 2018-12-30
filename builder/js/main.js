@@ -96,10 +96,10 @@ function mousePressed() {
             }
         }
     } else {
-        // Enter, gate, vortex, exit & time
+        // Enter, gate, vortex, exit, time, crystal ball and camera
 
         // Remove item
-        if (cell.item && cell.item.type === tool && ((tool === 'time' || tool === 'enter') || cell.item.color === color)) {
+        if (cell.item && cell.item.type === tool && (['time', 'enter', 'crystal', 'camera'].indexOf(tool) > -1 || cell.item.color === color)) {
             cell.item = false;
             return;
         }
