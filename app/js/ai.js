@@ -160,6 +160,8 @@ export default {
                     });
                 }
 
+                // TODO: add crystal as objectives
+
                 // Find articles (only during phase 1, and when all articles/exits are revealed)
                 if (
                     item.type === 'article' &&

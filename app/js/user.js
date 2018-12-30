@@ -25,10 +25,7 @@ export default {
         events.init();
         heroes.init();
         clock.init();
-        if (options.roles) {
-            player.init();
-            player.setRoles(options.roles);
-        }
+        if (options.roles) player.setRoles(options.roles);
         if (game.isAdmin()) ai.run();
     },
 

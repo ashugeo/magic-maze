@@ -1,5 +1,6 @@
 import config from './config';
 import game from './game';
+import ui from './ui';
 
 export default {
     tick: 0,
@@ -8,7 +9,6 @@ export default {
     remaining: 0,
 
     init() {
-        this.$clock = document.getElementById('clock');
         this.remaining = config.timer;
         this.ticker();
         this.interval = setInterval(() => { this.ticker() }, 1000);
@@ -49,6 +49,6 @@ export default {
     },
 
     display() {
-        this.$clock.innerHTML = this.toString(this.remaining);
+        ui.setHTML('clock', this.toString(this.remaining));
     }
 }

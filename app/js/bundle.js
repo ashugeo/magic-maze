@@ -647,6 +647,8 @@
                     });
                 }
 
+                // TODO: add crystal as objectives
+
                 // Find articles (only during phase 1, and when all articles/exits are revealed)
                 if (
                     item.type === 'article' &&
@@ -1907,7 +1909,7 @@ class Tile {
 
         if (this.players === 1 && __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].bots.length === 0) {
             // Admin is the only player, disable nextAction button
-            document.getElementById('nextAction').classList.add('disabled');
+            ui.addClass('nextAction', 'disabled');
         }
     }
 });
@@ -1920,6 +1922,8 @@ class Tile {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__game__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__ui__ = __webpack_require__(26);
+
 
 
 
@@ -1930,7 +1934,6 @@ class Tile {
     remaining: 0,
 
     init() {
-        this.$clock = document.getElementById('clock');
         this.remaining = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].timer;
         this.ticker();
         this.interval = setInterval(() => { this.ticker() }, 1000);
@@ -1971,7 +1974,7 @@ class Tile {
     },
 
     display() {
-        this.$clock.innerHTML = this.toString(this.remaining);
+        __WEBPACK_IMPORTED_MODULE_2__ui__["a" /* default */].setHTML('clock', this.toString(this.remaining));
     }
 });
 
@@ -74205,10 +74208,7 @@ const scenarios = __webpack_require__(24);
         __WEBPACK_IMPORTED_MODULE_4__events__["a" /* default */].init();
         __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].init();
         __WEBPACK_IMPORTED_MODULE_2__clock__["a" /* default */].init();
-        if (options.roles) {
-            __WEBPACK_IMPORTED_MODULE_9__player__["a" /* default */].init();
-            __WEBPACK_IMPORTED_MODULE_9__player__["a" /* default */].setRoles(options.roles);
-        }
+        if (options.roles) __WEBPACK_IMPORTED_MODULE_9__player__["a" /* default */].setRoles(options.roles);
         if (__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].isAdmin()) __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].run();
     },
 
@@ -74240,8 +74240,10 @@ const scenarios = __webpack_require__(24);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__game__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__heroes__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__player__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__user__ = __webpack_require__(20);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__tiles__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__ui__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__user__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__tiles__ = __webpack_require__(2);
+
 
 
 
@@ -74254,35 +74256,30 @@ const scenarios = __webpack_require__(24);
 
 /* harmony default export */ __webpack_exports__["a"] = ({
     init() {
-        const $ui = document.getElementById('ui');
-        const $admin = document.getElementById('admin');
-        const $people = document.getElementById('people');
-        const $spectator = document.getElementById('spectator');
-
         socket.on('people', people => {
-            $people.innerHTML = people.all - people.bots;
-            $people.innerHTML += people.all - people.bots > 1 ? ' players online' : ' player online';
-            if (people.bots) $people.innerHTML += people.bots > 1 ? ` (and ${people.bots} bots)` : ' (and 1 bot)';
+            let html = people.all - people.bots;
+            html += people.all - people.bots > 1 ? ' players online' : ' player online';
+            if (people.bots) html += people.bots > 1 ? ` (and ${people.bots} bots)` : ' (and 1 bot)';
+            __WEBPACK_IMPORTED_MODULE_7__ui__["a" /* default */].setHTML('people', html);
         });
 
         socket.on('admin', () => {
-            $admin.innerHTML = `<h3>Game admin</h3>
+            let html = `<h3>Game admin</h3>
             <p>Bot(s) <input type="number" id="bots" value="0" min="0" max="7" /></p>
             <p>Scenario <input type="number" id="scenario" value="3" min="1" max="15" /></p>
             <button id="start">Start game!</button>`;
 
-            document.getElementById('start').addEventListener('click', () => {
-                socket.emit('prestart');
-            });
+            __WEBPACK_IMPORTED_MODULE_7__ui__["a" /* default */].setHTML('admin', html);
+            __WEBPACK_IMPORTED_MODULE_7__ui__["a" /* default */].addEvent('start', 'click', () => { socket.emit('prestart'); });
         });
 
         socket.on('prestart', isAdmin => {
-            const spectator = $spectator.checked;
+            const spectator = __WEBPACK_IMPORTED_MODULE_7__ui__["a" /* default */].getProperty('spectator', 'checked');
 
             if (isAdmin) {
                 // Ask admin for game parameters
-                const bots = parseInt(document.getElementById('bots').value);
-                const scenario = parseInt(document.getElementById('scenario').value);
+                const bots = __WEBPACK_IMPORTED_MODULE_7__ui__["a" /* default */].getProperty('bots', 'value');
+                const scenario = __WEBPACK_IMPORTED_MODULE_7__ui__["a" /* default */].getProperty('scenario', 'value');
                 socket.emit('settings', { bots, scenario, spectator });
             } else {
                 socket.emit('settings', { spectator });
@@ -74290,13 +74287,13 @@ const scenarios = __webpack_require__(24);
         });
 
         socket.on('start', options => {
-            __WEBPACK_IMPORTED_MODULE_7__user__["a" /* default */].start(options);
+            __WEBPACK_IMPORTED_MODULE_8__user__["a" /* default */].start(options);
 
-            document.getElementById('spectator-ui').remove();
+            __WEBPACK_IMPORTED_MODULE_7__ui__["a" /* default */].remove('spectator-ui');
 
             if (options.admin) {
                 // Admin only
-                document.getElementById('admin').remove();
+                __WEBPACK_IMPORTED_MODULE_7__ui__["a" /* default */].remove('admin');
             }
         });
 
@@ -74316,10 +74313,10 @@ const scenarios = __webpack_require__(24);
         });
 
         socket.on('tile', data => {
-            const tile = __WEBPACK_IMPORTED_MODULE_8__tiles__["a" /* default */].getTile(data.tile.id);
+            const tile = __WEBPACK_IMPORTED_MODULE_9__tiles__["a" /* default */].getTile(data.tile.id);
             tile.rotation = data.tile.rotation;
             tile.set(data.x, data.y);
-            __WEBPACK_IMPORTED_MODULE_8__tiles__["a" /* default */].board.push(tile.id);
+            __WEBPACK_IMPORTED_MODULE_9__tiles__["a" /* default */].board.push(tile.id);
         });
 
         socket.on('invertClock', data => {
@@ -74356,17 +74353,13 @@ module.exports = {"1":{"tiles":[0,2,3,4,5,6,7,8,9]},"2":{"tiles":[0,2,3,4,5,6,7,
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__game__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__ui__ = __webpack_require__(26);
+
 
 
 /* harmony default export */ __webpack_exports__["a"] = ({
-    $currentAction: null,
-    $roles: null,
     allActions: [],
     role: '',
-
-    init() {
-        this.$roles = document.getElementById('roles');
-    },
 
     setRoles(roles) {
         // Save my role in window.role
@@ -74377,27 +74370,25 @@ module.exports = {"1":{"tiles":[0,2,3,4,5,6,7,8,9]},"2":{"tiles":[0,2,3,4,5,6,7,
             // First role in shuffled array
             this.role = roles[0];
 
-            let text = `<p>Current action: <span id="currentAction">${this.role}</span></p>
+            let html = `<p>Current action: <span id="currentAction">${this.role}</span></p>
             <button id="nextAction">Next action</button>`;
-            this.$roles.innerHTML = text;
+            __WEBPACK_IMPORTED_MODULE_1__ui__["a" /* default */].setHTML('roles', html);
 
-            document.getElementById('nextAction').addEventListener('click', (e) => {
-                if (e.path[0].classList.contains('disabled')) return;
+            __WEBPACK_IMPORTED_MODULE_1__ui__["a" /* default */].addEvent('nextAction', 'click', (e) => {
+                if (__WEBPACK_IMPORTED_MODULE_1__ui__["a" /* default */].hasClass(e.srcElement.id, 'disabled')) return;
                 this.nextAction();
             });
-
-            this.$currentAction = document.getElementById('currentAction');
         } else {
             // Display role
-            let text = '<p>Authorized actions: ';
+            let html = '<p>Authorized actions: ';
             for (let i in roles) {
                 i = parseInt(i);
-                text += roles[i];
-                if (roles[i + 1]) text += ', ';
+                html += roles[i];
+                if (roles[i + 1]) html += ', ';
             }
-            text += '.</p>'
+            html += '.</p>'
 
-            this.$roles.innerHTML = text;
+            __WEBPACK_IMPORTED_MODULE_1__ui__["a" /* default */].setHTML('roles', html);
         }
     },
 
@@ -74406,7 +74397,49 @@ module.exports = {"1":{"tiles":[0,2,3,4,5,6,7,8,9]},"2":{"tiles":[0,2,3,4,5,6,7,
         i = i + 1 === this.allActions.length ? 0 : i + 1;
         this.role = this.allActions[i];
 
-        this.$currentAction.innerHTML = this.role;
+        __WEBPACK_IMPORTED_MODULE_1__ui__["a" /* default */].setHTML('currentAction', this.role);
+    }
+});
+
+
+/***/ }),
+/* 26 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony default export */ __webpack_exports__["a"] = ({
+    getById(id) {
+        return document.getElementById(id);
+    },
+
+    setHTML(id, html) {
+        const elem = this.getById(id);
+        elem.innerHTML = html;
+    },
+
+    addEvent(id, ev, f) {
+        const elem = this.getById(id);
+        elem.addEventListener(ev, f);
+    },
+
+    getProperty(id, prop) {
+        const elem = this.getById(id);
+        return elem[prop];
+    },
+
+    remove(id) {
+        const elem = this.getById(id);
+        elem.remove();
+    },
+
+    addClass(id, cl) {
+        const elem = this.getById(id);
+        elem.classList.add(cl);
+    },
+
+    hasClass(id, cl) {
+        const elem = this.getById(id);
+        return elem.classList.contains(cl);
     }
 });
 

@@ -5,40 +5,36 @@ import clock from './clock';
 import game from './game';
 import heroes from './heroes';
 import player from './player';
+import ui from './ui';
 import user from './user';
 import tiles from './tiles';
 
 export default {
     init() {
-        const $ui = document.getElementById('ui');
-        const $admin = document.getElementById('admin');
-        const $people = document.getElementById('people');
-        const $spectator = document.getElementById('spectator');
-
         socket.on('people', people => {
-            $people.innerHTML = people.all - people.bots;
-            $people.innerHTML += people.all - people.bots > 1 ? ' players online' : ' player online';
-            if (people.bots) $people.innerHTML += people.bots > 1 ? ` (and ${people.bots} bots)` : ' (and 1 bot)';
+            let html = people.all - people.bots;
+            html += people.all - people.bots > 1 ? ' players online' : ' player online';
+            if (people.bots) html += people.bots > 1 ? ` (and ${people.bots} bots)` : ' (and 1 bot)';
+            ui.setHTML('people', html);
         });
 
         socket.on('admin', () => {
-            $admin.innerHTML = `<h3>Game admin</h3>
+            let html = `<h3>Game admin</h3>
             <p>Bot(s) <input type="number" id="bots" value="0" min="0" max="7" /></p>
             <p>Scenario <input type="number" id="scenario" value="3" min="1" max="15" /></p>
             <button id="start">Start game!</button>`;
 
-            document.getElementById('start').addEventListener('click', () => {
-                socket.emit('prestart');
-            });
+            ui.setHTML('admin', html);
+            ui.addEvent('start', 'click', () => { socket.emit('prestart'); });
         });
 
         socket.on('prestart', isAdmin => {
-            const spectator = $spectator.checked;
+            const spectator = ui.getProperty('spectator', 'checked');
 
             if (isAdmin) {
                 // Ask admin for game parameters
-                const bots = parseInt(document.getElementById('bots').value);
-                const scenario = parseInt(document.getElementById('scenario').value);
+                const bots = ui.getProperty('bots', 'value');
+                const scenario = ui.getProperty('scenario', 'value');
                 socket.emit('settings', { bots, scenario, spectator });
             } else {
                 socket.emit('settings', { spectator });
@@ -48,11 +44,11 @@ export default {
         socket.on('start', options => {
             user.start(options);
 
-            document.getElementById('spectator-ui').remove();
+            ui.remove('spectator-ui');
 
             if (options.admin) {
                 // Admin only
-                document.getElementById('admin').remove();
+                ui.remove('admin');
             }
         });
 

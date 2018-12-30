@@ -1,14 +1,9 @@
 import game from './game';
+import ui from './ui';
 
 export default {
-    $currentAction: null,
-    $roles: null,
     allActions: [],
     role: '',
-
-    init() {
-        this.$roles = document.getElementById('roles');
-    },
 
     setRoles(roles) {
         // Save my role in window.role
@@ -19,27 +14,25 @@ export default {
             // First role in shuffled array
             this.role = roles[0];
 
-            let text = `<p>Current action: <span id="currentAction">${this.role}</span></p>
+            let html = `<p>Current action: <span id="currentAction">${this.role}</span></p>
             <button id="nextAction">Next action</button>`;
-            this.$roles.innerHTML = text;
+            ui.setHTML('roles', html);
 
-            document.getElementById('nextAction').addEventListener('click', (e) => {
-                if (e.path[0].classList.contains('disabled')) return;
+            ui.addEvent('nextAction', 'click', (e) => {
+                if (ui.hasClass(e.srcElement.id, 'disabled')) return;
                 this.nextAction();
             });
-
-            this.$currentAction = document.getElementById('currentAction');
         } else {
             // Display role
-            let text = '<p>Authorized actions: ';
+            let html = '<p>Authorized actions: ';
             for (let i in roles) {
                 i = parseInt(i);
-                text += roles[i];
-                if (roles[i + 1]) text += ', ';
+                html += roles[i];
+                if (roles[i + 1]) html += ', ';
             }
-            text += '.</p>'
+            html += '.</p>'
 
-            this.$roles.innerHTML = text;
+            ui.setHTML('roles', html);
         }
     },
 
@@ -48,6 +41,6 @@ export default {
         i = i + 1 === this.allActions.length ? 0 : i + 1;
         this.role = this.allActions[i];
 
-        this.$currentAction.innerHTML = this.role;
+        ui.setHTML('currentAction', this.role);
     }
 }
