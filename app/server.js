@@ -112,19 +112,19 @@ io.sockets.on('connection', socket => {
             }
         }
 
-        // Tell everyon his new roles
-        for (let person of people) {
+        // Tell everyone his new roles
+        for (let player of players) {
             // Can't emit to bots
-            if (person.bot) return;
+            if (player.bot) return;
 
             // Tell this player his new roles
-            if (person.id === adminID) {
-                io.to(person.id).emit('roles', {
-                    self: person.roles,
+            if (player.id === adminID) {
+                io.to(player.id).emit('roles', {
+                    self: player.roles,
                     bots: people.filter(p => { return p.bot })
                 });
             } else {
-                io.to(person.id).emit('roles', { self: person.roles });
+                io.to(player.id).emit('roles', { self: player.roles });
             }
         }
     });
