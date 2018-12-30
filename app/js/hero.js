@@ -4,6 +4,7 @@ import config from './config';
 import events from './events';
 import game from './game';
 import heroes from './heroes';
+import player from './player';
 import tiles from './tiles';
 
 export default class Hero {
@@ -90,7 +91,7 @@ export default class Hero {
         }
 
         // Check for vortex
-        if (role.indexOf('vortex') > -1) {
+        if (player.role.indexOf('vortex') > -1) {
             const item = board.get(hero.x, hero.y).item;
             if (item && item.type === 'vortex' && item.color === this.color) {
                 const targetItem = board.get(target.x, target.y).item;
@@ -105,7 +106,7 @@ export default class Hero {
         if (hero.x !== target.x && hero.y !== target.y) {
             // Not the same column or row
             // Check for escalator
-            if (role.indexOf('escalator') > -1) {
+            if (player.role.indexOf('escalator') > -1) {
                 const escalator = board.get(hero.x, hero.y).escalator;
                 if (escalator && escalator.x === target.x && escalator.y === target.y) {
                     path.push({x: hero.x, y: hero.y});
@@ -148,7 +149,7 @@ export default class Hero {
         if (!target) target = this.cell;
 
         // Use player role
-        const role = window.role;
+        const role = player.role;
 
         const path = this.getPath(target);
         if (!path) return;
@@ -239,7 +240,7 @@ export default class Hero {
 
         // No path, no go
         if (path.length === 0) return false;
-        
+
         // Make sure last cell in path is the target (anti-spam security)
         const last = path[path.length - 1];
         if (last.x !== target.x || last.y !== target.y) return false;

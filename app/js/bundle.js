@@ -1507,8 +1507,10 @@ class Tile {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__hero__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__helpers__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__heroes__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__tile__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__tiles__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__player__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__tile__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__tiles__ = __webpack_require__(2);
+
 
 
 
@@ -1575,7 +1577,7 @@ class Tile {
 
     mouseDown() {
         // Spectator can't click
-        if (role.length === 0) return;
+        if (__WEBPACK_IMPORTED_MODULE_9__player__["a" /* default */].role.length === 0) return;
 
         const cell = this.getHoveredCell();
 
@@ -1658,7 +1660,7 @@ class Tile {
     */
     cancel() {
         if (this.action === 'placing') {
-            __WEBPACK_IMPORTED_MODULE_10__tiles__["a" /* default */].putBackInStock();
+            __WEBPACK_IMPORTED_MODULE_11__tiles__["a" /* default */].putBackInStock();
         }
         this.action = '';
     },
@@ -1669,7 +1671,7 @@ class Tile {
     */
     setTile(cell) {
         // Select picked tile
-        const tile = __WEBPACK_IMPORTED_MODULE_10__tiles__["a" /* default */].getPickedTile();
+        const tile = __WEBPACK_IMPORTED_MODULE_11__tiles__["a" /* default */].getPickedTile();
         const o = tile.getOrientation();
 
         if (tile.canBeSet && tile.status === 'picked') {
@@ -1698,8 +1700,8 @@ class Tile {
     * Get next tile from stock
     */
     newTile() {
-        if (role.indexOf('explore') === -1) return;
-        if (__WEBPACK_IMPORTED_MODULE_10__tiles__["a" /* default */].getStockSize() === 0) return;
+        if (__WEBPACK_IMPORTED_MODULE_9__player__["a" /* default */].role.indexOf('explore') === -1) return;
+        if (__WEBPACK_IMPORTED_MODULE_11__tiles__["a" /* default */].getStockSize() === 0) return;
         let canAddTile = false;
 
         for (let hero of __WEBPACK_IMPORTED_MODULE_8__heroes__["a" /* default */].all) {
@@ -1718,8 +1720,8 @@ class Tile {
             this.action = 'placing';
 
             // Make sure no tile is already picked
-            if (!__WEBPACK_IMPORTED_MODULE_10__tiles__["a" /* default */].isPickedTile()) {
-                __WEBPACK_IMPORTED_MODULE_10__tiles__["a" /* default */].getFromStock();
+            if (!__WEBPACK_IMPORTED_MODULE_11__tiles__["a" /* default */].isPickedTile()) {
+                __WEBPACK_IMPORTED_MODULE_11__tiles__["a" /* default */].getFromStock();
             }
         }
     },
@@ -1729,7 +1731,7 @@ class Tile {
     * @param  {int} dir direction (1 for clockwise, -1 for counterclockwise)
     */
     rotateTile(dir) {
-        const pickedTile = __WEBPACK_IMPORTED_MODULE_10__tiles__["a" /* default */].getPickedTile();
+        const pickedTile = __WEBPACK_IMPORTED_MODULE_11__tiles__["a" /* default */].getPickedTile();
         if (pickedTile) pickedTile.rotate(dir);
     },
 
@@ -1780,7 +1782,7 @@ class Tile {
 
             if (__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].players === 1 && __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].bots.length === 0) {
                 // Admin is the only player, shuffle roles
-                allActions = __WEBPACK_IMPORTED_MODULE_7__helpers__["a" /* default */].shuffleArray(allActions);
+                __WEBPACK_IMPORTED_MODULE_9__player__["a" /* default */].allActions = __WEBPACK_IMPORTED_MODULE_7__helpers__["a" /* default */].shuffleArray(__WEBPACK_IMPORTED_MODULE_9__player__["a" /* default */].allActions);
             } else if (__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].players >= 2 && __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].scenario >= 3) {
                 // Scenario 3 or greater: swap roles when clock is inverted
                 socket.emit('swap');
@@ -2050,7 +2052,9 @@ class Tile {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__events__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__game__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__heroes__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__tiles__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__player__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__tiles__ = __webpack_require__(2);
+
 
 
 
@@ -2111,7 +2115,7 @@ class Hero {
 
 
         const boardCell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(x, y);
-        const tile = __WEBPACK_IMPORTED_MODULE_6__tiles__["a" /* default */].getTile(boardCell.tileID);
+        const tile = __WEBPACK_IMPORTED_MODULE_7__tiles__["a" /* default */].getTile(boardCell.tileID);
         const tileCell = boardCell.tileCell;
 
         if (tile) {
@@ -2143,7 +2147,7 @@ class Hero {
         }
 
         // Check for vortex
-        if (role.indexOf('vortex') > -1) {
+        if (__WEBPACK_IMPORTED_MODULE_6__player__["a" /* default */].role.indexOf('vortex') > -1) {
             const item = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(hero.x, hero.y).item;
             if (item && item.type === 'vortex' && item.color === this.color) {
                 const targetItem = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(target.x, target.y).item;
@@ -2158,7 +2162,7 @@ class Hero {
         if (hero.x !== target.x && hero.y !== target.y) {
             // Not the same column or row
             // Check for escalator
-            if (role.indexOf('escalator') > -1) {
+            if (__WEBPACK_IMPORTED_MODULE_6__player__["a" /* default */].role.indexOf('escalator') > -1) {
                 const escalator = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(hero.x, hero.y).escalator;
                 if (escalator && escalator.x === target.x && escalator.y === target.y) {
                     path.push({x: hero.x, y: hero.y});
@@ -2201,7 +2205,7 @@ class Hero {
         if (!target) target = this.cell;
 
         // Use player role
-        const role = window.role;
+        const role = __WEBPACK_IMPORTED_MODULE_6__player__["a" /* default */].role;
 
         const path = this.getPath(target);
         if (!path) return;
@@ -2292,7 +2296,7 @@ class Hero {
 
         // No path, no go
         if (path.length === 0) return false;
-        
+
         // Make sure last cell in path is the target (anti-spam security)
         const last = path[path.length - 1];
         if (last.x !== target.x || last.y !== target.y) return false;
@@ -2314,7 +2318,7 @@ class Hero {
         const boardCell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(this.cell.x, this.cell.y);
         const tileCell = boardCell.tileCell;
         const tileID = boardCell.tileID;
-        const tile = __WEBPACK_IMPORTED_MODULE_6__tiles__["a" /* default */].getTile(tileID);
+        const tile = __WEBPACK_IMPORTED_MODULE_7__tiles__["a" /* default */].getTile(tileID);
         const exit = tile.getExitPlusOne(tileCell.x, tileCell.y);
 
         // Move out of board
@@ -73840,193 +73844,12 @@ module.exports = p5;
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ai__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__clock__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__config__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__events__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__game__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__hero__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__heroes__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_p5__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8_p5__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__sketch__ = __webpack_require__(18);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__tile__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__tiles__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__sockets__ = __webpack_require__(21);
 
 
-
-
-
-
-
-
-
-
-
-
-
-const $ui = document.getElementById('ui');
-const $admin = document.getElementById('admin');
-const $people = document.getElementById('people');
-const $spectator = document.getElementById('spectator');
-const $roles = document.getElementById('roles');
-
-let $currentAction;
-
-let allTiles = [];
-let scenarios = [];
-window.socket = io({transports: ['websocket'], upgrade: false});
-window.role = [];
-window.allActions = [];
-
-fetch('data/tiles.json').then(response => response.json()).then(data => {
-    allTiles = data;
-});
-
-fetch('data/scenarios.json').then(response => response.json()).then(data => {
-    scenarios = data;
-});
-
-function start(options) {
-    new __WEBPACK_IMPORTED_MODULE_8_p5___default.a(__WEBPACK_IMPORTED_MODULE_9__sketch__["a" /* default */]);
-    __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].init(options);
-    if (options.roles) setRoles(options.roles);
-    const deck = buildDeck(options.scenario);
-    __WEBPACK_IMPORTED_MODULE_11__tiles__["a" /* default */].init(deck);
-    __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].init();
-    __WEBPACK_IMPORTED_MODULE_4__events__["a" /* default */].init();
-    __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].init();
-    __WEBPACK_IMPORTED_MODULE_2__clock__["a" /* default */].init();
-    if (__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].isAdmin()) __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].run();
-}
-
-function buildDeck(scenario) {
-    let deck = {};
-    const ids = scenarios[scenario].tiles;
-
-    for (let id of ids) {
-        deck[id] = allTiles[id];
-    }
-
-    return deck;
-}
-
-// FIXME: why is this not reliable?
-socket.on('people', people => {
-    $people.innerHTML = people.all - people.bots;
-    $people.innerHTML += people.all - people.bots > 1 ? ' players online' : ' player online';
-    if (people.bots) $people.innerHTML += people.bots > 1 ? ` (and ${people.bots} bots)` : ' (and 1 bot)';
-});
-
-socket.on('admin', () => {
-    $admin.innerHTML = `<h3>Game admin</h3>
-    <p>Bot(s) <input type="number" id="bots" value="0" min="0" max="7" /></p>
-    <p>Scenario <input type="number" id="scenario" value="3" min="1" max="15" /></p>
-    <button id="start">Start game!</button>`;
-
-    document.getElementById('start').addEventListener('click', () => {
-        socket.emit('prestart');
-    });
-});
-
-socket.on('prestart', isAdmin => {
-    const spectator = $spectator.checked;
-
-    if (isAdmin) {
-        // Ask admin for game parameters
-        const bots = parseInt(document.getElementById('bots').value);
-        const scenario = parseInt(document.getElementById('scenario').value);
-        socket.emit('settings', { bots, scenario, spectator });
-    } else {
-        socket.emit('settings', { spectator });
-    }
-});
-
-socket.on('start', options => {
-    start(options);
-
-    document.getElementById('spectator-ui').remove();
-
-    if (options.admin) {
-        // Admin only
-        document.getElementById('admin').remove();
-    }
-});
-
-socket.on('roles', roles => {
-    setRoles(roles.self);
-    if (__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].isAdmin() && __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].bots.length > 0) __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].setRoles(roles.bots);
-});
-
-function setRoles(roles) {
-    // Save my role in window.role
-    role = roles;
-
-    if (__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].players === 1) {
-        allActions = roles;
-        // First role in shuffled array
-        role = role[0];
-
-        let text = `<p>Current action: <span id="currentAction">${role}</span></p>
-        <button id="nextAction">Next action</button>`;
-        $roles.innerHTML = text;
-
-        document.getElementById('nextAction').addEventListener('click', (e) => {
-            if (e.path[0].classList.contains('disabled')) return;
-            nextAction();
-        });
-
-        $currentAction = document.getElementById('currentAction');
-    } else {
-        // Display role
-        let text = '<p>Authorized actions: ';
-        for (let i in roles) {
-            i = parseInt(i);
-            text += roles[i];
-            if (roles[i + 1]) text += ', ';
-        }
-        text += '.</p>'
-
-        $roles.innerHTML = text;
-    }
-}
-
-function nextAction() {
-    let i = allActions.indexOf(role);
-    i = i + 1 === allActions.length ? 0 : i + 1;
-    role = allActions[i];
-
-    $currentAction.innerHTML = role;
-}
-
-socket.on('hero', data => {
-    const hero = __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].all[data.id];
-    const cell = data.cell;
-    hero.set(cell.x, cell.y);
-});
-
-socket.on('board', data => {
-    __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].save(data.x, data.y, data.cell)
-});
-
-socket.on('tile', data => {
-    const tile = __WEBPACK_IMPORTED_MODULE_11__tiles__["a" /* default */].getTile(data.tile.id);
-    tile.rotation = data.tile.rotation;
-    tile.set(data.x, data.y);
-    __WEBPACK_IMPORTED_MODULE_11__tiles__["a" /* default */].board.push(tile.id);
-});
-
-socket.on('invertClock', data => {
-    __WEBPACK_IMPORTED_MODULE_2__clock__["a" /* default */].invert();
-});
-
-socket.on('used', data => {
-    __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].setUsed(data.x, data.y);
-});
-
-socket.on('ai', data => {
-    __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].run();
+window.addEventListener('load', () => {
+    window.socket = io({transports: ['websocket'], upgrade: false});
+    __WEBPACK_IMPORTED_MODULE_0__sockets__["a" /* default */].init();
 });
 
 
@@ -74313,6 +74136,256 @@ function displayTiles() {
 }
 
 /* harmony default export */ __webpack_exports__["a"] = (sketch);
+
+
+/***/ }),
+/* 19 */,
+/* 20 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ai__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__board__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__clock__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__config__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__events__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__game__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__hero__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__heroes__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_p5__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_p5___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8_p5__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__player__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__sketch__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__tile__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__tiles__ = __webpack_require__(2);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const allTiles = __webpack_require__(23);
+const scenarios = __webpack_require__(24);
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+    start(options) {
+        new __WEBPACK_IMPORTED_MODULE_8_p5___default.a(__WEBPACK_IMPORTED_MODULE_10__sketch__["a" /* default */]);
+        __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].init(options);
+        const deck = this.buildDeck(options.scenario);
+        __WEBPACK_IMPORTED_MODULE_12__tiles__["a" /* default */].init(deck);
+        __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].init();
+        __WEBPACK_IMPORTED_MODULE_4__events__["a" /* default */].init();
+        __WEBPACK_IMPORTED_MODULE_7__heroes__["a" /* default */].init();
+        __WEBPACK_IMPORTED_MODULE_2__clock__["a" /* default */].init();
+        if (options.roles) {
+            __WEBPACK_IMPORTED_MODULE_9__player__["a" /* default */].init();
+            __WEBPACK_IMPORTED_MODULE_9__player__["a" /* default */].setRoles(options.roles);
+        }
+        if (__WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].isAdmin()) __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].run();
+    },
+
+    buildDeck(scenario) {
+        let deck = {};
+        const ids = scenarios[scenario].tiles;
+
+        for (let id of ids) {
+            deck[id] = allTiles[id];
+        }
+
+        return deck;
+    }
+});
+
+
+/***/ }),
+/* 21 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__ai__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__app__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__board__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__clock__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__game__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__heroes__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__player__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__user__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__tiles__ = __webpack_require__(2);
+
+
+
+
+
+
+
+
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+    init() {
+        const $ui = document.getElementById('ui');
+        const $admin = document.getElementById('admin');
+        const $people = document.getElementById('people');
+        const $spectator = document.getElementById('spectator');
+
+        socket.on('people', people => {
+            $people.innerHTML = people.all - people.bots;
+            $people.innerHTML += people.all - people.bots > 1 ? ' players online' : ' player online';
+            if (people.bots) $people.innerHTML += people.bots > 1 ? ` (and ${people.bots} bots)` : ' (and 1 bot)';
+        });
+
+        socket.on('admin', () => {
+            $admin.innerHTML = `<h3>Game admin</h3>
+            <p>Bot(s) <input type="number" id="bots" value="0" min="0" max="7" /></p>
+            <p>Scenario <input type="number" id="scenario" value="3" min="1" max="15" /></p>
+            <button id="start">Start game!</button>`;
+
+            document.getElementById('start').addEventListener('click', () => {
+                socket.emit('prestart');
+            });
+        });
+
+        socket.on('prestart', isAdmin => {
+            const spectator = $spectator.checked;
+
+            if (isAdmin) {
+                // Ask admin for game parameters
+                const bots = parseInt(document.getElementById('bots').value);
+                const scenario = parseInt(document.getElementById('scenario').value);
+                socket.emit('settings', { bots, scenario, spectator });
+            } else {
+                socket.emit('settings', { spectator });
+            }
+        });
+
+        socket.on('start', options => {
+            __WEBPACK_IMPORTED_MODULE_7__user__["a" /* default */].start(options);
+
+            document.getElementById('spectator-ui').remove();
+
+            if (options.admin) {
+                // Admin only
+                document.getElementById('admin').remove();
+            }
+        });
+
+        socket.on('roles', roles => {
+            __WEBPACK_IMPORTED_MODULE_6__player__["a" /* default */].setRoles(roles.self);
+            if (__WEBPACK_IMPORTED_MODULE_4__game__["a" /* default */].isAdmin() && __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].bots.length > 0) __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].setRoles(roles.bots);
+        });
+
+        socket.on('hero', data => {
+            const hero = __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].all[data.id];
+            const cell = data.cell;
+            hero.set(cell.x, cell.y);
+        });
+
+        socket.on('board', data => {
+            __WEBPACK_IMPORTED_MODULE_2__board__["a" /* default */].save(data.x, data.y, data.cell)
+        });
+
+        socket.on('tile', data => {
+            const tile = __WEBPACK_IMPORTED_MODULE_8__tiles__["a" /* default */].getTile(data.tile.id);
+            tile.rotation = data.tile.rotation;
+            tile.set(data.x, data.y);
+            __WEBPACK_IMPORTED_MODULE_8__tiles__["a" /* default */].board.push(tile.id);
+        });
+
+        socket.on('invertClock', data => {
+            __WEBPACK_IMPORTED_MODULE_3__clock__["a" /* default */].invert();
+        });
+
+        socket.on('used', data => {
+            __WEBPACK_IMPORTED_MODULE_2__board__["a" /* default */].setUsed(data.x, data.y);
+        });
+
+        socket.on('ai', data => {
+            __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].run();
+        });
+    }
+});
+
+
+/***/ }),
+/* 22 */,
+/* 23 */
+/***/ (function(module, exports) {
+
+module.exports = {"0":"31i02700002039703030000000003980316000000900311c31500040120f4000","1":"37i02800031036000930010036001000010003001200044c04002720390f4000","2":"10f0400040004000130840004000377040004000280003h04000282203003950","3":"4000280012h0400030400300270039i031502700090028304000106004001200","4":"400037604000400030h0000039i0400040000100300027304000101040001380","5":"400037700440360036h00100300012000400000039i028204000011030001200","6":"4000400037c04000301027000900400040001000040027h04000102040001370","7":"4000400037504000280030000308360013a0400040000130400037ha40001380","8":"280030002700360012204000138010004000400040000130319027h030001200","9":"400028003000360030h0120040001000400040003760100031b0274003001200","10":"400040001040400037604000040736000100360a400001h003d0093040001350","11":"10g0400010204000010030001200378010002800360001h00400091004001200","12":"2800390a40004000094040003705376010084000010000h012e0310312001370","13":"280036000410360012h001004800110040001000317009004000014030001200","14":"3770400010104000100b40000100360010004000160204h00400272057003980","15":"370a400037804000092040000101360022002900120001h040001010400013j0","16":"400028000930400037k010000400360001000300480005h00400272030003950","17":"400028003600400030h012000100395031k027000900400040001020040039j0","18":"400040001010400030002700120040004000010030003970400013k040004000","19":"28003600043036000940040030000900010027004800022013k010h040001350","20":"400028003600400027101200040736000400360a40000140400010h0400013j0","21":"280030003000360003303000360010002800300012000120040027h048001400","22":"378040000420360009h028002700120004001200040036004000281030001200","23":"280027003000398009201000400040001350040036002830400028h003001200","24":"400031702700360030402700120010004000100040000110316000h048001400"}
+
+/***/ }),
+/* 24 */
+/***/ (function(module, exports) {
+
+module.exports = {"1":{"tiles":[0,2,3,4,5,6,7,8,9]},"2":{"tiles":[0,2,3,4,5,6,7,8,9,10,11,12]},"3":{"tiles":[0,2,3,4,5,6,7,8,9,10,11,12]},"4":{"tiles":[0,2,3,4,5,6,7,8,9,10,11,12,13,14]},"5":{"tiles":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],"firstTile":15},"6":{"tiles":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,15,17]},"7":{"tiles":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,15,17,18,19]}}
+
+/***/ }),
+/* 25 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__game__ = __webpack_require__(7);
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+    $currentAction: null,
+    $roles: null,
+    allActions: [],
+    role: '',
+
+    init() {
+        this.$roles = document.getElementById('roles');
+    },
+
+    setRoles(roles) {
+        // Save my role in window.role
+        this.role = roles;
+
+        if (__WEBPACK_IMPORTED_MODULE_0__game__["a" /* default */].players === 1) {
+            this.allActions = roles;
+            // First role in shuffled array
+            this.role = roles[0];
+
+            let text = `<p>Current action: <span id="currentAction">${this.role}</span></p>
+            <button id="nextAction">Next action</button>`;
+            this.$roles.innerHTML = text;
+
+            document.getElementById('nextAction').addEventListener('click', (e) => {
+                if (e.path[0].classList.contains('disabled')) return;
+                this.nextAction();
+            });
+
+            this.$currentAction = document.getElementById('currentAction');
+        } else {
+            // Display role
+            let text = '<p>Authorized actions: ';
+            for (let i in roles) {
+                i = parseInt(i);
+                text += roles[i];
+                if (roles[i + 1]) text += ', ';
+            }
+            text += '.</p>'
+
+            this.$roles.innerHTML = text;
+        }
+    },
+
+    nextAction() {
+        let i = this.allActions.indexOf(this.role);
+        i = i + 1 === this.allActions.length ? 0 : i + 1;
+        this.role = this.allActions[i];
+
+        this.$currentAction.innerHTML = this.role;
+    }
+});
 
 
 /***/ })

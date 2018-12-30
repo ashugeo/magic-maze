@@ -7,6 +7,7 @@ import game from './game';
 import Hero from './hero';
 import helpers from './helpers';
 import heroes from './heroes';
+import player from './player';
 import Tile from './tile';
 import tiles from './tiles';
 
@@ -64,7 +65,7 @@ export default {
 
     mouseDown() {
         // Spectator can't click
-        if (role.length === 0) return;
+        if (player.role.length === 0) return;
 
         const cell = this.getHoveredCell();
 
@@ -187,7 +188,7 @@ export default {
     * Get next tile from stock
     */
     newTile() {
-        if (role.indexOf('explore') === -1) return;
+        if (player.role.indexOf('explore') === -1) return;
         if (tiles.getStockSize() === 0) return;
         let canAddTile = false;
 
@@ -269,7 +270,7 @@ export default {
 
             if (game.players === 1 && ai.bots.length === 0) {
                 // Admin is the only player, shuffle roles
-                allActions = helpers.shuffleArray(allActions);
+                player.allActions = helpers.shuffleArray(player.allActions);
             } else if (game.players >= 2 && game.scenario >= 3) {
                 // Scenario 3 or greater: swap roles when clock is inverted
                 socket.emit('swap');
