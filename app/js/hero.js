@@ -158,7 +158,6 @@ export default class Hero {
             i = parseInt(i);
             if (path[i].reachable === undefined) path[i].reachable = true;
 
-
             // Out of set tiles (empty cell)
             if (board.get(path[i].x, path[i].y).isEmpty()) {
                 path[i].reachable = false;
@@ -225,6 +224,12 @@ export default class Hero {
                         if (this.color === 'orange' && cell.walls.left === 'orange' && next.walls.right === 'orange') path[i].reachable = true;
                         if (role.indexOf('left') === -1) path[i].reachable = false;
                     }
+                }
+
+                // Can't go to time cells when two or more cameras are active
+                if (next.item && next.item.type === 'time') {
+                    const cameras = board.findItem('camera').filter(c => { return !c.isUsed() });
+                    if (cameras.length >= 2) path[i].reachable = false;
                 }
             }
         }

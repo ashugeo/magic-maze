@@ -308,13 +308,14 @@ export default {
 
             // All heroes can steal, engage game phase 2
             if (canSteal) game.setPhase(2);
-
         } else if (item.type === 'exit' && game.isPhase(2) && (item.color === hero.color || game.scenario === 1)) {
             // Same color exit or scenario 1 (only has purple exit)
             hero.exit();
-            if (ai.checkForWin()) {
-                game.win();
-            }
+            if (ai.checkForWin()) game.win();
+        } else if (item.type === 'camera' && item.color === hero.color) {
+            // Yellow hero steps on camera
+            const cell = board.get(hero.cell.x, hero.cell.y);
+            if (!cell.isUsed()) cell.setUsed();
         }
     }
 }

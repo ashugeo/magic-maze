@@ -299,6 +299,7 @@
                         // No- or one-color item
                         cell.item.type = {'h': 'enter', 'i': 'time', 'j': 'crystal', 'k': 'camera'}[bit];
                         if (cell.item.type === 'crystal') cell.item.color = 'purple';
+                        if (cell.item.type === 'camera') cell.item.color = 'yellow';
                     }
                 }
 
@@ -1870,13 +1871,14 @@ class Tile {
 
             // All heroes can steal, engage game phase 2
             if (canSteal) __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].setPhase(2);
-
         } else if (item.type === 'exit' && __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].isPhase(2) && (item.color === hero.color || __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].scenario === 1)) {
             // Same color exit or scenario 1 (only has purple exit)
             hero.exit();
-            if (__WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].checkForWin()) {
-                __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].win();
-            }
+            if (__WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].checkForWin()) __WEBPACK_IMPORTED_MODULE_5__game__["a" /* default */].win();
+        } else if (item.type === 'camera' && item.color === hero.color) {
+            // Yellow hero steps on camera
+            const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(hero.cell.x, hero.cell.y);
+            if (!cell.isUsed()) cell.setUsed();
         }
     }
 });
@@ -2279,7 +2281,6 @@ class Hero {
             i = parseInt(i);
             if (path[i].reachable === undefined) path[i].reachable = true;
 
-
             // Out of set tiles (empty cell)
             if (__WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(path[i].x, path[i].y).isEmpty()) {
                 path[i].reachable = false;
@@ -2346,6 +2347,12 @@ class Hero {
                         if (this.color === 'orange' && cell.walls.left === 'orange' && next.walls.right === 'orange') path[i].reachable = true;
                         if (role.indexOf('left') === -1) path[i].reachable = false;
                     }
+                }
+
+                // Can't go to time cells when two or more cameras are active
+                if (next.item && next.item.type === 'time') {
+                    const cameras = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].findItem('camera').filter(c => { return !c.isUsed() });
+                    if (cameras.length >= 2) path[i].reachable = false;
                 }
             }
         }

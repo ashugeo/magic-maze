@@ -134,6 +134,7 @@ export default {
                         // No- or one-color item
                         cell.item.type = {'h': 'enter', 'i': 'time', 'j': 'crystal', 'k': 'camera'}[bit];
                         if (cell.item.type === 'crystal') cell.item.color = 'purple';
+                        if (cell.item.type === 'camera') cell.item.color = 'yellow';
                     }
                 }
 
