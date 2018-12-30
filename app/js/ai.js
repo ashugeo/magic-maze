@@ -121,7 +121,7 @@ export default {
                 if (
                     item.type === 'time' &&
                     !cell.isUsed() &&
-                    clock.remaining < config.timer / 2
+                    clock.remaining < config.timer / 4
                 ) {
                     objectives.push({
                         coord: {
