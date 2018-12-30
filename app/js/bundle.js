@@ -633,7 +633,7 @@
                 // Ignore empty cells
                 if (cell.isEmpty()) continue;
 
-                // Add time cells as objectives (when timer is below half)
+                // Add time cells as objectives (when timer is below a fourth)
                 if (
                     item.type === 'time' &&
                     !cell.isUsed() &&
@@ -647,6 +647,16 @@
                         item: {
                             type: cell.item.type
                         }
+                    });
+                }
+
+                if (item.type === 'camera' && !cell.isUsed()) {
+                    objectives.push({
+                        coord: {
+                            x: cell.coord.x,
+                            y: cell.coord.y
+                        },
+                        hero: __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].findByColor(cell.item.color)
                     });
                 }
 
@@ -668,9 +678,6 @@
                         coord: {
                             x: cell.coord.x,
                             y: cell.coord.y
-                        },
-                        item: {
-                            type: cell.item.type
                         },
                         hero: __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].findByColor(cell.item.color)
                     });
@@ -695,9 +702,6 @@
                             x: cell.coord.x,
                             y: cell.coord.y
                         },
-                        item: {
-                            type: cell.item.type
-                        },
                         hero: __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].findByColor(cell.item.color)
                     });
                 }
@@ -716,9 +720,6 @@
                         coord: {
                             x: cell.coord.x,
                             y: cell.coord.y
-                        },
-                        item: {
-                            type: cell.item.type
                         },
                         hero: __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].findByColor(cell.item.color)
                     });

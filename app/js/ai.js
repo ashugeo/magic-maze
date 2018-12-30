@@ -140,7 +140,7 @@ export default {
                 // Ignore empty cells
                 if (cell.isEmpty()) continue;
 
-                // Add time cells as objectives (when timer is below half)
+                // Add time cells as objectives (when timer is below a fourth)
                 if (
                     item.type === 'time' &&
                     !cell.isUsed() &&
@@ -154,6 +154,16 @@ export default {
                         item: {
                             type: cell.item.type
                         }
+                    });
+                }
+
+                if (item.type === 'camera' && !cell.isUsed()) {
+                    objectives.push({
+                        coord: {
+                            x: cell.coord.x,
+                            y: cell.coord.y
+                        },
+                        hero: heroes.findByColor(cell.item.color)
                     });
                 }
 
@@ -175,9 +185,6 @@ export default {
                         coord: {
                             x: cell.coord.x,
                             y: cell.coord.y
-                        },
-                        item: {
-                            type: cell.item.type
                         },
                         hero: heroes.findByColor(cell.item.color)
                     });
@@ -202,9 +209,6 @@ export default {
                             x: cell.coord.x,
                             y: cell.coord.y
                         },
-                        item: {
-                            type: cell.item.type
-                        },
                         hero: heroes.findByColor(cell.item.color)
                     });
                 }
@@ -223,9 +227,6 @@ export default {
                         coord: {
                             x: cell.coord.x,
                             y: cell.coord.y
-                        },
-                        item: {
-                            type: cell.item.type
                         },
                         hero: heroes.findByColor(cell.item.color)
                     });
