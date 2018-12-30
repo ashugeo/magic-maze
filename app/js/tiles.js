@@ -9,17 +9,24 @@ export default {
     pickedTile: false, // ID or false
 
     init(deck) {
-        for (let id of Object.keys(deck)) {
+        for (let id of Object.keys(deck.tiles)) {
             id = parseInt(id);
             this.deck.push(id);
             this.stock.push(id);
-            const tile = this.stringToTile(id, deck[id]);
+            const tile = this.stringToTile(id, deck.tiles[id]);
             this.all.push(new Tile(tile));
         }
 
         const firstTile = this.stock[0];
         this.stock.shift();
         this.stock = helpers.shuffleArray(this.stock);
+
+        if (deck.firstInStock) {
+            const index = this.stock.indexOf(deck.firstInStock);
+            this.stock.splice(index, 1);
+            this.stock.unshift(deck.firstInStock);
+        }
+        
         this.stock.unshift(firstTile);
     },
 

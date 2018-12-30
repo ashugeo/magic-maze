@@ -33,11 +33,13 @@ export default {
     },
 
     buildDeck(scenario) {
-        let deck = {};
+        let deck = { tiles: [], firstInStock: null };
         const ids = scenarios[scenario].tiles;
 
+        deck.firstInStock = scenarios[scenario].firstInStock;
+
         for (let id of ids) {
-            deck[id] = allTiles[id];
+            deck.tiles[id] = allTiles[id];
         }
 
         return deck;

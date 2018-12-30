@@ -122,7 +122,7 @@
             }
         }
 
-        const firstTile = __WEBPACK_IMPORTED_MODULE_3__tiles__["a" /* default */].getFromStock(0);
+        const firstTile = __WEBPACK_IMPORTED_MODULE_3__tiles__["a" /* default */].getFromStock();
         firstTile.set(__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].firstTile.x, __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].firstTile.y);
     },
 
@@ -169,17 +169,24 @@
     pickedTile: false, // ID or false
 
     init(deck) {
-        for (let id of Object.keys(deck)) {
+        for (let id of Object.keys(deck.tiles)) {
             id = parseInt(id);
             this.deck.push(id);
             this.stock.push(id);
-            const tile = this.stringToTile(id, deck[id]);
+            const tile = this.stringToTile(id, deck.tiles[id]);
             this.all.push(new __WEBPACK_IMPORTED_MODULE_1__tile__["a" /* default */](tile));
         }
 
         const firstTile = this.stock[0];
         this.stock.shift();
         this.stock = __WEBPACK_IMPORTED_MODULE_0__helpers__["a" /* default */].shuffleArray(this.stock);
+
+        if (deck.firstInStock) {
+            const index = this.stock.indexOf(deck.firstInStock);
+            this.stock.splice(index, 1);
+            this.stock.unshift(deck.firstInStock);
+        }
+        
         this.stock.unshift(firstTile);
     },
 
@@ -74193,11 +74200,13 @@ const scenarios = __webpack_require__(24);
     },
 
     buildDeck(scenario) {
-        let deck = {};
+        let deck = { tiles: [], firstInStock: null };
         const ids = scenarios[scenario].tiles;
 
+        deck.firstInStock = scenarios[scenario].firstInStock;
+
         for (let id of ids) {
-            deck[id] = allTiles[id];
+            deck.tiles[id] = allTiles[id];
         }
 
         return deck;
@@ -74325,7 +74334,7 @@ module.exports = {"0":"31i02700002039703030000000003980316000000900311c315000401
 /* 24 */
 /***/ (function(module, exports) {
 
-module.exports = {"1":{"tiles":[0,2,3,4,5,6,7,8,9]},"2":{"tiles":[0,2,3,4,5,6,7,8,9,10,11,12]},"3":{"tiles":[0,2,3,4,5,6,7,8,9,10,11,12]},"4":{"tiles":[0,2,3,4,5,6,7,8,9,10,11,12,13,14]},"5":{"tiles":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],"firstTile":15},"6":{"tiles":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,15,17]},"7":{"tiles":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,15,17,18,19]}}
+module.exports = {"1":{"tiles":[0,2,3,4,5,6,7,8,9]},"2":{"tiles":[0,2,3,4,5,6,7,8,9,10,11,12]},"3":{"tiles":[0,2,3,4,5,6,7,8,9,10,11,12]},"4":{"tiles":[0,2,3,4,5,6,7,8,9,10,11,12,13,14]},"5":{"tiles":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],"firstInStock":15},"6":{"tiles":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,15,17]},"7":{"tiles":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,15,17,18,19]}}
 
 /***/ }),
 /* 25 */
