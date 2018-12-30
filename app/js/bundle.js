@@ -892,26 +892,10 @@
             // Make sure neighbor isn't empty
             if (!neighbor || neighbor.isEmpty()) continue;
 
-            // Make sure no wall is blocking the way
-            // TODO: make this sexier
-            if (
-                (i === 0 &&
-                    (!origin.walls.top && !neighbor.walls.bottom) ||
-                    (origin.walls.top === 'orange' && neighbor.walls.bottom === 'orange' && color === 'orange')
-                ) ||
-                (i === 1 &&
-                    (!origin.walls.right && !neighbor.walls.left) ||
-                    (origin.walls.right === 'orange' && neighbor.walls.left === 'orange' && color === 'orange')
-                ) ||
-                (i === 2 &&
-                    (!origin.walls.bottom && !neighbor.walls.top) ||
-                    (origin.walls.bottom === 'orange' && neighbor.walls.top === 'orange' && color === 'orange')
-                ) ||
-                (i === 3 &&
-                    (!origin.walls.left && !neighbor.walls.right) ||
-                    (origin.walls.left === 'orange' && neighbor.walls.right === 'orange' && color === 'orange')
-                )
-            ) {
+            // Make sure no wall is blocking the way (or walls are orange, like hero)
+            const wall1 = ['up', 'right', 'bottom', 'left'][i];
+            const wall2 = ['bottom', 'left', 'up', 'right'][i];
+            if ((!origin.walls[wall1] && !neighbor.walls[wall2]) || (origin.walls[wall1] === color && neighbor.walls[wall2] === color)) {
                 neighbors.push({x: neighbor.coord.x, y: neighbor.coord.y});
             }
         }
