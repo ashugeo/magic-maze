@@ -14,7 +14,7 @@ export default {
             }
         }
 
-        const firstTile = tiles.getFromStock(0);
+        const firstTile = tiles.getFromStock();
         firstTile.set(config.firstTile.x, config.firstTile.y);
     },
 
