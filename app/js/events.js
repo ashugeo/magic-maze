@@ -13,8 +13,9 @@ import tiles from './tiles';
 
 export default {
 
-    action: '',
+    action: '', // '', 'placing', 'hero'
     mouseIn: false,
+    crystal: null,
 
     init() {
         /**
@@ -129,7 +130,7 @@ export default {
 
     /**
     * Get hovered cell coordinates
-    * @return {Object} position {'x': ,'y': }
+    * @return {Object} {x, y}
     */
     getHoveredCell() {
         const x = p5.floor((p5.mouseX - p5.width/2 - (camera.x * camera.zoomValue)) / (config.size * camera.zoomValue));
@@ -155,7 +156,7 @@ export default {
 
     /**
     * Set picked tile
-    * @param {Object} cell cell to set tile onto
+    * @param {Object} cell {x, y} of cell to set tile onto
     */
     setTile(cell) {
         // Select picked tile
@@ -174,15 +175,28 @@ export default {
                 tile: tile
             });
 
-            // Mark cell as explored
-            this.gateCell.setExplored();
+            // Mark gate cell as explored
+            let gateCell = tile.getEnter(cell.x, cell.y, board.get(cell.x, cell.y).tileCell.x);
+            gateCell = board.get(gateCell.x, gateCell.y);
+            gateCell.setExplored();
+
+            // This tile was picked thanks to a crystal
+            if (this.crystal) {
+                // Add one use
+                if (this.crystal.item.uses) this.crystal.item.uses += 1;
+                else this.crystal.item.uses = 1;
+
+                // After two uses, set this crystal to used
+                if (this.crystal.item.uses === 2) {
+                    this.crystal.setUsed();
+                    this.crystal = null;
+                }
+            }
 
             // Run AI
             ai.run();
         }
     },
-
-    gateCell: {},
 
     /**
     * Get next tile from stock
@@ -192,17 +206,27 @@ export default {
         if (tiles.getStockSize() === 0) return;
         let canAddTile = false;
 
+        // Check for a hero standing on a gate the same color as his
         for (let hero of heroes.all) {
             const cell = board.get(hero.cell.x, hero.cell.y);
-            if (cell.item && cell.item.type === 'gate' && cell.item.color === hero.color) {
-                this.gateCell = cell;
-                if (!cell.isExplored()) {
+            if (cell.item && cell.item.color === hero.color && cell.item.type === 'gate' && !cell.isExplored()) {
+                this.crystal = null;
+                canAddTile = true;
+                break;
+            }
+        }
+
+        if (!canAddTile) {
+            // Check for purple hero standing on a crystal
+            for (let hero of heroes.all) {
+                const cell = board.get(hero.cell.x, hero.cell.y);
+                if (cell.item && cell.item.color === hero.color && cell.item.type === 'crystal' && !cell.isUsed()) {
+                    this.crystal = cell;
                     canAddTile = true;
                     break;
                 }
             }
         }
-
 
         if (canAddTile) {
             this.action = 'placing';

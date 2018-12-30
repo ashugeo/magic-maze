@@ -186,7 +186,7 @@
             this.stock.splice(index, 1);
             this.stock.unshift(deck.firstInStock);
         }
-        
+
         this.stock.unshift(firstTile);
     },
 
@@ -291,8 +291,9 @@
                         const color = ['green', 'orange', 'purple', 'yellow'][index % 4];
                         cell.item.color = color;
                     } else {
-                        // No color item
+                        // No- or one-color item
                         cell.item.type = {'h': 'enter', 'i': 'time', 'j': 'crystal', 'k': 'camera'}[bit];
+                        if (cell.item.type === 'crystal') cell.item.color = 'purple';
                     }
                 }
 
@@ -607,7 +608,7 @@
                 if (
                     item.type === 'time' &&
                     !cell.isUsed() &&
-                    __WEBPACK_IMPORTED_MODULE_2__clock__["a" /* default */].remaining < __WEBPACK_IMPORTED_MODULE_3__config__["a" /* default */].timer / 2
+                    __WEBPACK_IMPORTED_MODULE_2__clock__["a" /* default */].remaining < __WEBPACK_IMPORTED_MODULE_3__config__["a" /* default */].timer / 4
                 ) {
                     objectives.push({
                         coord: {
@@ -1256,8 +1257,12 @@ class Tile {
             } else {
                 // There is a gate, make sure it has a hero on it with the same color
                 for (let hero of __WEBPACK_IMPORTED_MODULE_2__heroes__["a" /* default */].all) {
-                    if (hero.cell.x === nextToEnter.x && hero.cell.y === nextToEnter.y) {
-                        if (hero.color === cellNextToEnter.item.color) {
+                    if (hero.cell.x === nextToEnter.x && hero.cell.y === nextToEnter.y && hero.color === cellNextToEnter.item.color) {
+                        return true;
+                    } else {
+                        // Purple hero is standing on an used crystal
+                        const cell = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].get(hero.cell.x, hero.cell.y);
+                        if (cell.item && cell.item.type === 'crystal' && cell.item.color === hero.color && !cell.isUsed()) {
                             return true;
                         }
                     }
@@ -1532,8 +1537,9 @@ class Tile {
 
 /* harmony default export */ __webpack_exports__["a"] = ({
 
-    action: '',
+    action: '', // '', 'placing', 'hero'
     mouseIn: false,
+    crystal: null,
 
     init() {
         /**
@@ -1648,7 +1654,7 @@ class Tile {
 
     /**
     * Get hovered cell coordinates
-    * @return {Object} position {'x': ,'y': }
+    * @return {Object} {x, y}
     */
     getHoveredCell() {
         const x = p5.floor((p5.mouseX - p5.width/2 - (__WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].x * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue)) / (__WEBPACK_IMPORTED_MODULE_4__config__["a" /* default */].size * __WEBPACK_IMPORTED_MODULE_2__camera__["a" /* default */].zoomValue));
@@ -1674,7 +1680,7 @@ class Tile {
 
     /**
     * Set picked tile
-    * @param {Object} cell cell to set tile onto
+    * @param {Object} cell {x, y} of cell to set tile onto
     */
     setTile(cell) {
         // Select picked tile
@@ -1693,15 +1699,28 @@ class Tile {
                 tile: tile
             });
 
-            // Mark cell as explored
-            this.gateCell.setExplored();
+            // Mark gate cell as explored
+            let gateCell = tile.getEnter(cell.x, cell.y, __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(cell.x, cell.y).tileCell.x);
+            gateCell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(gateCell.x, gateCell.y);
+            gateCell.setExplored();
+
+            // This tile was picked thanks to a crystal
+            if (this.crystal) {
+                // Add one use
+                if (this.crystal.item.uses) this.crystal.item.uses += 1;
+                else this.crystal.item.uses = 1;
+
+                // After two uses, set this crystal to used
+                if (this.crystal.item.uses === 2) {
+                    this.crystal.setUsed();
+                    this.crystal = null;
+                }
+            }
 
             // Run AI
             __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].run();
         }
     },
-
-    gateCell: {},
 
     /**
     * Get next tile from stock
@@ -1711,17 +1730,27 @@ class Tile {
         if (__WEBPACK_IMPORTED_MODULE_11__tiles__["a" /* default */].getStockSize() === 0) return;
         let canAddTile = false;
 
+        // Check for a hero standing on a gate the same color as his
         for (let hero of __WEBPACK_IMPORTED_MODULE_8__heroes__["a" /* default */].all) {
             const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(hero.cell.x, hero.cell.y);
-            if (cell.item && cell.item.type === 'gate' && cell.item.color === hero.color) {
-                this.gateCell = cell;
-                if (!cell.isExplored()) {
+            if (cell.item && cell.item.color === hero.color && cell.item.type === 'gate' && !cell.isExplored()) {
+                this.crystal = null;
+                canAddTile = true;
+                break;
+            }
+        }
+
+        if (!canAddTile) {
+            // Check for purple hero standing on a crystal
+            for (let hero of __WEBPACK_IMPORTED_MODULE_8__heroes__["a" /* default */].all) {
+                const cell = __WEBPACK_IMPORTED_MODULE_1__board__["a" /* default */].get(hero.cell.x, hero.cell.y);
+                if (cell.item && cell.item.color === hero.color && cell.item.type === 'crystal' && !cell.isUsed()) {
+                    this.crystal = cell;
                     canAddTile = true;
                     break;
                 }
             }
         }
-
 
         if (canAddTile) {
             this.action = 'placing';
@@ -74200,6 +74229,7 @@ const scenarios = __webpack_require__(24);
     },
 
     buildDeck(scenario) {
+        if (scenario > 7) scenario = 7;
         let deck = { tiles: [], firstInStock: null };
         const ids = scenarios[scenario].tiles;
 

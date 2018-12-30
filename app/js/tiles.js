@@ -26,7 +26,7 @@ export default {
             this.stock.splice(index, 1);
             this.stock.unshift(deck.firstInStock);
         }
-        
+
         this.stock.unshift(firstTile);
     },
 
@@ -131,8 +131,9 @@ export default {
                         const color = ['green', 'orange', 'purple', 'yellow'][index % 4];
                         cell.item.color = color;
                     } else {
-                        // No color item
+                        // No- or one-color item
                         cell.item.type = {'h': 'enter', 'i': 'time', 'j': 'crystal', 'k': 'camera'}[bit];
+                        if (cell.item.type === 'crystal') cell.item.color = 'purple';
                     }
                 }
 
