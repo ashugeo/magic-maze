@@ -181,17 +181,7 @@ export default {
             gateCell.setExplored();
 
             // This tile was picked thanks to a crystal
-            if (this.crystal) {
-                // Add one use
-                if (this.crystal.item.uses) this.crystal.item.uses += 1;
-                else this.crystal.item.uses = 1;
-
-                // After two uses, set this crystal to used
-                if (this.crystal.item.uses === 2) {
-                    this.crystal.setUsed();
-                    this.crystal = null;
-                }
-            }
+            if (this.crystal) crystal.addOneUse();
 
             // Run AI
             ai.run();

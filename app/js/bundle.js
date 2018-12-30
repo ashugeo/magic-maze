@@ -93,7 +93,7 @@
     },
     heroSpeed: 16,
     timer: 180,
-    botsInterval: 100
+    botsInterval: 1000
 });
 
 
@@ -139,14 +139,19 @@
         this.layout[x][y].setUsed();
     },
 
-    count(item) {
-        let count = 0;
+    findItem(item) {
+        let cells = [];
         for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardCols; i += 1) {
             for (let j = 0; j < __WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].boardRows; j += 1) {
-                if (this.layout[i][j] && this.layout[i][j].item && this.layout[i][j].item.type === item) count += 1;
+                const cell = this.get(i, j);
+                if (cell && cell.item && cell.item.type === item) cells.push(cell);
             }
         }
-        return count;
+        return cells;
+    },
+
+    count(item) {
+        return this.findItem(item).length;
     }
 });
 
@@ -588,7 +593,28 @@
                 return actions;
             }
 
-            // TODO: implement crystal explorations
+            // If puple hero sits on an unused crystal
+            if (item.type === 'crystal' && item.color === hero.color && !cell.isUsed()) {
+                // Find an unexplored gate on board
+                const gates = __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].findItem('gate').filter(g => { return !g.isExplored(); });
+                const targetCell = gates[Math.floor(Math.random() * gates.length)];
+
+                if (targetCell) {
+                    // Allow to set new tile
+                    actions.push({
+                        role: 'explore',
+                        cell: {
+                            x: targetCell.coord.x,
+                            y: targetCell.coord.y
+                        },
+                        cost: 0,
+                        crystal: cell
+                    });
+
+                    // Prevent two explorations at once
+                    return actions;
+                }
+            }
         }
 
         // No possible exploration has been found
@@ -1717,17 +1743,7 @@ class Tile {
             gateCell.setExplored();
 
             // This tile was picked thanks to a crystal
-            if (this.crystal) {
-                // Add one use
-                if (this.crystal.item.uses) this.crystal.item.uses += 1;
-                else this.crystal.item.uses = 1;
-
-                // After two uses, set this crystal to used
-                if (this.crystal.item.uses === 2) {
-                    this.crystal.setUsed();
-                    this.crystal = null;
-                }
-            }
+            if (this.crystal) crystal.addOneUse();
 
             // Run AI
             __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].run();
@@ -73965,6 +73981,16 @@ class Cell {
     isExplored() {
         return this.item.explored;
     }
+
+    addOneUse() {
+        if (this.item.uses) this.item.uses += 1;
+        else this.item.uses = 1;
+
+        // After two uses, set a crystal to used
+        if (this.item.type === 'crystal' && this.item.uses === 2) {
+            this.setUsed();
+        }
+    }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Cell;
 
@@ -74002,7 +74028,7 @@ class Bot {
     */
     play(action) {
         if (action.role === 'explore' && __WEBPACK_IMPORTED_MODULE_6__tiles__["a" /* default */].getStockSize()) {
-            this.newTile(action.cell.x, action.cell.y);
+            this.newTile(action.cell.x, action.cell.y, action.crystal);
         } else if (action.type === 'move') {
             // Make sure hero is selectable
             if (action.hero.selectable) {
@@ -74018,10 +74044,11 @@ class Bot {
 
     /**
     * Create and set a new tile
-    * @param  {int} x gate X coordinate
-    * @param  {int} y gate Y coordinate
+    * @param  {int}    x       gate X coordinate
+    * @param  {int}    y       gate Y coordinate
+    * @param  {Object} crystal crystal cell (optional)
     */
-    newTile(x, y) {
+    newTile(x, y, crystal) {
         // Pick next tile
         const tile = __WEBPACK_IMPORTED_MODULE_6__tiles__["a" /* default */].getFromStock();
 
@@ -74054,6 +74081,9 @@ class Bot {
 
         // Mark gate as explored
         cell.setExplored(x, y);
+
+        // This tile was picked thanks to a crystal
+        if (crystal) crystal.addOneUse();
 
         // Run AI again
         __WEBPACK_IMPORTED_MODULE_0__ai__["a" /* default */].run();
@@ -74291,8 +74321,8 @@ const scenarios = __webpack_require__(24);
 
         socket.on('admin', () => {
             let html = `<h3>Game admin</h3>
-            <p>Bot(s) <input type="number" id="bots" value="1" min="0" max="7" /></p>
-            <p>Scenario <input type="number" id="scenario" value="5" min="1" max="15" /></p>
+            <p>Bot(s) <input type="number" id="bots" value="0" min="0" max="7" /></p>
+            <p>Scenario <input type="number" id="scenario" value="1" min="1" max="15" /></p>
             <button id="start">Start game!</button>`;
 
             __WEBPACK_IMPORTED_MODULE_7__ui__["a" /* default */].setHTML('admin', html);

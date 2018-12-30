@@ -101,7 +101,28 @@ export default {
                 return actions;
             }
 
-            // TODO: implement crystal explorations
+            // If puple hero sits on an unused crystal
+            if (item.type === 'crystal' && item.color === hero.color && !cell.isUsed()) {
+                // Find an unexplored gate on board
+                const gates = board.findItem('gate').filter(g => { return !g.isExplored(); });
+                const targetCell = gates[Math.floor(Math.random() * gates.length)];
+
+                if (targetCell) {
+                    // Allow to set new tile
+                    actions.push({
+                        role: 'explore',
+                        cell: {
+                            x: targetCell.coord.x,
+                            y: targetCell.coord.y
+                        },
+                        cost: 0,
+                        crystal: cell
+                    });
+
+                    // Prevent two explorations at once
+                    return actions;
+                }
+            }
         }
 
         // No possible exploration has been found

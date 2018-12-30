@@ -55,4 +55,14 @@ export default class Cell {
     isExplored() {
         return this.item.explored;
     }
+
+    addOneUse() {
+        if (this.item.uses) this.item.uses += 1;
+        else this.item.uses = 1;
+
+        // After two uses, set a crystal to used
+        if (this.item.type === 'crystal' && this.item.uses === 2) {
+            this.setUsed();
+        }
+    }
 }

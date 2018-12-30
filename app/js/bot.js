@@ -18,7 +18,7 @@ export default class Bot {
     */
     play(action) {
         if (action.role === 'explore' && tiles.getStockSize()) {
-            this.newTile(action.cell.x, action.cell.y);
+            this.newTile(action.cell.x, action.cell.y, action.crystal);
         } else if (action.type === 'move') {
             // Make sure hero is selectable
             if (action.hero.selectable) {
@@ -34,10 +34,11 @@ export default class Bot {
 
     /**
     * Create and set a new tile
-    * @param  {int} x gate X coordinate
-    * @param  {int} y gate Y coordinate
+    * @param  {int}    x       gate X coordinate
+    * @param  {int}    y       gate Y coordinate
+    * @param  {Object} crystal crystal cell (optional)
     */
-    newTile(x, y) {
+    newTile(x, y, crystal) {
         // Pick next tile
         const tile = tiles.getFromStock();
 
@@ -70,6 +71,9 @@ export default class Bot {
 
         // Mark gate as explored
         cell.setExplored(x, y);
+
+        // This tile was picked thanks to a crystal
+        if (crystal) crystal.addOneUse();
 
         // Run AI again
         ai.run();

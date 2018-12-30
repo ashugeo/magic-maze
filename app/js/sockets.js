@@ -20,8 +20,8 @@ export default {
 
         socket.on('admin', () => {
             let html = `<h3>Game admin</h3>
-            <p>Bot(s) <input type="number" id="bots" value="1" min="0" max="7" /></p>
-            <p>Scenario <input type="number" id="scenario" value="5" min="1" max="15" /></p>
+            <p>Bot(s) <input type="number" id="bots" value="0" min="0" max="7" /></p>
+            <p>Scenario <input type="number" id="scenario" value="1" min="1" max="15" /></p>
             <button id="start">Start game!</button>`;
 
             ui.setHTML('admin', html);
