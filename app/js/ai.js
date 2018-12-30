@@ -100,6 +100,8 @@ export default {
                 // Prevent two explorations at once
                 return actions;
             }
+
+            // TODO: implement crystal explorations
         }
 
         // No possible exploration has been found
@@ -160,7 +162,31 @@ export default {
                     });
                 }
 
-                // TODO: add crystal as objectives
+                // Find crystals (if stock is not empty, only during phase 1, and if some articles/exits remain unrevealed)
+                if (
+                    item.type === 'crystal' &&
+                    !cell.isUsed() &&
+                    tiles.getStockSize() > 0 &&
+                    game.isPhase(1) &&
+                    (
+                        board.count('article') < 4 ||
+                        (
+                            (game.isScenario(1) && board.count('exit') < 1) ||
+                            board.count('exit') < 4
+                        )
+                    )
+                ) {
+                    objectives.push({
+                        coord: {
+                            x: cell.coord.x,
+                            y: cell.coord.y
+                        },
+                        item: {
+                            type: cell.item.type
+                        },
+                        hero: heroes.findByColor(cell.item.color)
+                    });
+                }
 
                 // Find articles (only during phase 1, and when all articles/exits are revealed)
                 if (

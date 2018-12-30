@@ -93,7 +93,7 @@
     },
     heroSpeed: 16,
     timer: 180,
-    botsInterval: 1000
+    botsInterval: 100
 });
 
 
@@ -587,6 +587,8 @@
                 // Prevent two explorations at once
                 return actions;
             }
+
+            // TODO: implement crystal explorations
         }
 
         // No possible exploration has been found
@@ -647,7 +649,31 @@
                     });
                 }
 
-                // TODO: add crystal as objectives
+                // Find crystals (if stock is not empty, only during phase 1, and if some articles/exits remain unrevealed)
+                if (
+                    item.type === 'crystal' &&
+                    !cell.isUsed() &&
+                    __WEBPACK_IMPORTED_MODULE_6__tiles__["a" /* default */].getStockSize() > 0 &&
+                    __WEBPACK_IMPORTED_MODULE_4__game__["a" /* default */].isPhase(1) &&
+                    (
+                        __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].count('article') < 4 ||
+                        (
+                            (__WEBPACK_IMPORTED_MODULE_4__game__["a" /* default */].isScenario(1) && __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].count('exit') < 1) ||
+                            __WEBPACK_IMPORTED_MODULE_0__board__["a" /* default */].count('exit') < 4
+                        )
+                    )
+                ) {
+                    objectives.push({
+                        coord: {
+                            x: cell.coord.x,
+                            y: cell.coord.y
+                        },
+                        item: {
+                            type: cell.item.type
+                        },
+                        hero: __WEBPACK_IMPORTED_MODULE_5__heroes__["a" /* default */].findByColor(cell.item.color)
+                    });
+                }
 
                 // Find articles (only during phase 1, and when all articles/exits are revealed)
                 if (
@@ -74265,8 +74291,8 @@ const scenarios = __webpack_require__(24);
 
         socket.on('admin', () => {
             let html = `<h3>Game admin</h3>
-            <p>Bot(s) <input type="number" id="bots" value="0" min="0" max="7" /></p>
-            <p>Scenario <input type="number" id="scenario" value="3" min="1" max="15" /></p>
+            <p>Bot(s) <input type="number" id="bots" value="1" min="0" max="7" /></p>
+            <p>Scenario <input type="number" id="scenario" value="5" min="1" max="15" /></p>
             <button id="start">Start game!</button>`;
 
             __WEBPACK_IMPORTED_MODULE_7__ui__["a" /* default */].setHTML('admin', html);
