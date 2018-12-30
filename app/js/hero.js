@@ -4,6 +4,7 @@ import config from './config';
 import events from './events';
 import game from './game';
 import heroes from './heroes';
+import player from './player';
 import tiles from './tiles';
 
 export default class Hero {
@@ -90,7 +91,7 @@ export default class Hero {
         }
 
         // Check for vortex
-        if (role.indexOf('vortex') > -1) {
+        if (player.role.indexOf('vortex') > -1) {
             const item = board.get(hero.x, hero.y).item;
             if (item && item.type === 'vortex' && item.color === this.color) {
                 const targetItem = board.get(target.x, target.y).item;
@@ -105,7 +106,7 @@ export default class Hero {
         if (hero.x !== target.x && hero.y !== target.y) {
             // Not the same column or row
             // Check for escalator
-            if (role.indexOf('escalator') > -1) {
+            if (player.role.indexOf('escalator') > -1) {
                 const escalator = board.get(hero.x, hero.y).escalator;
                 if (escalator && escalator.x === target.x && escalator.y === target.y) {
                     path.push({x: hero.x, y: hero.y});
@@ -148,7 +149,7 @@ export default class Hero {
         if (!target) target = this.cell;
 
         // Use player role
-        const role = window.role;
+        const role = player.role;
 
         const path = this.getPath(target);
         if (!path) return;
@@ -156,7 +157,6 @@ export default class Hero {
         for (let i in path) {
             i = parseInt(i);
             if (path[i].reachable === undefined) path[i].reachable = true;
-
 
             // Out of set tiles (empty cell)
             if (board.get(path[i].x, path[i].y).isEmpty()) {
@@ -225,6 +225,12 @@ export default class Hero {
                         if (role.indexOf('left') === -1) path[i].reachable = false;
                     }
                 }
+
+                // Can't go to time cells when two or more cameras are active
+                if (next.item && next.item.type === 'time') {
+                    const cameras = board.findItem('camera').filter(c => { return !c.isUsed() });
+                    if (cameras.length >= 2) path[i].reachable = false;
+                }
             }
         }
     }
@@ -238,9 +244,11 @@ export default class Hero {
         const path = this.path;
 
         // No path, no go
-        if (path.length === 0) {
-            return false;
-        }
+        if (path.length === 0) return false;
+
+        // Make sure last cell in path is the target (anti-spam security)
+        const last = path[path.length - 1];
+        if (last.x !== target.x || last.y !== target.y) return false;
 
         // Get first unreachable cell in this path
         for (let i in path) {

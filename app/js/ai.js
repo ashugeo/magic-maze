@@ -12,8 +12,14 @@ export default {
     bots: [],
 
     init(options) {
-        for (let i = 0; i < options.bots; i += 1) {
-            this.bots.push(new Bot(i, options.botsRoles[i]));
+        for (let i = 0; i < options.bots.length; i += 1) {
+            this.bots.push(new Bot(i, options.bots[i].roles));
+        }
+    },
+
+    setRoles(bots) {
+        for (let i = 0; i < this.bots.length; i += 1) {
+            this.bots[i].roles = bots[i].roles;
         }
     },
 
@@ -94,6 +100,29 @@ export default {
                 // Prevent two explorations at once
                 return actions;
             }
+
+            // If puple hero sits on an unused crystal
+            if (item.type === 'crystal' && item.color === hero.color && !cell.isUsed()) {
+                // Find an unexplored gate on board
+                const gates = board.findItem('gate').filter(g => { return !g.isExplored(); });
+                const targetCell = gates[Math.floor(Math.random() * gates.length)];
+
+                if (targetCell) {
+                    // Allow to set new tile
+                    actions.push({
+                        role: 'explore',
+                        cell: {
+                            x: targetCell.coord.x,
+                            y: targetCell.coord.y
+                        },
+                        cost: 0,
+                        crystal: cell
+                    });
+
+                    // Prevent two explorations at once
+                    return actions;
+                }
+            }
         }
 
         // No possible exploration has been found
@@ -111,11 +140,11 @@ export default {
                 // Ignore empty cells
                 if (cell.isEmpty()) continue;
 
-                // Add time cells as objectives (when timer is below half)
+                // Add time cells as objectives (when timer is below a fourth)
                 if (
                     item.type === 'time' &&
                     !cell.isUsed() &&
-                    clock.remaining < config.timer / 2
+                    clock.remaining < config.timer / 4
                 ) {
                     objectives.push({
                         coord: {
@@ -125,6 +154,16 @@ export default {
                         item: {
                             type: cell.item.type
                         }
+                    });
+                }
+
+                if (item.type === 'camera' && !cell.isUsed()) {
+                    objectives.push({
+                        coord: {
+                            x: cell.coord.x,
+                            y: cell.coord.y
+                        },
+                        hero: heroes.findByColor(cell.item.color)
                     });
                 }
 
@@ -147,8 +186,28 @@ export default {
                             x: cell.coord.x,
                             y: cell.coord.y
                         },
-                        item: {
-                            type: cell.item.type
+                        hero: heroes.findByColor(cell.item.color)
+                    });
+                }
+
+                // Find crystals (if stock is not empty, only during phase 1, and if some articles/exits remain unrevealed)
+                if (
+                    item.type === 'crystal' &&
+                    !cell.isUsed() &&
+                    tiles.getStockSize() > 0 &&
+                    game.isPhase(1) &&
+                    (
+                        board.count('article') < 4 ||
+                        (
+                            (game.isScenario(1) && board.count('exit') < 1) ||
+                            board.count('exit') < 4
+                        )
+                    )
+                ) {
+                    objectives.push({
+                        coord: {
+                            x: cell.coord.x,
+                            y: cell.coord.y
                         },
                         hero: heroes.findByColor(cell.item.color)
                     });
@@ -168,9 +227,6 @@ export default {
                         coord: {
                             x: cell.coord.x,
                             y: cell.coord.y
-                        },
-                        item: {
-                            type: cell.item.type
                         },
                         hero: heroes.findByColor(cell.item.color)
                     });
@@ -399,26 +455,10 @@ export default {
             // Make sure neighbor isn't empty
             if (!neighbor || neighbor.isEmpty()) continue;
 
-            // Make sure no wall is blocking the way
-            // TODO: make this sexier
-            if (
-                (i === 0 &&
-                    (!origin.walls.top && !neighbor.walls.bottom) ||
-                    (origin.walls.top === 'orange' && neighbor.walls.bottom === 'orange' && color === 'orange')
-                ) ||
-                (i === 1 &&
-                    (!origin.walls.right && !neighbor.walls.left) ||
-                    (origin.walls.right === 'orange' && neighbor.walls.left === 'orange' && color === 'orange')
-                ) ||
-                (i === 2 &&
-                    (!origin.walls.bottom && !neighbor.walls.top) ||
-                    (origin.walls.bottom === 'orange' && neighbor.walls.top === 'orange' && color === 'orange')
-                ) ||
-                (i === 3 &&
-                    (!origin.walls.left && !neighbor.walls.right) ||
-                    (origin.walls.left === 'orange' && neighbor.walls.right === 'orange' && color === 'orange')
-                )
-            ) {
+            // Make sure no wall is blocking the way (or walls are orange, like hero)
+            const wall1 = ['up', 'right', 'bottom', 'left'][i];
+            const wall2 = ['bottom', 'left', 'up', 'right'][i];
+            if ((!origin.walls[wall1] && !neighbor.walls[wall2]) || (origin.walls[wall1] === color && neighbor.walls[wall2] === color)) {
                 neighbors.push({x: neighbor.coord.x, y: neighbor.coord.y});
             }
         }

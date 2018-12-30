@@ -58,7 +58,7 @@ export default {
 
         if (this.players === 1 && ai.bots.length === 0) {
             // Admin is the only player, disable nextAction button
-            document.getElementById('nextAction').classList.add('disabled');
+            ui.addClass('nextAction', 'disabled');
         }
     }
 }

@@ -7,12 +7,15 @@ import game from './game';
 import Hero from './hero';
 import helpers from './helpers';
 import heroes from './heroes';
+import player from './player';
 import Tile from './tile';
 import tiles from './tiles';
 
 export default {
 
-    action: '',
+    action: '', // '', 'placing', 'hero'
+    mouseIn: false,
+    crystal: null,
 
     init() {
         /**
@@ -34,22 +37,24 @@ export default {
         });
 
         document.addEventListener('mousedown', () => {
-            if (!game.isEnded()) this.mouseDown();
+            if (!game.isEnded() && this.mouseIn) this.mouseDown();
         });
 
         document.addEventListener('mouseup', () => {
-            if (!game.isEnded()) this.mouseUp();
+            if (!game.isEnded() && this.mouseIn) this.mouseUp();
         });
 
         document.addEventListener('mousemove', () => {
-            if (!game.isEnded()) this.mouseMove();
+            if (!game.isEnded() && this.mouseIn) this.mouseMove();
         });
 
         document.getElementById('canvas-wrap').addEventListener('mouseleave', () => {
+            this.mouseIn = false;
             camera.mouseIn = false;
         });
 
         document.getElementById('canvas-wrap').addEventListener('mouseenter', () => {
+            this.mouseIn = true;
             camera.mouseIn = true;
         });
 
@@ -61,8 +66,8 @@ export default {
 
     mouseDown() {
         // Spectator can't click
-        if (role.length === 0) return;
-        
+        if (player.role.length === 0) return;
+
         const cell = this.getHoveredCell();
 
         if (this.action === 'placing') {
@@ -86,7 +91,6 @@ export default {
 
         if (!(cell.x === this.oldHeroCell.x && cell.y === this.oldHeroCell.y)) {
             if (this.action === 'hero' && hero.canGoTo(cell)) {
-                // FIXME: hero will sometimes go to a cell it shouldn't if spammed/timed correctly
                 hero.set(cell.x, cell.y);
                 socket.emit('hero', {
                     id: hero.id,
@@ -126,7 +130,7 @@ export default {
 
     /**
     * Get hovered cell coordinates
-    * @return {Object} position {'x': ,'y': }
+    * @return {Object} {x, y}
     */
     getHoveredCell() {
         const x = p5.floor((p5.mouseX - p5.width/2 - (camera.x * camera.zoomValue)) / (config.size * camera.zoomValue));
@@ -152,7 +156,7 @@ export default {
 
     /**
     * Set picked tile
-    * @param {Object} cell cell to set tile onto
+    * @param {Object} cell {x, y} of cell to set tile onto
     */
     setTile(cell) {
         // Select picked tile
@@ -171,35 +175,48 @@ export default {
                 tile: tile
             });
 
-            // Mark cell as explored
-            this.gateCell.setExplored();
+            // Mark gate cell as explored
+            let gateCell = tile.getEnter(cell.x, cell.y, board.get(cell.x, cell.y).tileCell.x);
+            gateCell = board.get(gateCell.x, gateCell.y);
+            gateCell.setExplored();
+
+            // This tile was picked thanks to a crystal
+            if (this.crystal) crystal.addOneUse();
 
             // Run AI
             ai.run();
         }
     },
 
-    gateCell: {},
-
     /**
     * Get next tile from stock
     */
     newTile() {
-        if (role.indexOf('explore') === -1) return;
+        if (player.role.indexOf('explore') === -1) return;
         if (tiles.getStockSize() === 0) return;
         let canAddTile = false;
 
+        // Check for a hero standing on a gate the same color as his
         for (let hero of heroes.all) {
             const cell = board.get(hero.cell.x, hero.cell.y);
-            if (cell.item && cell.item.type === 'gate' && cell.item.color === hero.color) {
-                this.gateCell = cell;
-                if (!cell.isExplored()) {
+            if (cell.item && cell.item.color === hero.color && cell.item.type === 'gate' && !cell.isExplored()) {
+                this.crystal = null;
+                canAddTile = true;
+                break;
+            }
+        }
+
+        if (!canAddTile) {
+            // Check for purple hero standing on a crystal
+            for (let hero of heroes.all) {
+                const cell = board.get(hero.cell.x, hero.cell.y);
+                if (cell.item && cell.item.color === hero.color && cell.item.type === 'crystal' && !cell.isUsed()) {
+                    this.crystal = cell;
                     canAddTile = true;
                     break;
                 }
             }
         }
-
 
         if (canAddTile) {
             this.action = 'placing';
@@ -267,7 +284,10 @@ export default {
 
             if (game.players === 1 && ai.bots.length === 0) {
                 // Admin is the only player, shuffle roles
-                allActions = helpers.shuffleArray(allActions);
+                player.allActions = helpers.shuffleArray(player.allActions);
+            } else if (game.players >= 2 && game.scenario >= 3) {
+                // Scenario 3 or greater: swap roles when clock is inverted
+                socket.emit('swap');
             }
 
             // Time cell is now used
@@ -288,13 +308,14 @@ export default {
 
             // All heroes can steal, engage game phase 2
             if (canSteal) game.setPhase(2);
-
         } else if (item.type === 'exit' && game.isPhase(2) && (item.color === hero.color || game.scenario === 1)) {
             // Same color exit or scenario 1 (only has purple exit)
             hero.exit();
-            if (ai.checkForWin()) {
-                game.win();
-            }
+            if (ai.checkForWin()) game.win();
+        } else if (item.type === 'camera' && item.color === hero.color) {
+            // Yellow hero steps on camera
+            const cell = board.get(hero.cell.x, hero.cell.y);
+            if (!cell.isUsed()) cell.setUsed();
         }
     }
 }

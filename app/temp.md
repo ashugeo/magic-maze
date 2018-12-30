@@ -11,7 +11,7 @@ When decoding that string, it gets split into 16 blocks of 4 characters each. Th
 The first two bits get converted to a 4-digit number in base 3. Every digit of that 4-digit number corresponds to a specific wall. We start from the top and go clockwise: top, right, bottom, left.
 
 nth digit | wall
-- | -
+-- | --
 1 | top
 2 | right
 3 | bottom
@@ -20,7 +20,7 @@ nth digit | wall
 The value of that digit (0, 1 or 2) corresponds to the state of a wall.
 
 Value | wall state
-- | -
+-- | --
 0 | no wall
 1 | wall
 2 | orange wall
@@ -28,7 +28,7 @@ Value | wall state
 Here is a base 10 to base 3 cheatsheet. It shows the index of every possible walls schema.
 
 First two bits | Walls schema
-- | -
+-- | --
 00 | 0000
 01 | 0001
 02 | 0002
@@ -130,7 +130,7 @@ Bottom wall:     1 (wall)
 The third bit corresponds to the item that a cell may hold. Some of them are color-specific, others aren't. All of them are listed in the table below.
 
 3rd bit | item | color
-- | - | -
+-- | -- | --
 0 | no item | -
 1 | gate | green
 2 | gate | orange
@@ -167,7 +167,7 @@ First block:    '31i0'
 The fourth bit is used for escalators. Since a cell can have both an item and an escalator end, we need a new bit for that. It tells us which cell the escalator has to go to (starting from the current cell).
 
 4th bit | coordinates
-- | -
+-- | --
 0 | no escalator
 1 | {x: 0, y: 0}
 2 | {x: 0, y: 1}

@@ -108,8 +108,12 @@ export default class Tile {
             } else {
                 // There is a gate, make sure it has a hero on it with the same color
                 for (let hero of heroes.all) {
-                    if (hero.cell.x === nextToEnter.x && hero.cell.y === nextToEnter.y) {
-                        if (hero.color === cellNextToEnter.item.color) {
+                    if (hero.cell.x === nextToEnter.x && hero.cell.y === nextToEnter.y && hero.color === cellNextToEnter.item.color) {
+                        return true;
+                    } else {
+                        // Purple hero is standing on an used crystal
+                        const cell = board.get(hero.cell.x, hero.cell.y);
+                        if (cell.item && cell.item.type === 'crystal' && cell.item.color === hero.color && !cell.isUsed()) {
                             return true;
                         }
                     }

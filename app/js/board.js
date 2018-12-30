@@ -14,7 +14,7 @@ export default {
             }
         }
 
-        const firstTile = tiles.getFromStock(0);
+        const firstTile = tiles.getFromStock();
         firstTile.set(config.firstTile.x, config.firstTile.y);
     },
 
@@ -31,13 +31,18 @@ export default {
         this.layout[x][y].setUsed();
     },
 
-    count(item) {
-        let count = 0;
+    findItem(item) {
+        let cells = [];
         for (let i = 0; i < config.boardCols; i += 1) {
             for (let j = 0; j < config.boardRows; j += 1) {
-                if (this.layout[i][j] && this.layout[i][j].item && this.layout[i][j].item.type === item) count += 1;
+                const cell = this.get(i, j);
+                if (cell && cell.item && cell.item.type === item) cells.push(cell);
             }
         }
-        return count;
+        return cells;
+    },
+
+    count(item) {
+        return this.findItem(item).length;
     }
 }
