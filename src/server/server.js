@@ -11,8 +11,6 @@ app.use(express.static(path.resolve('public')));
 
 app.get('/', (req, res) => {
     res.sendFile(path.resolve('public/home/index.html'));
-    res.sendFile(path.resolve('public/home/main.css'));
-    res.sendFile(path.resolve('public/home/bundle.js'));
 });
 
 const listener = http.listen(process.env.PORT || 3000, () => {
