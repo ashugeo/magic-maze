@@ -2,6 +2,7 @@ import ai from './ai';
 import clock from './clock';
 import config from './config';
 import events from './events';
+import ui from './ui';
 
 export default {
 

@@ -75,6 +75,7 @@ button {
 
     &.disabled {
         opacity: .6;
+        cursor: not-allowed;
     }
 }
 
@@ -119,10 +120,11 @@ input[type="checkbox"] {
     }
 
     &:checked::after {
+        content: "✓";
         position: absolute;
         top: 50%;
         left: 50%;
-        content: "✓";
+        font-weight: bold;
         color: white;
         font-size: 1.6em;
         transform: translate(-50%, -50%);
