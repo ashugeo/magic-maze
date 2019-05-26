@@ -115,7 +115,7 @@ io.sockets.on('connection', socket => {
         // Tell everyone his new roles
         for (let player of players) {
             // Can't emit to bots
-            if (player.bot) return;
+            if (player.bot) continue;
 
             // Tell this player his new roles
             if (player.id === adminID) {
