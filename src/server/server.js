@@ -1,14 +1,13 @@
 const express = require('express');
 const app = express();
+const path = require('path');
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
-const actions = require('./data/actions.json');
 
-app.use(express.static(__dirname + '/'));
+// TODO: move this
+const actions = require('../client/play/data/actions.json');
 
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
-});
+app.use(express.static(path.resolve('public/')));
 
 const listener = http.listen(process.env.PORT || 3000, () => {
     console.log(`✨ App running on port ${listener.address().port}`);

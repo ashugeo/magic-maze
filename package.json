@@ -4,9 +4,9 @@
     "description": "Online version of board game Magic Maze",
     "main": "webpack.config.js",
     "scripts": {
-        "app": "node server.js",
-        "dev": "webpack --config dev.config.js",
-        "prod": "webpack --config prod.config.js"
+        "app": "node ./src/server/server.js",
+        "dev": "webpack --config webpack.config.js",
+        "prod": "NODE_ENV=production webpack --config webpack.config.js"
     },
     "repository": {
         "type": "git",
