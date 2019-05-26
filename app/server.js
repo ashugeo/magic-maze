@@ -10,6 +10,11 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
+const listener = http.listen(3000, () => {
+    console.log(`✨ App running on port ${listener.address().port}`);
+    console.log(`🔗 http://localhost:${listener.address().port}/ (Open with ⌘ + double click on Mac terminal)\n`);
+});
+
 let people = [];
 let players = [];
 let adminID = '';
@@ -137,8 +142,6 @@ io.sockets.on('connection', socket => {
         io.to(adminID).emit('ai');
     });
 });
-
-http.listen(3000);
 
 function shuffleArray(a) {
     for (let i = a.length - 1; i > 0; i -= 1) {
