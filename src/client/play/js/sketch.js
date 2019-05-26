@@ -1,4 +1,4 @@
-import p5 from 'p5';
+import p5 from 'p5/lib/p5.min.js';
 import board from './board';
 import camera from './camera';
 import config from './config';
