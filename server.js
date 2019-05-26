@@ -10,7 +10,7 @@ app.get('/', (req, res) => {
     res.sendFile(__dirname + '/index.html');
 });
 
-const listener = http.listen(3000, () => {
+const listener = http.listen(process.env.PORT || 3000, () => {
     console.log(`✨ App running on port ${listener.address().port}`);
     console.log(`🔗 http://localhost:${listener.address().port}/ (Open with ⌘ + double click on Mac terminal)\n`);
 });
