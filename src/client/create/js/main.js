@@ -1,3 +1,5 @@
+import p5 from 'p5/lib/p5.min.js';
+
 const config = {
     size: 100,
     tolerance: 4,
@@ -16,12 +18,12 @@ let color = 'green';
 let p1 = false;
 let p2 = false;
 
-function setup() {
+window.setup = () => {
     canvas = createCanvas(500, 500);
-    tile = new Tile();
+    tile = new Tile(0);
 }
 
-function draw() {
+window.draw = () => {
     background('255');
     translate(width / 2 - config.size * 2, height / 2 - config.size * 2);
 
@@ -32,7 +34,7 @@ function draw() {
     tile.display();
 }
 
-function mousePressed() {
+window.mousePressed = () => {
     const mouseCell = getHoveredCell();
     if (!mouseCell) return;
     const cell = tile.layout[mouseCell.x][mouseCell.y];

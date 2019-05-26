@@ -6,7 +6,7 @@ import events from './events';
 import game from './game';
 import Hero from './hero';
 import heroes from './heroes';
-import p5 from 'p5';
+import p5 from 'p5/lib/p5.min.js';
 import player from './player';
 import sketch from './sketch';
 import Tile from './tile';
@@ -17,7 +17,7 @@ const scenarios = require('../data/scenarios.json');
 
 export default {
     start(options) {
-        new p5(sketch);
+        // new p5(sketch);
         game.init(options);
         const deck = this.buildDeck(options.scenario);
         tiles.init(deck);

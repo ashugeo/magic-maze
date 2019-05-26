@@ -1,16 +1,21 @@
 const express = require('express');
 const app = express();
+const path = require('path');
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
-const actions = require('./data/actions.json');
 
-app.use(express.static(__dirname + '/'));
+// TODO: move this
+const actions = require('../client/play/data/actions.json');
+
+app.use(express.static(path.resolve('public')));
 
 app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
+    res.sendFile(path.resolve('public/home/index.html'));
+    res.sendFile(path.resolve('public/home/main.css'));
+    res.sendFile(path.resolve('public/home/bundle.js'));
 });
 
-const listener = http.listen(3000, () => {
+const listener = http.listen(process.env.PORT || 3000, () => {
     console.log(`✨ App running on port ${listener.address().port}`);
     console.log(`🔗 http://localhost:${listener.address().port}/ (Open with ⌘ + double click on Mac terminal)\n`);
 });
