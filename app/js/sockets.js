@@ -33,8 +33,8 @@ export default {
 
             if (isAdmin) {
                 // Ask admin for game parameters
-                const bots = ui.getProperty('bots', 'value');
-                const scenario = ui.getProperty('scenario', 'value');
+                const bots = parseInt(ui.getProperty('bots', 'value'));
+                const scenario = parseInt(ui.getProperty('scenario', 'value'));
                 socket.emit('settings', { bots, scenario, spectator });
             } else {
                 socket.emit('settings', { spectator });
