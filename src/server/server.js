@@ -7,7 +7,13 @@ const io = require('socket.io')(http);
 // TODO: move this
 const actions = require('../client/play/data/actions.json');
 
-app.use(express.static(path.resolve('public/')));
+app.use(express.static(path.resolve('public')));
+
+app.get('/', (req, res) => {
+    res.sendFile(path.resolve('public/home/index.html'));
+    res.sendFile(path.resolve('public/home/main.css'));
+    res.sendFile(path.resolve('public/home/bundle.js'));
+});
 
 const listener = http.listen(process.env.PORT || 3000, () => {
     console.log(`✨ App running on port ${listener.address().port}`);
