@@ -22,22 +22,22 @@ export default {
             let html = `<h3>Game admin</h3>
             <p>Bot(s) <input type="number" id="bots" value="0" min="0" max="7" /></p>
             <p>Scenario <input type="number" id="scenario" value="1" min="1" max="15" /></p>
-            <button id="start">Start game!</button>`;
+            <button id="start">Start game</button>`;
 
             ui.setHTML('admin', html);
             ui.addEvent('start', 'click', () => { socket.emit('prestart'); });
         });
 
         socket.on('prestart', isAdmin => {
-            const spectator = ui.getProperty('spectator', 'checked');
+            const isSpectator = ui.getProperty('isSpectator', 'checked');
 
             if (isAdmin) {
                 // Ask admin for game parameters
                 const bots = parseInt(ui.getProperty('bots', 'value'));
                 const scenario = parseInt(ui.getProperty('scenario', 'value'));
-                socket.emit('settings', { bots, scenario, spectator });
+                socket.emit('settings', { bots, scenario, isSpectator });
             } else {
-                socket.emit('settings', { spectator });
+                socket.emit('settings', { isSpectator });
             }
         });
 

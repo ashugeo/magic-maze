@@ -5,7 +5,6 @@ import events from './events';
 import ui from './ui';
 
 export default {
-
     scenario: 0,
     players: 0,
     admin: false,

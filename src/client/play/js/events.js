@@ -12,7 +12,6 @@ import Tile from './tile';
 import tiles from './tiles';
 
 export default {
-
     action: '', // '', 'placing', 'hero'
     mouseIn: false,
     crystal: null,

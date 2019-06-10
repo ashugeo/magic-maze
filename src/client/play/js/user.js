@@ -17,7 +17,7 @@ const scenarios = require('../data/scenarios.json');
 
 export default {
     start(options) {
-        // new p5(sketch);
+        new p5(sketch);
         game.init(options);
         const deck = this.buildDeck(options.scenario);
         tiles.init(deck);
