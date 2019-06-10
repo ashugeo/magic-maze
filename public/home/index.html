@@ -3,13 +3,26 @@
 <head>
     <meta charset="utf-8">
     <title>Magic Maze</title>
-    <link rel="stylesheet" href="/home/main.css">
+    <link rel="stylesheet" href="/home/main.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/home/bundle.js" charset="utf-8"></script>
 </head>
 <body>
-    <h1>Magic Maze</h1>
+    <div class="wrap">
+        <h1>Magic Maze</h1>
 
-    <p id="play">Join room</p>
+        <div class="row">
+            <div class="box" id="room1">
+                <p>Room 1</p>
+                <button name="play">Play</button>
+            </div>
+
+            <div class="box">
+                <input type="text" placeholder="Name your room…">
+                <button name="create">Create room</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

@@ -53,7 +53,7 @@
 /***/ (function() {
 
 "use strict";
-eval("\n\nwindow.onload = init;\n\nfunction init() {\n    window.socket = io({ transports: ['websocket'], upgrade: false });\n\n    document.getElementById('play').addEventListener('click', function (e) {\n        sessionStorage.setItem('room', 'room1');\n        window.location.href = '/play';\n    });\n}\n\n//# sourceURL=webpack:///./src/client/home/js/main.js?");
+eval("\n\nwindow.onload = init;\n\nfunction init() {\n    window.socket = io({ transports: ['websocket'], upgrade: false });\n}\n\n$(document).on('click', 'button[name=\"play\"]', function (e) {\n    e.preventDefault();\n    var room = $(e.target).parents('.box').attr('id');\n    sessionStorage.setItem('room', room);\n    window.location.href = '/play';\n});\n\n$(document).on('click', 'button[name=\"create\"]', function (e) {\n    e.preventDefault();\n    var room = $(e.target).parents('.box').find('input').val();\n    sessionStorage.setItem('room', room);\n    window.location.href = '/play';\n});\n\n//# sourceURL=webpack:///./src/client/home/js/main.js?");
 
 /***/ }),
 
