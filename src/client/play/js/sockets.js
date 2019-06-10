@@ -74,6 +74,16 @@ export default {
             tiles.board.push(tile.id);
         });
 
+        socket.on('getStatus', user => {
+            const data = {
+                board: board.getAll(),
+                clock: clock.get(),
+                heroes: heroes.get(),
+                tiles: tiles.get()
+            }
+            socket.emit('status', data, user);
+        });
+
         socket.on('invertClock', data => {
             clock.invert();
         });

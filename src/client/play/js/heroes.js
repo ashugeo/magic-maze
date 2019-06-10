@@ -5,19 +5,29 @@ import Hero from './hero';
 import tiles from './tiles';
 
 export default {
-
     all: [],
 
-    init() {
+    init(heroes) {
         for (let i = 0; i < 4; i += 1) {
             this.all.push(new Hero(i));
-            this.all[i].set(
-                config.firstTile.x + [1, 2, 2, 1][i],
-                config.firstTile.y + [1, 1, 2, 2][i]
-            );
+            if (heroes) {
+                this.all[i].set(
+                    heroes[i].cell.x,
+                    heroes[i].cell.y
+                );
+            } else {
+                this.all[i].set(
+                    config.firstTile.x + [1, 2, 2, 1][i],
+                    config.firstTile.y + [1, 1, 2, 2][i]
+                );
+            }
             this.all[i].pos = this.all[i].target;
             this.all[i].status = 'set';
         }
+    },
+
+    get() {
+        return this.all;
     },
 
     findByColor(color) {

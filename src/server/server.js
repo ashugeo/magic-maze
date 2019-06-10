@@ -31,6 +31,13 @@ io.sockets.on('connection', socket => {
         const room = io.sockets.adapter.rooms[roomID];
         room.id = roomID;
 
+        // Game already started
+        if (room.isStarted) {
+            // Join as spectator
+            room.spectators[socket.id] = true;
+            socket.scenario = room.options.scenario;
+            io.to(room.adminID).emit('getStatus', socket.id);
+        }
 
         // Tell everyone
         const all = room.length;
@@ -43,6 +50,15 @@ io.sockets.on('connection', socket => {
         }
     });
 
+    socket.on('status', (data, user) => {
+        io.to(user).emit('start', {
+            board: data.board,
+            clock: data.clock,
+            heroes: data.heroes,
+            tiles: data.tiles,
+            scenario: io.sockets.sockets[user].scenario
+        });
+    });
 
     // User disconnected from a room
     socket.on('disconnect', () => {
