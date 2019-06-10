@@ -18,12 +18,15 @@ const listener = http.listen(process.env.PORT || 3000, () => {
     console.log(`🔗 http://localhost:${listener.address().port}/ (Open with ⌘ + double click on Mac terminal)\n`);
 });
 
-// let people = [];
-// let players = [];
-// let adminID = '';
-// let options = {};
-
 io.sockets.on('connection', socket => {
+    for (const roomID of Object.keys(io.sockets.adapter.rooms)) {
+        const room = io.sockets.adapter.rooms[roomID];
+        if (room.id) {
+            const all = room.length;
+            io.emit('stats', { room: roomID, players: all, bots: 0 });
+        }
+    }
+
     // New player entered a room
     socket.on('join', roomID => {
         socket.join(roomID);
@@ -42,6 +45,7 @@ io.sockets.on('connection', socket => {
         // Tell everyone
         const all = room.length;
         io.to(roomID).emit('people', { all, bots: 0 });
+        io.emit('stats', { room: roomID, players: all, bots: 0 });
 
         // First player, make it admin
         if (all === 1) {
@@ -66,6 +70,7 @@ io.sockets.on('connection', socket => {
         const room = io.sockets.adapter.rooms[roomID];
 
         // No more players, room gets deleted
+        if (roomID && !room) io.emit('stats', { room: roomID, players: 0 });
         if (!room) return;
 
         // Tell everyone
@@ -73,6 +78,7 @@ io.sockets.on('connection', socket => {
 
         // TODO: update bots count
         io.to(roomID).emit('people', { all, bots: 0 });
+        io.emit('stats', { room: roomID, players: all, bots: 0 });
 
         // It was the admin, set a new admin
         if (socket.id === room.adminID) {
