@@ -235,7 +235,7 @@ function start(room) {
             }, {});
 
             io.to(user).emit('start', {
-                roles: allPlayers[user].roles,
+                roles: allPlayers[user] ? allPlayers[user].roles : false,
                 scenario: room.options.scenario,
                 players: Object.keys(allPlayers).length,
                 bots,
