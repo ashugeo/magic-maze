@@ -177,7 +177,7 @@ export default {
                         board.count('article') < 4 ||
                         (
                             (game.isScenario(1) && board.count('exit') < 1) ||
-                            board.count('exit') < 4
+                            (!game.isScenario(1) && board.count('exit') < 4)
                         )
                     )
                 ) {
@@ -200,7 +200,7 @@ export default {
                         board.count('article') < 4 ||
                         (
                             (game.isScenario(1) && board.count('exit') < 1) ||
-                            board.count('exit') < 4
+                            (!game.isScenario(1) && board.count('exit') < 4)
                         )
                     )
                 ) {
@@ -220,7 +220,7 @@ export default {
                     board.count('article') === 4 &&
                     (
                         (game.isScenario(1) && board.count('exit') === 1) ||
-                        board.count('exit') === 4
+                        (!game.isScenario(1) && board.count('exit') === 4)
                     )
                 ) {
                     objectives.push({
