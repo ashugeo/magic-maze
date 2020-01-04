@@ -5,6 +5,7 @@ import tiles from './tiles';
 
 export default {
     layout: [],
+    ready: false,
 
     init(board) {
         for (let i = 0; i < config.boardCols; i += 1) {
@@ -13,6 +14,7 @@ export default {
                 this.layout[i][j] = new Cell(i, j);
             }
         }
+        this.ready = true;
     },
 
     getAll() {
