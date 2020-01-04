@@ -84,11 +84,10 @@ export default {
         const height = p5.height;
 
         const allCells = board.getAll();
-        const allCellsReverse = [...allCells].reverse();
         
         const minX = allCells.find(col => Object.values(col).some(cell => !cell.empty))[0].coord.x;
 
-        const maxX = allCellsReverse.find(col => Object.values(col).some(cell => !cell.empty))[0].coord.x;
+        const maxX = [...allCells].reverse().find(col => Object.values(col).some(cell => !cell.empty))[0].coord.x;
 
         const minY = allCells.reduce((lowest, curr) => {
             const topMost = Object.values(curr).find(cell => !cell.empty);
@@ -96,7 +95,7 @@ export default {
             return lowest;
         }, config.boardRows);
 
-        const maxY = allCellsReverse.reduce((highest, curr) => {
+        const maxY = allCells.reduce((highest, curr) => {
             const bottomMost = Object.values(curr).reverse().find(cell => !cell.empty);
             if (bottomMost) return Math.max(bottomMost.coord.y, highest);
             return highest;
