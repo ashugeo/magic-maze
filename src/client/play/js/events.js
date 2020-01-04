@@ -35,6 +35,8 @@ export default {
             } else if (e.which === 80) { // P
                 if (game.isPaused()) game.resume();
                 else game.pause();
+            } else if (e.which === 71) { // G
+                config.grid = !config.grid;
             }
         });
 
