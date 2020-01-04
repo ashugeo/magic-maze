@@ -54,7 +54,7 @@ export default {
 
         p5.translate(this.x, this.y);
 
-        if (this.mouseIn && config.cameraMouse) {
+        if (config.cameraMouse) {
             const x1 = -this.x
             const y1 = -this.y;
             const x2 = (-p5.width/2 + p5.mouseX) / this.zoomValue - this.x;
