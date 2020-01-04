@@ -5,8 +5,8 @@ export default {
     x: 0,
     y: 0,
     mouseIn: true,
-    zoomValue: 2,
-    targetZoom: 2,
+    zoomValue: 4,
+    targetZoom: 4,
 
     /**
     * Animate camera zoom
@@ -105,7 +105,11 @@ export default {
         this.targetX = (minX + (maxX - minX + 1) / 2) * config.size;
         this.targetY = (minY + (maxY - minY + 1) / 2) * config.size;
 
-        if (Math.abs(this.targetX - this.x) > 1) this.x += (this.targetX - this.x) / 200;
-        if (Math.abs(this.targetY - this.y) > 1) this.y += (this.targetY - this.y) / 200;
+        if (Math.abs(this.targetX - this.x) > 1) this.x += (this.targetX - this.x) / 50;
+        if (Math.abs(this.targetY - this.y) > 1) this.y += (this.targetY - this.y) / 50;
+
+        const tilesWidth = (maxX - minX) * config.size * this.targetZoom;
+        const tilesHeight = (maxY - minY) * config.size * this.targetZoom;
+        if (tilesWidth > width - 2 * config.size * this.targetZoom || tilesHeight > height - 2 * config.size * this.targetZoom) this.targetZoom -= .1;
     }
 }
