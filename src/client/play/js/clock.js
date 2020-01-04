@@ -30,8 +30,9 @@ export default {
     },
 
     ticker() {
+        if (game.isPaused()) return;
         this.display();
-
+        
         // No time left
         if (this.remaining === 0) {
             this.stop();

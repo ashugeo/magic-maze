@@ -9,6 +9,7 @@ export default {
     players: 0,
     admin: false,
     phase: 0, // 0: not started, 1: exploring, 2: escaping, 3: won, 4: lost
+    paused: false,
 
     init(options) {
         this.scenario = options.scenario;
@@ -39,6 +40,22 @@ export default {
 
     isEnded() {
         return this.phase >= 3;
+    },
+
+    pause() {
+        if (this.isEnded()) return;
+        this.paused = true;
+    },
+
+    resume() {
+        if (this.isEnded()) return;
+        this.paused = false;
+
+        ai.run();
+    },
+
+    isPaused() {
+        return this.paused;
     },
 
     // TODO: win and lose

@@ -32,6 +32,9 @@ export default {
                 if (!game.isEnded()) this.cancel();
             } else if (e.which === 66) { // B
                 // this.steal();
+            } else if (e.which === 80) { // P
+                if (game.isPaused()) game.resume();
+                else game.pause();
             }
         });
 

@@ -24,8 +24,8 @@ export default {
     },
 
     run() {
-        // Only run AI if game is not ended
-        if (game.isEnded()) return;
+        // Only run AI if game is not ended or paused
+        if (game.isEnded() || game.isPaused()) return;
 
         // Only run AI if there are bots
         if (this.bots.length === 0) return;
