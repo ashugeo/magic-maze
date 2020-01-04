@@ -91,7 +91,7 @@ input[type="checkbox"] {
     outline: none;
     background-color: rgba(0, 0, 0, 0.3); }
   input[type="checkbox"]:checked::after {
-    content: "\2713";
+    content: "✓";
     position: absolute;
     top: 50%;
     left: 50%;
@@ -117,7 +117,7 @@ input[type="checkbox"] {
     position: absolute;
     top: 50%;
     left: 50%;
-    content: "\2713";
+    content: "✓";
     color: white;
     font-size: 1.6em;
     transform: translate(-50%, -50%); }

@@ -25,7 +25,7 @@ module.exports = {
                     {
                         loader: 'file-loader',
                         options: {
-                            name: '[name]/main.css',
+                            name: '[name]/main.min.css',
                         }
                     },
                     {
