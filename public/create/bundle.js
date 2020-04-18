@@ -73,11 +73,13 @@ eval("\n\nvar _createClass = function () { function defineProperties(target, pro
 /*!********************************************!*\
   !*** ./src/client/create/scss/create.scss ***!
   \********************************************/
-/*! other exports [maybe provided (runtime-defined)] [no usage info] */
-/*! runtime requirements: module, __webpack_require__.p, __webpack_require__ */
-/***/ (function(module, __unusedexports, __webpack_require__) {
+/*! export default [provided] [no usage info] [missing usage info prevents renaming] */
+/*! other exports [not provided] [no usage info] */
+/*! runtime requirements: __webpack_require__.r, __webpack_exports__, __webpack_require__.p, __webpack_require__ */
+/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
 
-eval("module.exports = __webpack_require__.p + \"create/main.css\";\n\n//# sourceURL=webpack:///./src/client/create/scss/create.scss?");
+"use strict";
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony default export */ __webpack_exports__[\"default\"] = (__webpack_require__.p + \"create/main.min.css\");\n\n//# sourceURL=webpack:///./src/client/create/scss/create.scss?");
 
 /***/ })
 
@@ -85,6 +87,17 @@ eval("module.exports = __webpack_require__.p + \"create/main.css\";\n\n//# sourc
 /******/ function(__webpack_require__) { // webpackRuntimeModules
 /******/ 	"use strict";
 /******/ 
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	!function() {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = function(exports) {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	}();
+/******/ 	
 /******/ 	/* webpack/runtime/publicPath */
 /******/ 	!function() {
 /******/ 		__webpack_require__.p = "";
