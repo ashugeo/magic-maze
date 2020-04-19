@@ -196,7 +196,7 @@ export default {
     * Get next tile from stock
     */
     newTile() {
-        if (player.role.indexOf('explore') === -1) return;
+        if (!player.role.includes('explore') && !config.debug) return;
         if (tiles.getStockSize() === 0) return;
         let canAddTile = false;
 

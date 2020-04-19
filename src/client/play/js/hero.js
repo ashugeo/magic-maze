@@ -90,8 +90,10 @@ export default class Hero {
             return path;
         }
 
+        const role = config.debug ? ['up', 'right', 'down', 'left', 'explore', 'escalator', 'vortex'] : player.role;
+
         // Check for vortex
-        if (player.role.indexOf('vortex') > -1) {
+        if (role.includes('vortex')) {
             const item = board.get(hero.x, hero.y).item;
             if (item && item.type === 'vortex' && item.color === this.color) {
                 const targetItem = board.get(target.x, target.y).item;
@@ -106,7 +108,7 @@ export default class Hero {
         if (hero.x !== target.x && hero.y !== target.y) {
             // Not the same column or row
             // Check for escalator
-            if (player.role.indexOf('escalator') > -1) {
+            if (role.includes('escalator')) {
                 const escalator = board.get(hero.x, hero.y).escalator;
                 if (escalator && escalator.x === target.x && escalator.y === target.y) {
                     path.push({x: hero.x, y: hero.y});
@@ -149,7 +151,7 @@ export default class Hero {
         if (!target) target = this.cell;
 
         // Use player role
-        const role = player.role;
+        const role = config.debug ? ['up', 'right', 'down', 'left', 'explore', 'escalator', 'vortex'] : player.role;
 
         const path = this.getPath(target);
         if (!path) return;
@@ -205,24 +207,24 @@ export default class Hero {
                         // Going down
                         path[i].reachable = !cell.walls.bottom && !next.walls.top;
                         if (this.color === 'orange' && cell.walls.bottom === 'orange' && next.walls.top === 'orange') path[i].reachable = true;
-                        if (role.indexOf('down') === -1) path[i].reachable = false;
+                        if (!role.includes('down')) path[i].reachable = false;
                     } else {
                         // Going up
                         path[i].reachable = !cell.walls.top && !next.walls.bottom;
                         if (this.color === 'orange' && cell.walls.top === 'orange' && next.walls.bottom === 'orange') path[i].reachable = true;
-                        if (role.indexOf('up') === -1) path[i].reachable = false;
+                        if (!role.includes('up')) path[i].reachable = false;
                     }
                 } else if (path[i].y === y) {
                     if (path[i].x > x) {
                         // Going right
                         path[i].reachable = !cell.walls.right && !next.walls.left;
                         if (this.color === 'orange' && cell.walls.right === 'orange' && next.walls.left === 'orange') path[i].reachable = true;
-                        if (role.indexOf('right') === -1) path[i].reachable = false;
+                        if (!role.includes('right')) path[i].reachable = false;
                     } else {
                         // Going left
                         path[i].reachable = !cell.walls.left && !next.walls.right;
                         if (this.color === 'orange' && cell.walls.left === 'orange' && next.walls.right === 'orange') path[i].reachable = true;
-                        if (role.indexOf('left') === -1) path[i].reachable = false;
+                        if (!role.includes('left')) path[i].reachable = false;
                     }
                 }
 

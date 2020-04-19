@@ -9,7 +9,7 @@ export default {
         // Save my role in window.role
         this.role = roles;
 
-        if (game.players === 1) {
+        if (game.players.length === 1) {
             this.allActions = roles;
             // First role in shuffled array
             this.role = roles[0];
@@ -22,17 +22,6 @@ export default {
                 if (ui.hasClass(e.srcElement.id, 'disabled')) return;
                 this.nextAction();
             });
-        } else {
-            // Display role
-            let html = '<p>Authorized actions: ';
-            for (let i in roles) {
-                i = parseInt(i);
-                html += roles[i];
-                if (roles[i + 1]) html += ', ';
-            }
-            html += '.</p>'
-
-            ui.setHTML('roles', html);
         }
     },
 

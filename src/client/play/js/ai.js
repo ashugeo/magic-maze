@@ -12,6 +12,7 @@ export default {
     bots: [],
 
     init(options) {
+        if (!options.bots) return;
         for (let i = 0; i < Object.keys(options.bots).length; i += 1) {
             this.bots.push(new Bot(i, options.bots[Object.keys(options.bots)[i]].roles));
         }
@@ -656,7 +657,7 @@ export default {
 
         // Run bot with corresponding role
         for (const bot of this.bots) {
-            if (bot.roles.indexOf(action.role) > -1) {
+            if (bot.roles.includes(action.role)) {
                 bot.play(action);
                 return;
             } else {
