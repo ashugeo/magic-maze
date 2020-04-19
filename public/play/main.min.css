@@ -13,8 +13,8 @@ body {
   position: relative;
   width: 300px;
   height: 100vh;
-  background-color: #345;
-  color: white;
+  background-color: rgba(103, 58, 183, 0.1);
+  color: black;
   padding: 2em;
   font-family: sans-serif; }
   #ui #admin {
@@ -23,7 +23,7 @@ body {
     bottom: 0;
     left: 0;
     padding: 2em;
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(103, 58, 183, 0.08);
     transition: bottom .5s ease-in-out; }
     #ui #admin:empty {
       bottom: -100%;
@@ -39,13 +39,14 @@ p {
 h3 {
   font-size: 1rem;
   text-align: center;
-  font-weight: normal;
   margin-bottom: 1em; }
 
 button {
   display: block;
   color: inherit;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: #673ab7;
+  color: white;
+  font-weight: bold;
   border: none;
   border-radius: 4px;
   margin: 1em auto 0 auto;
@@ -57,7 +58,7 @@ button {
   button:focus {
     outline: none; }
   button:not(.disabled):hover, button:not(.disabled):focus {
-    background-color: rgba(0, 0, 0, 0.3); }
+    background-color: #7446c4; }
   button.disabled {
     opacity: .6;
     cursor: not-allowed; }
@@ -67,62 +68,46 @@ input[type="number"] {
   height: 24px;
   padding: 16px;
   font-size: 1em;
-  background-color: rgba(0, 0, 0, 0.2);
-  color: inherit;
+  color: #512e90;
+  background-color: rgba(103, 58, 183, 0.1);
   border: none;
   border-radius: 4px; }
   input[type="number"]:hover, input[type="number"]:focus {
     outline: none;
-    background-color: rgba(0, 0, 0, 0.3); }
+    background-color: rgba(103, 58, 183, 0.15); }
   input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none; }
 
 input[type="checkbox"] {
   position: relative;
-  width: 32px;
-  height: 32px;
-  background-color: rgba(0, 0, 0, 0.2);
+  width: 24px;
+  height: 24px;
+  background-color: rgba(103, 58, 183, 0.1);
   border: none;
   border-radius: 4px;
   -webkit-appearance: none;
   cursor: pointer;
   vertical-align: middle; }
   input[type="checkbox"]:hover, input[type="checkbox"]:focus {
-    outline: none;
-    background-color: rgba(0, 0, 0, 0.3); }
-  input[type="checkbox"]:checked::after {
-    content: "✓";
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    font-weight: bold;
-    color: white;
-    font-size: 1.6em;
-    transform: translate(-50%, -50%); }
-
-input[type="checkbox"] {
-  position: relative;
-  width: 32px;
-  height: 32px;
-  background-color: rgba(0, 0, 0, 0.2);
-  border: none;
-  border-radius: 4px;
-  -webkit-appearance: none;
-  cursor: pointer;
-  vertical-align: middle; }
-  input[type="checkbox"]:hover, input[type="checkbox"]:focus {
-    outline: none;
-    background-color: rgba(0, 0, 0, 0.3); }
-  input[type="checkbox"]:checked::after {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    content: "✓";
-    color: white;
-    font-size: 1.6em;
-    transform: translate(-50%, -50%); }
+    outline: none; }
+  input[type="checkbox"]:checked {
+    background-color: #673ab7; }
+    input[type="checkbox"]:checked::after {
+      content: "✓";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      font-weight: bold;
+      color: white;
+      font-size: 1.4em;
+      transform: translate(-50%, -50%); }
+    input[type="checkbox"]:checked + label {
+      opacity: 1; }
 
 label {
   display: inline-block;
   margin-left: .5em;
-  pointer-events: none; }
+  cursor: pointer;
+  user-select: none;
+  color: #673ab7;
+  opacity: .6; }

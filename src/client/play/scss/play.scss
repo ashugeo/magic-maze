@@ -1,3 +1,5 @@
+$primary-color: #673ab7;
+
 * {
     margin: 0;
     padding: 0;
@@ -14,8 +16,8 @@ body {
     position: relative;
     width: 300px;
     height: 100vh;
-    background-color: #345;
-    color: white;
+    background-color: transparentize($primary-color, .9);
+    color: black;
     padding: 2em;
     font-family: sans-serif;
 
@@ -25,7 +27,7 @@ body {
         bottom: 0;
         left: 0;
         padding: 2em;
-        background-color: rgba(0,0,0,.1);
+        background-color: transparentize($primary-color, .92);
         transition: bottom .5s ease-in-out;
 
         &:empty {
@@ -47,14 +49,15 @@ p {
 h3 {
     font-size: 1rem;
     text-align: center;
-    font-weight: normal;
     margin-bottom: 1em;
 }
 
 button {
     display: block;
     color: inherit;
-    background-color: rgba(0,0,0,.2);
+    background-color: $primary-color;
+    color: white;
+    font-weight: bold;
     border: none;
     border-radius: 4px;
     margin: 1em auto 0 auto;
@@ -70,7 +73,7 @@ button {
 
     &:not(.disabled):hover,
     &:not(.disabled):focus {
-        background-color: rgba(0,0,0,.3);
+        background-color: lighten($primary-color, 5);
     }
 
     &.disabled {
@@ -84,15 +87,15 @@ input[type="number"] {
     height: 24px;
     padding: 16px;
     font-size: 1em;
-    background-color: rgba(0,0,0,.2);
-    color: inherit;
+    color: darken($primary-color, 10);
+    background-color: transparentize($primary-color, .9);
     border: none;
     border-radius: 4px;
 
     &:hover,
     &:focus {
         outline: none;
-        background-color: rgba(0,0,0,.3);
+        background-color: transparentize($primary-color, .85);
     }
 
     &::-webkit-outer-spin-button,
@@ -104,9 +107,9 @@ input[type="number"] {
 
 input[type="checkbox"] {
     position: relative;
-    width: 32px;
-    height: 32px;
-    background-color: rgba(0,0,0,.2);
+    width: 24px;
+    height: 24px;
+    background-color: transparentize($primary-color, .9);
     border: none;
     border-radius: 4px;
     -webkit-appearance: none;
@@ -116,51 +119,37 @@ input[type="checkbox"] {
     &:hover,
     &:focus {
         outline: none;
-        background-color: rgba(0,0,0,.3);
+
+        &:not(:checked) {
+            // background-color: transparentize($primary-color, .8);
+        }
     }
 
-    &:checked::after {
-        content: "✓";
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        font-weight: bold;
-        color: white;
-        font-size: 1.6em;
-        transform: translate(-50%, -50%);
-    }
-}
+    &:checked {
+        background-color: $primary-color;
 
-input[type="checkbox"] {
-    position: relative;
-    width: 32px;
-    height: 32px;
-    background-color: rgba(0,0,0,.2);
-    border: none;
-    border-radius: 4px;
-    -webkit-appearance: none;
-    cursor: pointer;
-    vertical-align: middle;
+        &::after {
+            content: "✓";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            font-weight: bold;
+            color: white;
+            font-size: 1.4em;
+            transform: translate(-50%, -50%);
+        }
 
-    &:hover,
-    &:focus {
-        outline: none;
-        background-color: rgba(0,0,0,.3);
-    }
-
-    &:checked::after {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        content: "✓";
-        color: white;
-        font-size: 1.6em;
-        transform: translate(-50%, -50%);
+        + label {
+            opacity: 1;
+        }
     }
 }
 
 label {
     display: inline-block;
     margin-left: .5em;
-    pointer-events: none;
+    cursor: pointer;
+    user-select: none;
+    color: $primary-color;
+    opacity: .6;
 }
