@@ -14,6 +14,7 @@ app.get('/', (req, res) => {
 });
 
 const listener = http.listen(process.env.PORT || 3000, () => {
+    console.clear();
     console.log(`✨ App running on port ${listener.address().port}`);
     console.log(`🔗 http://localhost:${listener.address().port}/\n`);
 });

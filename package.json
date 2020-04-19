@@ -4,7 +4,7 @@
     "description": "Online version of board game Magic Maze",
     "main": "webpack.config.js",
     "scripts": {
-        "start": "clear && node ./src/server/server.js",
+        "start": "node ./src/server/server.js",
         "watch": "nodemon --config nodemon.json",
         "dev": "webpack --config webpack.config.js",
         "prod": "NODE_ENV=production webpack --config webpack.config.js --progress"
