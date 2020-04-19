@@ -15,40 +15,45 @@ app.get('/', (req, res) => {
 
 const listener = http.listen(process.env.PORT || 3000, () => {
     console.log(`✨ App running on port ${listener.address().port}`);
-    console.log(`🔗 http://localhost:${listener.address().port}/ (Open with ⌘ + double click on Mac terminal)\n`);
+    console.log(`🔗 http://localhost:${listener.address().port}/\n`);
 });
 
 io.sockets.on('connection', socket => {
     for (const roomID of Object.keys(io.sockets.adapter.rooms)) {
         const room = io.sockets.adapter.rooms[roomID];
         if (room.id) {
-            const all = room.length;
-            io.emit('stats', { room: roomID, players: all, bots: 0 });
+            // const all = room.members.length;
+            io.emit('home', room);
         }
     }
 
     // New player entered a room
-    socket.on('join', roomID => {
+    socket.on('join', params => {
+        const roomID = params.room;
         socket.join(roomID);
         socket.roomID = roomID;
+        socket.name = params.name;
+
         const room = io.sockets.adapter.rooms[roomID];
+
         room.id = roomID;
 
         // Game already started
         if (room.isStarted) {
             // Join as spectator
-            room.spectators[socket.id] = true;
+            room.members[socket.id].isSpectator = true;
             socket.scenario = room.options.scenario;
             io.to(room.adminID).emit('getStatus', socket.id);
         }
 
         // Tell everyone
-        const all = room.length;
-        io.to(roomID).emit('people', { all, bots: 0 });
-        io.emit('stats', { room: roomID, players: all, bots: 0 });
+        room.members = Object.keys(room.sockets).map(socketID => ({ id: socketID, name: io.sockets.sockets[socketID].name }));
+
+        io.to(roomID).emit('members', room.members );
+        io.emit('home', { room });
 
         // First player, make it admin
-        if (all === 1) {
+        if (room.members.length === 1) {
             room.adminID = socket.id;
             socket.emit('admin');
         }
@@ -70,21 +75,22 @@ io.sockets.on('connection', socket => {
         const room = io.sockets.adapter.rooms[roomID];
 
         // No more players, room gets deleted
-        if (roomID && !room) io.emit('stats', { room: roomID, players: 0 });
+        if (roomID && !room) io.emit('home', { room: roomID, players: 0 });
         if (!room) return;
 
         // Tell everyone
-        const all = room.length;
+        room.members = Object.keys(room.sockets).map(socketID => ({ id: socketID, name: io.sockets.sockets[socketID].name }));
 
         // TODO: update bots count
-        io.to(roomID).emit('people', { all, bots: 0 });
-        io.emit('stats', { room: roomID, players: all, bots: 0 });
+        io.to(roomID).emit('members', room.members);
+        io.emit('home', room);
 
         // It was the admin, set a new admin
         if (socket.id === room.adminID) {
             const users = Object.keys(room.sockets);
             const adminID = users[0];
             room.adminID = adminID;
+
             // Tell him
             io.to(adminID).emit('admin');
         }
@@ -117,15 +123,16 @@ io.sockets.on('connection', socket => {
         const users = Object.keys(room.sockets);
         const adminID = room.adminID;
 
-        if (!room.spectators) room.spectators = {};
+        // if (!room.spectators) room.spectators = {};
 
-        room.spectators[socket.id] = settings.isSpectator;
+        // room.spectators[socket.id] = settings.isSpectator;
 
         // If admin, build options object with additional data
         if (socket.id === adminID) room.options = { bots: settings.bots, scenario: settings.scenario };
 
         // When the spectator status of everyone is known, the game can start
-        if (Object.keys(room.spectators).length === users.length) start(room);
+        // if (Object.keys(room.spectators).length === users.length) start(room);
+        start(room);
     });
 
     socket.on('hero', data => {
@@ -186,72 +193,73 @@ io.sockets.on('connection', socket => {
 
 function start(room) {
     room.isStarted = true;
-    room.bots = [];
 
     // Add bots to players
     if (room.options.bots) {
         for (let i = 0; i < room.options.bots; i += 1) {
-            room.bots.push('bot' + i);
+            room.members.push('bot' + i);
         }
     }
 
     // Build array of human players (exclude spectators)
-    const players = Object.keys(room.spectators).filter(p => !room.spectators[p]);
+    const players = room.members.filter(m => !m.isSpectator);
 
     // Build array of all players (including bots)
-    let allPlayers = [...players].reduce((obj, item) => Object.assign(obj, { [item]: {} }), {});
-    allPlayers = [...room.bots].reduce((obj, item) => Object.assign(obj, { [item]: { isBot: true } }), allPlayers);
+    console.log(players);
+    // let allPlayers = [...players].reduce((obj, item) => Object.assign(obj, { [item]: {} }), {});
+    // allPlayers = [...room.bots].reduce((obj, item) => Object.assign(obj, { [item]: { isBot: true } }), allPlayers);
+
+    // console.log(allPlayers);
 
     // A game can't start with no one playing
-    if (Object.keys(allPlayers).length === 0) return;
+    if (Object.keys(players).length === 0) return;
 
     // Update players count with bots
-    io.to(room.id).emit('people', {
-        all: Object.keys(allPlayers).length,
-        bots: room.bots.length
-    });
+    io.to(room.id).emit('members', room.members);
 
     // Get all actions for that number of players
     let roles = [];
     for (const i in actions) {
-        if (actions[i].players.includes(Object.keys(allPlayers).length)) roles.push(actions[i].roles);
+        if (actions[i].players.includes(Object.keys(players).length)) roles.push(actions[i].roles);
     }
 
     // Set roles to players
-    if (Object.keys(allPlayers).length === 1) {
+    if (players.length === 1) {
         // Admin alone or admin spectating a single bot, merge roles together
         const allRoles = [].concat(...roles);
-        allPlayers[Object.keys(allPlayers)[0]].roles = shuffleArray(allRoles);
+        players[0].roles = shuffleArray(allRoles);
     } else {
         // Give actions to players randomly
         roles = shuffleArray(roles);
 
         for (let i in roles) {
             i = parseInt(i);
-            allPlayers[Object.keys(allPlayers)[i]].roles = roles[i];
+            players[Object.keys(players)[i]].roles = roles[i];
         }
     }
 
     // Launch game
-    for (const user of Object.keys(room.sockets)) {
-        if (user === room.adminID) {
-            const bots = Object.keys(allPlayers).reduce((bots, player) => {
-                if (allPlayers[player].isBot) bots[player] = allPlayers[player];
+    for (const member of room.members) {
+        console.log(member);
+        
+        if (member.id === room.adminID) {
+            const bots = Object.keys(players).reduce((bots, player) => {
+                if (players[player].isBot) bots[player] = players[player];
                 return bots;
             }, {});
 
-            io.to(user).emit('start', {
-                roles: allPlayers[user] ? allPlayers[user].roles : false,
+            io.to(member.id).emit('start', {
+                roles: players[user] ? players[user].roles : false,
                 scenario: room.options.scenario,
-                players: Object.keys(allPlayers).length,
+                players: Object.keys(players).length,
                 bots,
                 admin: true
             });
         } else {
-            io.to(user).emit('start', {
-                roles: allPlayers[user].roles,
+            io.to(member.id).emit('start', {
+                roles: players[user].roles,
                 scenario: room.options.scenario,
-                players: Object.keys(allPlayers).length
+                players: Object.keys(players).length
             });
         }
     }
