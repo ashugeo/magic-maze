@@ -229,8 +229,6 @@ function start(room) {
         }
     }
 
-    console.log(players);
-
     // Launch game
     const bots = players.filter(p => p.isBot);
 
