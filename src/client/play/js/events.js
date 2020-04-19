@@ -137,8 +137,8 @@ export default {
     * @return {Object} {x, y}
     */
     getHoveredCell() {
-        const x = p5.floor((p5.mouseX - p5.width/2 - (camera.x * camera.zoomValue)) / (config.size * camera.zoomValue));
-        const y = p5.floor((p5.mouseY - p5.height/2 - (camera.y * camera.zoomValue)) / (config.size * camera.zoomValue));
+        const x = p5.floor((p5.mouseX - p5.width / 2 + (camera.x * camera.zoomValue)) / (config.size * camera.zoomValue));
+        const y = p5.floor((p5.mouseY - p5.height / 2 + (camera.y * camera.zoomValue)) / (config.size * camera.zoomValue));
 
         const cell = {
             'x': x,
