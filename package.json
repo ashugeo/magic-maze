@@ -20,19 +20,7 @@
     "homepage": "https://github.com/Ashugeo/magic-maze",
     "dependencies": {
         "express": "^4.17.1",
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-        "npm": "^6.13.4",
-=======
         "npm": "^6.14.4",
->>>>>>> dev
-=======
-        "npm": "^6.13.4",
->>>>>>> parent of bf4e978... npm update
-=======
-        "npm": "^6.13.4",
->>>>>>> parent of bf4e978... npm update
         "p5": "^0.5.16",
         "socket.io": "^2.2.0"
     },
