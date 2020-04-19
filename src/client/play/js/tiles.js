@@ -1,33 +1,61 @@
+import config from './config';
 import helpers from './helpers';
 import Tile from './tile';
 
 export default {
-    all: [], // Array of Tile objects
-    deck: [], // Array of IDs (growing order)
-    stock: [], // Array of IDs (to be mixed)
-    board: [], // Array of IDs (chronologically)
+    all: [],           // Array of Tile objects
+    deck: [],          // Array of IDs (growing order)
+    stock: [],         // Array of IDs (to be mixed)
+    board: [],         // Array of IDs (chronologically)
     pickedTile: false, // ID or false
 
-    init(deck) {
+    init(deck, tiles) {
         for (let id of Object.keys(deck.tiles)) {
             id = parseInt(id);
-            this.deck.push(id);
-            this.stock.push(id);
-            const tile = this.stringToTile(id, deck.tiles[id]);
-            this.all.push(new Tile(tile));
+
+            if (tiles) {
+                const tile = new Tile(this.stringToTile(id, deck.tiles[id]));
+
+                if (tiles.board.includes(id)) {
+                    const t = tiles.all.find(t => t.id === id);
+                    tile.set(t.x, t.y);
+                }
+
+                this.all.push(tile);
+            } else {
+                this.deck.push(id);
+                this.stock.push(id);
+                const tile = this.stringToTile(id, deck.tiles[id]);
+                this.all.push(new Tile(tile));
+            }
         }
 
-        const firstTile = this.stock[0];
-        this.stock.shift();
-        this.stock = helpers.shuffleArray(this.stock);
+        if (!tiles) {
+            const firstTile = this.stock[0];
+            this.stock.shift();
+            this.stock = helpers.shuffleArray(this.stock);
 
-        if (deck.firstInStock) {
-            const index = this.stock.indexOf(deck.firstInStock);
-            this.stock.splice(index, 1);
-            this.stock.unshift(deck.firstInStock);
+            if (deck.firstInStock) {
+                const index = this.stock.indexOf(deck.firstInStock);
+                this.stock.splice(index, 1);
+                this.stock.unshift(deck.firstInStock);
+            }
+
+            this.stock.unshift(firstTile);
+            
+            this.getFromStock().set(config.firstTile.x, config.firstTile.y);
+        }
+    },
+
+    get() {
+        const data = {
+            all: this.all,
+            deck: this.deck,
+            stock: this.stock,
+            board: this.board
         }
 
-        this.stock.unshift(firstTile);
+        return data;
     },
 
     getFromStock(index) {

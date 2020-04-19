@@ -20,9 +20,13 @@
     "homepage": "https://github.com/Ashugeo/magic-maze",
     "dependencies": {
         "express": "^4.17.1",
+<<<<<<< HEAD
         "npm": "^6.13.4",
+=======
+        "npm": "^6.14.4",
+>>>>>>> dev
         "p5": "^0.5.16",
-        "socket.io": "^2.2.0"
+        "socket.io": "^2.3.0"
     },
     "devDependencies": {
         "babel": "^6.23.0",
@@ -30,13 +34,17 @@
         "babel-loader": "^7.1.5",
         "babel-preset-es2015": "^6.24.1",
         "babel-preset-react": "^6.24.1",
+        "css-loader": "^3.5.2",
         "extract-loader": "^3.1.0",
         "extract-text-webpack-plugin": "^3.0.2",
-        "jshint": "^2.10.2",
+        "file-loader": "^5.1.0",
+        "jshint": "^2.11.0",
         "jshint-loader": "^0.8.4",
-        "node-libs-browser": "^2.2.0",
-        "uglifyjs-webpack-plugin": "^2.1.3",
-        "webpack": "^5.0.0-alpha.14",
-        "webpack-cli": "^3.3.2"
+        "node-libs-browser": "^2.2.1",
+        "node-sass": "^4.13.1",
+        "sass-loader": "^8.0.2",
+        "uglifyjs-webpack-plugin": "^2.2.0",
+        "webpack": "^5.0.0-beta.14",
+        "webpack-cli": "^3.3.11"
     }
 }

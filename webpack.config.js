@@ -25,17 +25,14 @@ module.exports = {
                     {
                         loader: 'file-loader',
                         options: {
-                            name: '[name]/main.css',
+                            name: '[name]/main.min.css',
                         }
                     },
                     {
                         loader: 'extract-loader'
                     },
                     {
-                        loader: 'css-loader',
-                        options: {
-                            minimize: process.env.NODE_ENV === 'production' ? true : false
-                        }
+                        loader: 'css-loader'
                     },
                     {
                         loader: 'sass-loader'

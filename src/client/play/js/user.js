@@ -17,14 +17,14 @@ const scenarios = require('../data/scenarios.json');
 
 export default {
     start(options) {
-        // new p5(sketch);
+        new p5(sketch);
         game.init(options);
         const deck = this.buildDeck(options.scenario);
-        tiles.init(deck);
-        board.init();
+        board.init(options.board);
+        tiles.init(deck, options.tiles);
         events.init();
-        heroes.init();
-        clock.init();
+        heroes.init(options.heroes);
+        clock.init(options.clock);
         if (options.roles) player.setRoles(options.roles);
         if (game.isAdmin()) ai.run();
     },

@@ -12,7 +12,6 @@ import Tile from './tile';
 import tiles from './tiles';
 
 export default {
-
     action: '', // '', 'placing', 'hero'
     mouseIn: false,
     crystal: null,
@@ -33,6 +32,11 @@ export default {
                 if (!game.isEnded()) this.cancel();
             } else if (e.which === 66) { // B
                 // this.steal();
+            } else if (e.which === 80) { // P
+                if (game.isPaused()) game.resume();
+                else game.pause();
+            } else if (e.which === 71) { // G
+                config.grid = !config.grid;
             }
         });
 
@@ -133,8 +137,8 @@ export default {
     * @return {Object} {x, y}
     */
     getHoveredCell() {
-        const x = p5.floor((p5.mouseX - p5.width/2 - (camera.x * camera.zoomValue)) / (config.size * camera.zoomValue));
-        const y = p5.floor((p5.mouseY - p5.height/2 - (camera.y * camera.zoomValue)) / (config.size * camera.zoomValue));
+        const x = p5.floor((p5.mouseX - p5.width / 2 + (camera.x * camera.zoomValue)) / (config.size * camera.zoomValue));
+        const y = p5.floor((p5.mouseY - p5.height / 2 + (camera.y * camera.zoomValue)) / (config.size * camera.zoomValue));
 
         const cell = {
             'x': x,

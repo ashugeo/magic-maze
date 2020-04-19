@@ -11,33 +11,38 @@ import tiles from './tiles';
 
 export default {
     init() {
-        socket.on('people', people => {
-            let html = people.all - people.bots;
-            html += people.all - people.bots > 1 ? ' players online' : ' player online';
-            if (people.bots) html += people.bots > 1 ? ` (and ${people.bots} bots)` : ' (and 1 bot)';
+        socket.on('members', members => {
+            console.log(members);
+            const botsCount = members.filter(m => m.isBot).length;
+            let html = members.length - botsCount;
+            html += members.length - botsCount > 1 ? ' players online' : ' player online';
+            if (botsCount) html += botsCount > 1 ? ` (and ${botsCount} bots)` : ' (and 1 bot)';
             ui.setHTML('people', html);
+
+            const peopleHTML = members.map(m => `<li>${m.name}</li>`).join('');
+            ui.setHTML('list', peopleHTML);
         });
 
         socket.on('admin', () => {
             let html = `<h3>Game admin</h3>
             <p>Bot(s) <input type="number" id="bots" value="0" min="0" max="7" /></p>
             <p>Scenario <input type="number" id="scenario" value="1" min="1" max="15" /></p>
-            <button id="start">Start game!</button>`;
+            <button id="start">Start game</button>`;
 
             ui.setHTML('admin', html);
             ui.addEvent('start', 'click', () => { socket.emit('prestart'); });
         });
 
         socket.on('prestart', isAdmin => {
-            const spectator = ui.getProperty('spectator', 'checked');
+            const isSpectator = ui.getProperty('isSpectator', 'checked');
 
             if (isAdmin) {
                 // Ask admin for game parameters
                 const bots = parseInt(ui.getProperty('bots', 'value'));
                 const scenario = parseInt(ui.getProperty('scenario', 'value'));
-                socket.emit('settings', { bots, scenario, spectator });
+                socket.emit('settings', { bots, scenario, isSpectator });
             } else {
-                socket.emit('settings', { spectator });
+                socket.emit('settings', { isSpectator });
             }
         });
 
@@ -72,6 +77,16 @@ export default {
             tile.rotation = data.tile.rotation;
             tile.set(data.x, data.y);
             tiles.board.push(tile.id);
+        });
+
+        socket.on('getStatus', user => {
+            const data = {
+                board: board.getAll(),
+                clock: clock.get(),
+                heroes: heroes.get(),
+                tiles: tiles.get()
+            }
+            socket.emit('status', data, user);
         });
 
         socket.on('invertClock', data => {

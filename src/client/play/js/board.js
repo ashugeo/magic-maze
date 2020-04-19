@@ -5,17 +5,20 @@ import tiles from './tiles';
 
 export default {
     layout: [],
+    ready: false,
 
-    init() {
+    init(board) {
         for (let i = 0; i < config.boardCols; i += 1) {
             this.layout[i] = {};
             for (let j = 0; j < config.boardRows; j += 1) {
                 this.layout[i][j] = new Cell(i, j);
             }
         }
+        this.ready = true;
+    },
 
-        const firstTile = tiles.getFromStock();
-        firstTile.set(config.firstTile.x, config.firstTile.y);
+    getAll() {
+        return this.layout;
     },
 
     get(x, y) {

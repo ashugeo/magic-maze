@@ -5,13 +5,20 @@
     <title>Magic Maze</title>
     <script src="/socket.io/socket.io.js"></script>
     <script src="./bundle.js" charset="utf-8"></script>
-    <link rel="stylesheet" href="./main.css">
+    <link rel="stylesheet" href="./main.min.css">
 </head>
 <body>
     <div id="ui">
-        <p><span id="people">1 player online</span></p>
         <p>Time remaining: <span id="clock">- m - - s</span></p>
-        <p id="spectator-ui"><input type="checkbox" name="spectator" id="spectator"><label for="spectator">Spectator</label></p>
+
+        <p><strong id="people">1 player online</strong></p>
+
+        <ul id="list"></ul>
+
+        <p id="spectator-ui">
+            <!-- <input type="checkbox" name="isSpectator" id="isSpectator">
+            <label for="isSpectator">Spectator</label> -->
+        </p>
         <p id="roles"></p>
         <div id="admin"></div>
     </div>

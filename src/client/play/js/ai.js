@@ -12,8 +12,8 @@ export default {
     bots: [],
 
     init(options) {
-        for (let i = 0; i < options.bots.length; i += 1) {
-            this.bots.push(new Bot(i, options.bots[i].roles));
+        for (let i = 0; i < Object.keys(options.bots).length; i += 1) {
+            this.bots.push(new Bot(i, options.bots[Object.keys(options.bots)[i]].roles));
         }
     },
 
@@ -24,8 +24,8 @@ export default {
     },
 
     run() {
-        // Only run AI if game is not ended
-        if (game.isEnded()) return;
+        // Only run AI if game is not ended or paused
+        if (game.isEnded() || game.isPaused()) return;
 
         // Only run AI if there are bots
         if (this.bots.length === 0) return;
@@ -177,7 +177,7 @@ export default {
                         board.count('article') < 4 ||
                         (
                             (game.isScenario(1) && board.count('exit') < 1) ||
-                            board.count('exit') < 4
+                            (!game.isScenario(1) && board.count('exit') < 4)
                         )
                     )
                 ) {
@@ -200,7 +200,7 @@ export default {
                         board.count('article') < 4 ||
                         (
                             (game.isScenario(1) && board.count('exit') < 1) ||
-                            board.count('exit') < 4
+                            (!game.isScenario(1) && board.count('exit') < 4)
                         )
                     )
                 ) {
@@ -220,7 +220,7 @@ export default {
                     board.count('article') === 4 &&
                     (
                         (game.isScenario(1) && board.count('exit') === 1) ||
-                        board.count('exit') === 4
+                        (!game.isScenario(1) && board.count('exit') === 4)
                     )
                 ) {
                     objectives.push({
@@ -655,7 +655,7 @@ export default {
         const action = actions[id];
 
         // Run bot with corresponding role
-        for (let bot of this.bots) {
+        for (const bot of this.bots) {
             if (bot.roles.indexOf(action.role) > -1) {
                 bot.play(action);
                 return;
@@ -675,7 +675,7 @@ export default {
     },
 
     checkForWin() {
-        for (let hero of heroes.all) {
+        for (const hero of heroes.all) {
             // Is every hero out?
             if (!hero.hasExited()) return false;
         }

@@ -15,6 +15,7 @@ export default {
 
     getProperty(id, prop) {
         const elem = this.getById(id);
+        if (!elem) return false;
         return elem[prop];
     },
 
