@@ -9,7 +9,10 @@ window.onload = () => {
     window.socket = io({transports: ['websocket'], upgrade: false});
     sockets.init();
 
-    if (room) socket.emit('join', { room, name });
+    if (room) {
+        socket.emit('join', { room, name });
+        document.title = `Magic Maze · ${room}`;
+    }
 
     socket.on('msg', msg => {
         console.log(msg);
