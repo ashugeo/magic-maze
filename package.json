@@ -4,7 +4,8 @@
     "description": "Online version of board game Magic Maze",
     "main": "webpack.config.js",
     "scripts": {
-        "start": "node ./src/server/server.js",
+        "start": "clear && node ./src/server/server.js",
+        "watch": "nodemon --config nodemon.json",
         "dev": "webpack --config webpack.config.js",
         "prod": "NODE_ENV=production webpack --config webpack.config.js --progress"
     },
@@ -20,6 +21,7 @@
     "homepage": "https://github.com/Ashugeo/magic-maze",
     "dependencies": {
         "express": "^4.17.1",
+        "nodemon": "^2.0.3",
         "npm": "^6.14.4",
         "p5": "^0.5.16",
         "socket.io": "^2.3.0"

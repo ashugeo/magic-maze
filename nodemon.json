@@ -1,0 +1,8 @@
+{
+    "exec": "npm start",
+    "ignore": [
+        ".git",
+        "node_modules/**/node_modules"
+    ],
+    "ext": "js"
+}
