@@ -48,6 +48,16 @@ body {
 
 p {
     margin-bottom: 1em;
+
+    &::first-letter {
+        text-transform: capitalize;
+    }
+
+    &.small {
+        font-size: .825rem;
+        color: rgba(0,0,0,.5);
+        margin-top: -1em;
+    }
 }
 
 h3 {

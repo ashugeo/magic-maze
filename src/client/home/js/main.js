@@ -3,12 +3,12 @@ window.onload = init;
 function init() {
     window.socket = io({transports: ['websocket'], upgrade: false});
 
-    socket.on('home', data => {
-        if (data.members.length === 0) {
-            $(`#${data.id}`).remove();
-        } else if (!$(`#${data.id}`)[0]) {
-            $('.row').prepend(`<div class="box" id="${data.id}">
-                <h4>${data.id}</h4>
+    socket.on('home', room => {
+        if (!room.members || room.members.length === 0) {
+            $(`#${room.id}`).remove();
+        } else if (!$(`#${room.id}`)[0]) {
+            $('.row').prepend(`<div class="box" id="${room.id}">
+                <h4>${room.id}</h4>
                 <p>
                     <span class="players">0 player</span><br>
                     <span class="bots small">0 bot</span>
@@ -21,11 +21,13 @@ function init() {
             </div>`);
         }
 
-        const botsCount = data.members.filter(m => m.isBot).length;
-        const playersCount = data.members.length - botsCount;
+        if (!room.members) return;
 
-        $(`#${data.id} .players`).html(`${playersCount} player${playersCount > 1 ? 's' : ''}`);
-        $(`#${data.id} .bots`).html(`${botsCount} bot${botsCount > 1 ? 's' : ''}`);
+        const botsCount = room.members.filter(m => m.isBot).length;
+        const playersCount = room.members.length - botsCount;
+
+        $(`#${room.id} .players`).html(`${playersCount} player${playersCount > 1 ? 's' : ''}`);
+        $(`#${room.id} .bots`).html(`${botsCount} bot${botsCount > 1 ? 's' : ''}`);
     });
 }
 

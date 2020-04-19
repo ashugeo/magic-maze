@@ -12,6 +12,7 @@ export default {
     bots: [],
 
     init(options) {
+        if (!options.bots) return;
         for (let i = 0; i < Object.keys(options.bots).length; i += 1) {
             this.bots.push(new Bot(i, options.bots[Object.keys(options.bots)[i]].roles));
         }
