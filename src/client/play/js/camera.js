@@ -4,7 +4,6 @@ import config from './config';
 export default {
     x: 0,
     y: 0,
-    mouseIn: true,
     zoomValue: 4,
     targetZoom: 4,
 
