@@ -15,7 +15,7 @@ function init() {
                 </p>
 
                 <label for="name">Nickname</label>
-                <input type="text" id="name" placeholder="Enter a nickname…" required>
+                <input type="text" id="nickname" placeholder="Enter a nickname…" required>
 
                 <button name="play">Play</button>
             </div>`);
@@ -34,7 +34,7 @@ function init() {
 $(document).on('click', 'button[name="play"]', e => {
     e.preventDefault();
     const room = $(e.target).parents('.box').attr('id');
-    const name = $('#name').val();
+    const name = $('#nickname').val();
 
     if (!room || !name) return;
 
@@ -46,7 +46,7 @@ $(document).on('click', 'button[name="play"]', e => {
 $(document).on('click', 'button[name="create"]', e => {
     e.preventDefault();
     const room = $('#room').val();
-    const name = $('#name').val();
+    const name = $('#nickname').val();
 
     if (!room || !name) return;
 
@@ -62,7 +62,7 @@ $(document).on('click', '.box.new-game', () => {
         <input type="text" id="room" placeholder="Name your room…" required>
         
         <label for="name">Nickname</label>
-        <input type="text" id="name" placeholder="Enter a nickname…" required>
+        <input type="text" id="nickname" placeholder="Enter a nickname…" required>
 
         <button name="create">Create room</button>
     </div>

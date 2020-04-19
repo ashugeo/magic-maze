@@ -35,7 +35,7 @@ eval("\n\nObject.defineProperty(exports, \"__esModule\", ({\n    value: true\n})
 /***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
 
 "use strict";
-eval("\n\nvar _sockets = __webpack_require__(/*! ./sockets */ \"./src/client/play/js/sockets.js\");\n\nvar _sockets2 = _interopRequireDefault(_sockets);\n\nfunction _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }\n\nvar room = sessionStorage.getItem('room');\nvar name = sessionStorage.getItem('name');\n\nif (!room) window.location.href = '/';\n\nwindow.onload = function () {\n    window.socket = io({ transports: ['websocket'], upgrade: false });\n    _sockets2.default.init();\n\n    if (room) socket.emit('join', { room: room, name: name });\n\n    socket.on('msg', function (msg) {\n        console.log(msg);\n    });\n};\n\n//# sourceURL=webpack://magic-maze/./src/client/play/js/app.js?");
+eval("\n\nvar _sockets = __webpack_require__(/*! ./sockets */ \"./src/client/play/js/sockets.js\");\n\nvar _sockets2 = _interopRequireDefault(_sockets);\n\nfunction _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }\n\nvar room = sessionStorage.getItem('room');\nvar name = sessionStorage.getItem('name');\n\nif (!room) window.location.href = '/';\n\nwindow.onload = function () {\n    window.socket = io({ transports: ['websocket'], upgrade: false });\n    _sockets2.default.init();\n\n    if (room) {\n        socket.emit('join', { room: room, name: name });\n        document.title = 'Magic Maze \\xB7 ' + room;\n    }\n\n    socket.on('msg', function (msg) {\n        console.log(msg);\n    });\n};\n\n//# sourceURL=webpack://magic-maze/./src/client/play/js/app.js?");
 
 /***/ }),
 
