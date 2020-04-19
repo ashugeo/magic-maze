@@ -657,7 +657,7 @@ export default {
 
         // Run bot with corresponding role
         for (const bot of this.bots) {
-            if (bot.roles.indexOf(action.role) > -1) {
+            if (bot.roles.includes(action.role)) {
                 bot.play(action);
                 return;
             } else {
