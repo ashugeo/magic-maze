@@ -32,8 +32,7 @@
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
-/******/ 		__webpack_require__("./src/client/play/js/app.js");
-/******/ 		return __webpack_require__("./src/client/play/scss/play.scss");
+/******/ 		return __webpack_require__("./src/client/play/js/app.js");
 /******/ 	};
 /******/ 	// initialize runtime
 /******/ 	runtime(__webpack_require__);
@@ -385,42 +384,12 @@ eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});
 "use strict";
 eval("\n\nObject.defineProperty(exports, \"__esModule\", {\n    value: true\n});\n\nvar _ai = __webpack_require__(/*! ./ai */ \"./src/client/play/js/ai.js\");\n\nvar _ai2 = _interopRequireDefault(_ai);\n\nvar _board = __webpack_require__(/*! ./board */ \"./src/client/play/js/board.js\");\n\nvar _board2 = _interopRequireDefault(_board);\n\nvar _clock = __webpack_require__(/*! ./clock */ \"./src/client/play/js/clock.js\");\n\nvar _clock2 = _interopRequireDefault(_clock);\n\nvar _config = __webpack_require__(/*! ./config */ \"./src/client/play/js/config.js\");\n\nvar _config2 = _interopRequireDefault(_config);\n\nvar _events = __webpack_require__(/*! ./events */ \"./src/client/play/js/events.js\");\n\nvar _events2 = _interopRequireDefault(_events);\n\nvar _game = __webpack_require__(/*! ./game */ \"./src/client/play/js/game.js\");\n\nvar _game2 = _interopRequireDefault(_game);\n\nvar _hero = __webpack_require__(/*! ./hero */ \"./src/client/play/js/hero.js\");\n\nvar _hero2 = _interopRequireDefault(_hero);\n\nvar _heroes = __webpack_require__(/*! ./heroes */ \"./src/client/play/js/heroes.js\");\n\nvar _heroes2 = _interopRequireDefault(_heroes);\n\nvar _p5Min = __webpack_require__(/*! p5/lib/p5.min.js */ \"./node_modules/p5/lib/p5.min.js\");\n\nvar _p5Min2 = _interopRequireDefault(_p5Min);\n\nvar _player = __webpack_require__(/*! ./player */ \"./src/client/play/js/player.js\");\n\nvar _player2 = _interopRequireDefault(_player);\n\nvar _sketch = __webpack_require__(/*! ./sketch */ \"./src/client/play/js/sketch.js\");\n\nvar _sketch2 = _interopRequireDefault(_sketch);\n\nvar _tile = __webpack_require__(/*! ./tile */ \"./src/client/play/js/tile.js\");\n\nvar _tile2 = _interopRequireDefault(_tile);\n\nvar _tiles = __webpack_require__(/*! ./tiles */ \"./src/client/play/js/tiles.js\");\n\nvar _tiles2 = _interopRequireDefault(_tiles);\n\nfunction _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }\n\nvar allTiles = __webpack_require__(/*! ../data/tiles.json */ \"./src/client/play/data/tiles.json\");\nvar scenarios = __webpack_require__(/*! ../data/scenarios.json */ \"./src/client/play/data/scenarios.json\");\n\nexports.default = {\n    start: function start(options) {\n        new _p5Min2.default(_sketch2.default);\n        _game2.default.init(options);\n        var deck = this.buildDeck(options.scenario);\n        _board2.default.init(options.board);\n        _tiles2.default.init(deck, options.tiles);\n        _events2.default.init();\n        _heroes2.default.init(options.heroes);\n        _clock2.default.init(options.clock);\n        if (options.roles) _player2.default.setRoles(options.roles);\n        if (_game2.default.isAdmin()) _ai2.default.run();\n    },\n    buildDeck: function buildDeck(scenario) {\n        if (scenario > 7) scenario = 7;\n        var deck = { tiles: [], firstInStock: null };\n        var ids = scenarios[scenario].tiles;\n\n        deck.firstInStock = scenarios[scenario].firstInStock;\n\n        var _iteratorNormalCompletion = true;\n        var _didIteratorError = false;\n        var _iteratorError = undefined;\n\n        try {\n            for (var _iterator = ids[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {\n                var id = _step.value;\n\n                deck.tiles[id] = allTiles[id];\n            }\n        } catch (err) {\n            _didIteratorError = true;\n            _iteratorError = err;\n        } finally {\n            try {\n                if (!_iteratorNormalCompletion && _iterator.return) {\n                    _iterator.return();\n                }\n            } finally {\n                if (_didIteratorError) {\n                    throw _iteratorError;\n                }\n            }\n        }\n\n        return deck;\n    }\n};\n\n//# sourceURL=webpack:///./src/client/play/js/user.js?");
 
-/***/ }),
-
-/***/ "./src/client/play/scss/play.scss":
-/*!****************************************!*\
-  !*** ./src/client/play/scss/play.scss ***!
-  \****************************************/
-/*! export default [provided] [no usage info] [missing usage info prevents renaming] */
-/*! other exports [not provided] [no usage info] */
-/*! runtime requirements: __webpack_require__.r, __webpack_exports__, __webpack_require__.p, __webpack_require__ */
-/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony default export */ __webpack_exports__[\"default\"] = (__webpack_require__.p + \"play/main.min.css\");\n\n//# sourceURL=webpack:///./src/client/play/scss/play.scss?");
-
 /***/ })
 
 /******/ },
 /******/ function(__webpack_require__) { // webpackRuntimeModules
 /******/ 	"use strict";
 /******/ 
-/******/ 	/* webpack/runtime/make namespace object */
-/******/ 	!function() {
-/******/ 		// define __esModule on exports
-/******/ 		__webpack_require__.r = function(exports) {
-/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 			}
-/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 		};
-/******/ 	}();
-/******/ 	
-/******/ 	/* webpack/runtime/publicPath */
-/******/ 	!function() {
-/******/ 		__webpack_require__.p = "";
-/******/ 	}();
-/******/ 	
 /******/ 	/* webpack/runtime/global */
 /******/ 	!function() {
 /******/ 		__webpack_require__.g = (function() {
