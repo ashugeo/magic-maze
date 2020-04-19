@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css?family=Barlow:400,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:wght@700&display=swap&text=MAGICMAZE');
 
 $primary-color: #673ab7;
 
@@ -6,13 +6,13 @@ $primary-color: #673ab7;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Barlow', sans-serif;
 }
 
 body {
     font-size: 18px;
     padding: 16px;
     background-color: transparentize($primary-color, .9);
+    font-family: system-ui, sans-serif;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -20,7 +20,77 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
+    position: relative;
+    font-size: 6rem;
     color: $primary-color;
+    font-family: 'Crimson Text', serif;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-shadow: 0 1px darken($primary-color, 10),
+                 0 2px darken($primary-color, 10),
+                 0 3px darken($primary-color, 10),
+                 0 4px darken($primary-color, 10);
+    display: flex;
+    justify-content: center;
+    margin-bottom: -2rem;
+    user-select: none;
+
+    span {
+        display: block;
+        position: relative;
+        margin: 0 2px;
+
+        @for $i from 1 through 10 {
+            
+            &:nth-child(#{$i}) {
+                color: lighten($primary-color, $i);
+                transform-origin: center center;
+                animation: levitate 2s $i / 5 - 2s ease-in-out infinite alternate;
+            }
+        }
+    }
+    
+    &.shadow {
+        position: absolute;
+        top: 2rem;
+        left: 0;
+        width: 100%;
+        z-index: -1;
+        text-shadow: none;
+        opacity: .1;
+
+        span {
+            margin: 0 4px;
+        }    
+    }
+}
+
+.hr {
+    position: relative;
+    width: 100%;
+    text-align: center;
+    color: $primary-color;
+    opacity: .3;
+    font-size: 1.5rem;
+    margin: 2rem 0;
+    user-select: none;
+
+    &::before,
+    &::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        right: calc(50% + 24px);
+        height: 1px;
+        width: 15%;
+        background-color: $primary-color;
+        opacity: .5;
+    }
+
+    &::after {
+        left: calc(50% + 24px);
+    }
 }
 
 a {
@@ -37,11 +107,11 @@ a {
 input {
     border: 0;
     font-size: 1em;
-
+    
     &[type="text"] {
         border-bottom: 1px solid transparentize($primary-color, .8);
-        padding: 4px;
-        margin-bottom: 8px;
+        padding: 8px;
+        margin-bottom: 16px;
         transition: border-color .2s ease;
 
         &:focus {
@@ -61,11 +131,12 @@ button {
     border: none;
     border-radius: 4px;
     text-transform: uppercase;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.05em;
     font-weight: bold;
     margin: auto auto 0 auto;
     cursor: pointer;
     transition: background-color .2s ease;
+    user-select: none;
 
     &:hover {
         background-color: transparentize($primary-color, .85);
@@ -73,6 +144,7 @@ button {
 }
 
 .wrap {
+    position: relative;
     max-width: 1000px;
     margin: 0 auto;
 }
@@ -82,7 +154,7 @@ button {
     flex-flow: row wrap;
 
     > div {
-        flex: 0 0 calc(20% - (16px / 5 * 4));
+        flex: 0 0 calc(25% - (16px / 4 * 3));
         display: flex;
         flex-flow: column;
         margin-bottom: 16px;
@@ -102,4 +174,9 @@ button {
     border-radius: 8px;
     background-color: white;
     box-shadow: 0 8px 16px transparentize($primary-color, .85);
+}
+
+@keyframes levitate {
+    0% { transform: none }
+    100% { transform: translateY(12px) rotate(1deg) }
 }

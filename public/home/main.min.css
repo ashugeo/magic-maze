@@ -1,19 +1,105 @@
-@import url(https://fonts.googleapis.com/css?family=Barlow:400,700&display=swap);* {
+@import url(https://fonts.googleapis.com/css2?family=Crimson+Text:wght@700&display=swap&text=MAGICMAZE);* {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
-  font-family: 'Barlow', sans-serif; }
+  box-sizing: border-box; }
 
 body {
   font-size: 18px;
   padding: 16px;
-  background-color: rgba(103, 58, 183, 0.1); }
+  background-color: rgba(103, 58, 183, 0.1);
+  font-family: system-ui, sans-serif; }
 
 h1, h2, h3, h4, h5, h6 {
   margin-bottom: 1em; }
 
 h1 {
-  color: #673ab7; }
+  position: relative;
+  font-size: 6rem;
+  color: #673ab7;
+  font-family: 'Crimson Text', serif;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: 0 1px #512e90, 0 2px #512e90, 0 3px #512e90, 0 4px #512e90;
+  display: flex;
+  justify-content: center;
+  margin-bottom: -2rem;
+  user-select: none; }
+  h1 span {
+    display: block;
+    position: relative;
+    margin: 0 2px; }
+    h1 span:nth-child(1) {
+      color: #693bbb;
+      transform-origin: center center;
+      animation: levitate 2s -1.8s ease-in-out infinite alternate; }
+    h1 span:nth-child(2) {
+      color: #6b3cbf;
+      transform-origin: center center;
+      animation: levitate 2s -1.6s ease-in-out infinite alternate; }
+    h1 span:nth-child(3) {
+      color: #6e3ec2;
+      transform-origin: center center;
+      animation: levitate 2s -1.4s ease-in-out infinite alternate; }
+    h1 span:nth-child(4) {
+      color: #7142c3;
+      transform-origin: center center;
+      animation: levitate 2s -1.2s ease-in-out infinite alternate; }
+    h1 span:nth-child(5) {
+      color: #7446c4;
+      transform-origin: center center;
+      animation: levitate 2s -1s ease-in-out infinite alternate; }
+    h1 span:nth-child(6) {
+      color: #764ac6;
+      transform-origin: center center;
+      animation: levitate 2s -0.8s ease-in-out infinite alternate; }
+    h1 span:nth-child(7) {
+      color: #794ec7;
+      transform-origin: center center;
+      animation: levitate 2s -0.6s ease-in-out infinite alternate; }
+    h1 span:nth-child(8) {
+      color: #7c52c8;
+      transform-origin: center center;
+      animation: levitate 2s -0.4s ease-in-out infinite alternate; }
+    h1 span:nth-child(9) {
+      color: #7f56c9;
+      transform-origin: center center;
+      animation: levitate 2s -0.2s ease-in-out infinite alternate; }
+    h1 span:nth-child(10) {
+      color: #8259cb;
+      transform-origin: center center;
+      animation: levitate 2s 0s ease-in-out infinite alternate; }
+  h1.shadow {
+    position: absolute;
+    top: 2rem;
+    left: 0;
+    width: 100%;
+    z-index: -1;
+    text-shadow: none;
+    opacity: .1; }
+    h1.shadow span {
+      margin: 0 4px; }
+
+.hr {
+  position: relative;
+  width: 100%;
+  text-align: center;
+  color: #673ab7;
+  opacity: .3;
+  font-size: 1.5rem;
+  margin: 2rem 0;
+  user-select: none; }
+  .hr::before, .hr::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: calc(50% + 24px);
+    height: 1px;
+    width: 15%;
+    background-color: #673ab7;
+    opacity: .5; }
+  .hr::after {
+    left: calc(50% + 24px); }
 
 a {
   color: #673ab7;
@@ -27,8 +113,8 @@ input {
   font-size: 1em; }
   input[type="text"] {
     border-bottom: 1px solid rgba(103, 58, 183, 0.2);
-    padding: 4px;
-    margin-bottom: 8px;
+    padding: 8px;
+    margin-bottom: 16px;
     transition: border-color .2s ease; }
     input[type="text"]:focus {
       outline: none;
@@ -44,15 +130,17 @@ button {
   border: none;
   border-radius: 4px;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.05em;
   font-weight: bold;
   margin: auto auto 0 auto;
   cursor: pointer;
-  transition: background-color .2s ease; }
+  transition: background-color .2s ease;
+  user-select: none; }
   button:hover {
     background-color: rgba(103, 58, 183, 0.15); }
 
 .wrap {
+  position: relative;
   max-width: 1000px;
   margin: 0 auto; }
 
@@ -60,7 +148,7 @@ button {
   display: flex;
   flex-flow: row wrap; }
   .row > div {
-    flex: 0 0 calc(20% - (16px / 5 * 4));
+    flex: 0 0 calc(25% - (16px / 4 * 3));
     display: flex;
     flex-flow: column;
     margin-bottom: 16px; }
@@ -74,3 +162,9 @@ button {
   border-radius: 8px;
   background-color: white;
   box-shadow: 0 8px 16px rgba(103, 58, 183, 0.15); }
+
+@keyframes levitate {
+  0% {
+    transform: none; }
+  100% {
+    transform: translateY(12px) rotate(1deg); } }
