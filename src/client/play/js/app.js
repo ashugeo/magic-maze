@@ -1,8 +1,9 @@
 import sockets from './sockets';
 
 const room = sessionStorage.getItem('room');
+const name = sessionStorage.getItem('name');
 
-if (!room) window.location.href = '/';
+if (!room || !name) window.location.href = '/';
 
 window.onload = () => {
     window.socket = io({transports: ['websocket'], upgrade: false});

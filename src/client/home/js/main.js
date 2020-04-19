@@ -14,7 +14,7 @@ function init() {
                     <span class="bots small">0 bot</span>
                 </p>
 
-                <label for="name">Nickname</label>
+                <label for="nickname">Nickname</label>
                 <input type="text" id="nickname" placeholder="Enter a nickname…" required>
 
                 <button name="play">Play</button>
@@ -39,6 +39,7 @@ $(document).on('click', 'button[name="play"]', e => {
     if (!room || !name) return;
 
     sessionStorage.setItem('room', room);
+    sessionStorage.setItem('name', name);
     window.location.href = '/play';
 });
 
@@ -50,6 +51,7 @@ $(document).on('click', 'button[name="create"]', e => {
     if (!room || !name) return;
 
     sessionStorage.setItem('room', room);
+    sessionStorage.setItem('name', name);
     window.location.href = '/play';
 });
 
@@ -59,7 +61,7 @@ $(document).on('click', '.box.new-game', () => {
         <label for="room">Room name</label>
         <input type="text" id="room" placeholder="Name your room…" required>
         
-        <label for="name">Nickname</label>
+        <label for="nickname">Nickname</label>
         <input type="text" id="nickname" placeholder="Enter a nickname…" required>
 
         <button name="create">Create room</button>
