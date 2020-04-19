@@ -11,16 +11,8 @@ import tiles from './tiles';
 
 export default {
     init() {
-<<<<<<< HEAD
-        socket.on('people', people => {
-            let html = people.all - people.bots;
-            html += people.all - people.bots > 1 ? ' players online' : ' player online';
-            if (people.bots) html += people.bots > 1 ? ` (and ${people.bots} bots)` : ' (and 1 bot)';
-            ui.setHTML('people', html);
-=======
         socket.on('members', members => {
             this.updateMembers(members);
->>>>>>> dev
         });
 
         socket.on('admin', () => {
