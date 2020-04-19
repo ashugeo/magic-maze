@@ -123,6 +123,14 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony default export */ 
 /******/ 	}();
 /******/ 	
 /******/ 	/* webpack/runtime/publicPath */
+<<<<<<< HEAD
+=======
+/******/ 	!function() {
+/******/ 		__webpack_require__.p = "";
+/******/ 	}();
+/******/ 	
+/******/ 	/* webpack/runtime/global */
+>>>>>>> parent of bf4e978... npm update
 /******/ 	!function() {
 /******/ 		__webpack_require__.p = "";
 /******/ 	}();

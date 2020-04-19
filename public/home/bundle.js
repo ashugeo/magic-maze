@@ -101,6 +101,20 @@ eval("/* unused harmony default export */ var _unused_webpack_default_export = (
 "use strict";
 eval("__webpack_require__.r(__webpack_exports__);\n/* harmony default export */ __webpack_exports__[\"default\"] = (__webpack_require__.p + \"home/main.min.css\");\n\n//# sourceURL=webpack:///./src/client/home/scss/home.scss?");
 
+/***/ }),
+
+/***/ "./src/client/home/scss/home.scss":
+/*!****************************************!*\
+  !*** ./src/client/home/scss/home.scss ***!
+  \****************************************/
+/*! export default [provided] [no usage info] [missing usage info prevents renaming] */
+/*! other exports [not provided] [no usage info] */
+/*! runtime requirements: __webpack_require__.r, __webpack_exports__, __webpack_require__.p, __webpack_require__ */
+/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony default export */ __webpack_exports__[\"default\"] = (__webpack_require__.p + \"home/main.min.css\");\n\n//# sourceURL=webpack:///./src/client/home/scss/home.scss?");
+
 /***/ })
 
 /******/ },
@@ -124,5 +138,9 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony default export */ 
 /******/ 	}();
 /******/ 	
 /******/ }
+<<<<<<< HEAD
+);
+>>>>>>> parent of bf4e978... npm update
+=======
 );
 >>>>>>> parent of bf4e978... npm update

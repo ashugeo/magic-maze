@@ -685,6 +685,20 @@ eval("module.exports = JSON.parse(\"{\\\"0\\\":\\\"31i02700002039703030000000003
 "use strict";
 eval("__webpack_require__.r(__webpack_exports__);\n/* harmony default export */ __webpack_exports__[\"default\"] = (__webpack_require__.p + \"play/main.min.css\");\n\n//# sourceURL=webpack:///./src/client/play/scss/play.scss?");
 
+/***/ }),
+
+/***/ "./src/client/play/scss/play.scss":
+/*!****************************************!*\
+  !*** ./src/client/play/scss/play.scss ***!
+  \****************************************/
+/*! export default [provided] [no usage info] [missing usage info prevents renaming] */
+/*! other exports [not provided] [no usage info] */
+/*! runtime requirements: __webpack_require__.r, __webpack_exports__, __webpack_require__.p, __webpack_require__ */
+/***/ (function(__unusedmodule, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony default export */ __webpack_exports__[\"default\"] = (__webpack_require__.p + \"play/main.min.css\");\n\n//# sourceURL=webpack:///./src/client/play/scss/play.scss?");
+
 /***/ })
 
 <<<<<<< HEAD
@@ -720,6 +734,25 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony default export */ 
 /******/ 	"use strict";
 /******/ 
 /******/ 	/* webpack/runtime/make namespace object */
+<<<<<<< HEAD
+=======
+/******/ 	!function() {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = function(exports) {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	}();
+/******/ 	
+/******/ 	/* webpack/runtime/publicPath */
+/******/ 	!function() {
+/******/ 		__webpack_require__.p = "";
+/******/ 	}();
+/******/ 	
+/******/ 	/* webpack/runtime/global */
+>>>>>>> parent of bf4e978... npm update
 /******/ 	!function() {
 /******/ 		// define __esModule on exports
 /******/ 		__webpack_require__.r = function(exports) {
