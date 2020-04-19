@@ -11,16 +11,11 @@ import tiles from './tiles';
 
 export default {
     init() {
-        socket.on('members', members => {
-            console.log(members);
-            const botsCount = members.filter(m => m.isBot).length;
-            let html = members.length - botsCount;
-            html += members.length - botsCount > 1 ? ' players online' : ' player online';
-            if (botsCount) html += botsCount > 1 ? ` (and ${botsCount} bots)` : ' (and 1 bot)';
+        socket.on('people', people => {
+            let html = people.all - people.bots;
+            html += people.all - people.bots > 1 ? ' players online' : ' player online';
+            if (people.bots) html += people.bots > 1 ? ` (and ${people.bots} bots)` : ' (and 1 bot)';
             ui.setHTML('people', html);
-
-            const peopleHTML = members.map(m => `<li>${m.name}</li>`).join('');
-            ui.setHTML('list', peopleHTML);
         });
 
         socket.on('admin', () => {

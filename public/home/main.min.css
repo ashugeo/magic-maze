@@ -108,39 +108,17 @@ a {
     outline: none;
     text-decoration: underline; }
 
-p {
-  line-height: 1.6em; }
-  p:not(:last-child) {
-    margin-bottom: 1em; }
-
-p.small,
-span.small {
-  font-size: 0.825em;
-  color: rgba(0, 0, 0, 0.5); }
-
 input {
   border: 0;
   font-size: 1em; }
   input[type="text"] {
     border-bottom: 1px solid rgba(103, 58, 183, 0.2);
     padding: 8px;
-    margin-bottom: 1.5em;
+    margin-bottom: 16px;
     transition: border-color .2s ease; }
     input[type="text"]:focus {
       outline: none;
       border-color: #673ab7; }
-  input:invalid ~ button {
-    opacity: .5;
-    pointer-events: none;
-    cursor: not-allowed; }
-
-label {
-  font-size: 0.825rem;
-  color: #673ab7;
-  text-transform: uppercase;
-  font-weight: bold;
-  letter-spacing: 0.02em;
-  margin-bottom: 4px; }
 
 button {
   display: block;
@@ -184,16 +162,6 @@ button {
   border-radius: 8px;
   background-color: white;
   box-shadow: 0 8px 16px rgba(103, 58, 183, 0.15); }
-
-.new-game {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  user-select: none; }
-  .new-game strong {
-    color: #673ab7;
-    font-size: 3rem; }
 
 @keyframes levitate {
   0% {

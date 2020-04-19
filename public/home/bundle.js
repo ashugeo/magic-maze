@@ -1,18 +1,13 @@
-/*
- * ATTENTION: The "eval" devtool has been used (maybe by default in mode: "development").
- * This devtool is not neither made for production nor for readable output files.
- * It uses "eval()" calls to create a separate source file in the browser devtools.
- * If you are trying to read the output file, select a different devtool (https://webpack.js.org/configuration/devtool/)
- * or disable the default devtool with "devtool: false".
- * If you are looking for production-ready output files, see mode: "production" (https://webpack.js.org/configuration/mode/).
- */
-/******/ (() => { // webpackBootstrap
+/******/ (function(modules, runtime) { // webpackBootstrap
 /******/ 	"use strict";
+<<<<<<< HEAD
 <<<<<<< HEAD
 /******/ 	// The require scope
 /******/ 	var __webpack_require__ = {};
 /******/ 	
 =======
+=======
+>>>>>>> parent of 9988094... [WIP] Break everything
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -45,33 +40,39 @@
 /******/ 	// the startup function
 /******/ 	function startup() {
 /******/ 		// Load entry module and return exports
+<<<<<<< HEAD
 /******/ 		__webpack_require__("./src/client/home/js/main.js");
 /******/ 		return __webpack_require__("./src/client/home/scss/home.scss");
 /******/ 	};
 /******/ 	// initialize runtime
 /******/ 	runtime(__webpack_require__);
+=======
+/******/ 		return __webpack_require__("./src/client/home/js/main.js");
+/******/ 	};
+>>>>>>> parent of 9988094... [WIP] Break everything
 /******/
 /******/ 	// run startup
 /******/ 	return startup();
 /******/ })
+<<<<<<< HEAD
 >>>>>>> parent of bf4e978... npm update
+=======
+>>>>>>> parent of 9988094... [WIP] Break everything
 /************************************************************************/
-/******/ 	/* webpack/runtime/publicPath */
-/******/ 	(() => {
-/******/ 		__webpack_require__.p = "";
-/******/ 	})();
-/******/ 	
-/************************************************************************/
-(() => {
+/******/ ({
+
+/***/ "./src/client/home/js/main.js":
 /*!************************************!*\
   !*** ./src/client/home/js/main.js ***!
   \************************************/
-/*! unknown exports (runtime-defined) */
-/*! exports [maybe provided (runtime-defined)] [unused] */
+/*! other exports [maybe provided (runtime-defined)] [no usage info] */
 /*! runtime requirements:  */
-eval("\n\nwindow.onload = init;\n\nfunction init() {\n    window.socket = io({ transports: ['websocket'], upgrade: false });\n\n    socket.on('home', function (data) {\n        if (data.members.length === 0) {\n            $('#' + data.id).remove();\n        } else if (!$('#' + data.id)[0]) {\n            $('.row').prepend('<div class=\"box\" id=\"' + data.id + '\">\\n                <h4>' + data.id + '</h4>\\n                <p>\\n                    <span class=\"players\">0 player</span><br>\\n                    <span class=\"bots small\">0 bot</span>\\n                </p>\\n\\n                <label for=\"name\">Nickname</label>\\n                <input type=\"text\" id=\"name\" placeholder=\"Enter a nickname\\u2026\" required>\\n\\n                <button name=\"play\">Play</button>\\n            </div>');\n        }\n\n        var botsCount = data.members.filter(function (m) {\n            return m.isBot;\n        }).length;\n        var playersCount = data.members.length - botsCount;\n\n        $('#' + data.id + ' .players').html(playersCount + ' player' + (playersCount > 1 ? 's' : ''));\n        $('#' + data.id + ' .bots').html(botsCount + ' bot' + (botsCount > 1 ? 's' : ''));\n    });\n}\n\n$(document).on('click', 'button[name=\"play\"]', function (e) {\n    e.preventDefault();\n    var room = $(e.target).parents('.box').attr('id');\n    var name = $('#name').val();\n\n    if (!room || !name) return;\n\n    sessionStorage.setItem('room', room);\n    sessionStorage.setItem('name', name);\n    window.location.href = '/play';\n});\n\n$(document).on('click', 'button[name=\"create\"]', function (e) {\n    e.preventDefault();\n    var room = $('#room').val();\n    var name = $('#name').val();\n\n    if (!room || !name) return;\n\n    sessionStorage.setItem('room', room);\n    sessionStorage.setItem('name', name);\n    window.location.href = '/play';\n});\n\n$(document).on('click', '.box.new-game', function () {\n    $('.box.new-game').replaceWith('\\n    <div class=\"box\">\\n        <label for=\"room\">Room name</label>\\n        <input type=\"text\" id=\"room\" placeholder=\"Name your room\\u2026\" required>\\n        \\n        <label for=\"name\">Nickname</label>\\n        <input type=\"text\" id=\"name\" placeholder=\"Enter a nickname\\u2026\" required>\\n\\n        <button name=\"create\">Create room</button>\\n    </div>\\n    ');\n});\n\n//# sourceURL=webpack://magic-maze/./src/client/home/js/main.js?");
-})();
+/***/ (function() {
 
+"use strict";
+eval("\n\nwindow.onload = init;\n\nfunction init() {\n    window.socket = io({ transports: ['websocket'], upgrade: false });\n\n    socket.on('stats', function (data) {\n        if (data.players === 0) {\n            $('#' + data.room).remove();\n        } else if (!$('#' + data.room)[0]) {\n            $('.row').prepend('<div class=\"box\" id=\"' + data.room + '\">\\n                <h4>' + data.room + '</h4>\\n                <p class=\"players\">0 player</p>\\n                <p class=\"bots\">0 bot</p>\\n                <button name=\"play\">Play</button>\\n            </div>');\n        }\n\n        $('#' + data.room + ' .players').html(data.players + ' player' + (data.players > 1 ? 's' : ''));\n        $('#' + data.room + ' .bots').html(data.bots + ' bot' + (data.players > 1 ? 's' : ''));\n    });\n}\n\n$(document).on('click', 'button[name=\"play\"]', function (e) {\n    e.preventDefault();\n    var room = $(e.target).parents('.box').attr('id');\n    sessionStorage.setItem('room', room);\n    window.location.href = '/play';\n});\n\n$(document).on('click', 'button[name=\"create\"]', function (e) {\n    e.preventDefault();\n    var room = $(e.target).parents('.box').find('input').val();\n    sessionStorage.setItem('room', room);\n    window.location.href = '/play';\n});\n\n//# sourceURL=webpack:///./src/client/home/js/main.js?");
+
+<<<<<<< HEAD
 <<<<<<< HEAD
 (() => {
 /*!****************************************!*\
@@ -144,3 +145,8 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony default export */ 
 =======
 );
 >>>>>>> parent of bf4e978... npm update
+=======
+/***/ })
+
+/******/ });
+>>>>>>> parent of 9988094... [WIP] Break everything
