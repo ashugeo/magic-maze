@@ -104,6 +104,20 @@ a {
     }
 }
 
+p {
+    line-height: 1.6em;
+
+    &:not(:last-child) {
+        margin-bottom: 1em;
+    }
+}
+
+p.small,
+span.small {
+    font-size: 0.825em;
+    color: rgba(0,0,0,.5);
+}
+
 input {
     border: 0;
     font-size: 1em;
@@ -111,7 +125,7 @@ input {
     &[type="text"] {
         border-bottom: 1px solid transparentize($primary-color, .8);
         padding: 8px;
-        margin-bottom: 16px;
+        margin-bottom: 1.5em;
         transition: border-color .2s ease;
 
         &:focus {
@@ -119,6 +133,23 @@ input {
             border-color: $primary-color;
         }
     }
+
+    &:invalid {
+        ~ button {
+            opacity: .5;
+            pointer-events: none;
+            cursor: not-allowed;
+        }
+    }
+}
+
+label {
+    font-size: 0.825rem;
+    color: $primary-color;
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 0.02em;
+    margin-bottom: 4px;
 }
 
 button {
@@ -174,6 +205,19 @@ button {
     border-radius: 8px;
     background-color: white;
     box-shadow: 0 8px 16px transparentize($primary-color, .85);
+}
+
+.new-game {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+
+    strong {
+        color: $primary-color;
+        font-size: 3rem;
+    }
 }
 
 @keyframes levitate {

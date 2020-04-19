@@ -97,6 +97,7 @@ export default {
     },
 
     updateMembers(members) {
+        console.log(members);
         const botsCount = members.filter(m => m.isBot).length;
 
         let html = members.length - botsCount;
