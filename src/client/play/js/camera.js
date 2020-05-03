@@ -6,6 +6,7 @@ export default {
     y: 0,
     zoomValue: 4,
     targetZoom: 4,
+    autopan: false,
 
     /**
     * Animate camera zoom

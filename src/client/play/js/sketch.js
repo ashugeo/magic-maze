@@ -26,7 +26,7 @@ const sketch = p5 => {
     }
 
     p5.draw = () => {
-        camera.update();
+        if (camera.autopan) camera.update();
 
         p5.clear();
         p5.background(245, 250, 255);
