@@ -21,8 +21,8 @@ export default {
         let svg = '';
         for (let i = 0; i < (config.boardCols - 1) / 4; i += 1) {
             for (let j = 0; j < (config.boardRows - 1) / 4; j += 1) {
-                const x = i * size * 4 + 2.35 * size - size * 0.85 * j;
-                const y = j * size * 4 - 2.1 * size + size * 0.85 * i;
+                const x = i * 4 * size - j * .85 * size + 21.5 * .15 * size;
+                const y = j * 4 * size + i * .85 * size - 40.5 * .15 * size;
                 const s = size * 4;
 
                 for (let n = 0; n < 4; n += 1) {

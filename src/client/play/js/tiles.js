@@ -47,6 +47,16 @@ export default {
         }
     },
 
+    display() {
+        // for (let tile of this.all) {
+        //     // Don't display stock tiles
+        //     if (tile.status === 'stock' || tile.status === 'picked') continue;
+    
+        //     // Display tile
+        //     tile.display();
+        // }
+    },
+
     get() {
         const data = {
             all: this.all,

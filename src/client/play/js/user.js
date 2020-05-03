@@ -34,6 +34,8 @@ export default {
             camera.zoom();
             camera.move();
             
+            tiles.display();
+            
             requestAnimationFrame(draw);
         }
         requestAnimationFrame(draw);

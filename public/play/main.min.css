@@ -60,6 +60,9 @@ body {
     z-index: -1; }
     #canvas-wrap #svg-wrap .cell:hover {
       fill: black; }
+    #canvas-wrap #svg-wrap image {
+      pointer-events: none;
+      transform-origin: center center; }
 
 p {
   margin-bottom: 1em; }

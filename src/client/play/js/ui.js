@@ -8,6 +8,11 @@ export default {
         elem.innerHTML = html;
     },
 
+    addHTML(id, html) {
+        const elem = this.getById(id);
+        elem.innerHTML += html;
+    },
+
     addEvent(id, ev, f) {
         const elem = this.getById(id);
         elem.addEventListener(ev, f);

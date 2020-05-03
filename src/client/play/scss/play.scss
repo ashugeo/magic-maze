@@ -76,9 +76,17 @@ body {
     #svg-wrap {
         transform-origin: center center;
         z-index: -1;
+        
+        .cell {
+            &:hover {
+                fill: black;
+            }
+        }
 
-        .cell:hover {
-            fill: black;
+        image {
+            pointer-events: none;
+            transform-origin: center center;
+            // opacity: .5;
         }
     }
 

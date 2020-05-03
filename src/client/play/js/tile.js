@@ -3,6 +3,7 @@ import config from './config';
 import heroes from './heroes';
 import symbols from './symbols';
 import tiles from './tiles';
+import ui from './ui';
 
 const size = config.size;
 
@@ -214,6 +215,8 @@ export default class Tile {
         this.status = 'set';
         this.saveToBoard(x, y);
         tiles.setTile(this.id);
+
+        this.display();
     }
 
     saveToBoard(x, y) {
@@ -301,37 +304,42 @@ export default class Tile {
     }
 
     display() {
-        p5.push();
-        // Rotate and translate tile
-        p5.rotate(this.rotation * p5.PI / 2);
+        // p5.push();
+        // // Rotate and translate tile
+        // p5.rotate(this.rotation * p5.PI / 2);
         const x = this.x;
         const y = this.y;
         const r = this.rotation;
-        let _x = [x, y, - x - 4, - y - 4][r] * size;
-        let _y = [y, - x - 4, - y - 4, x][r] * size;
+        // let _x = [x, y, - x - 4, - y - 4][r] * size;
+        // let _y = [y, - x - 4, - y - 4, x][r] * size;
+        let _x = x * size;
+        let _y = y * size;
 
-        // Shift adjustment for images
+        // // Shift adjustment for images
         const shift = this.shift;
-        _x += [shift.x, shift.y, -shift.x, -shift.y][r];
-        _y += [shift.y, -shift.x, -shift.y, shift.x][r];
-        p5.translate(_x, _y);
+        // _x += [shift.x, shift.y, -shift.x, -shift.y][r];
+        // _y += [shift.y, -shift.x, -shift.y, shift.x][r];
+        // p5.translate(_x, _y);
 
-        // Display image of cell
-        p5.image(tilesImages[this.id], 0, 0, 4 * size, 4 * size);
+        // // Display image of cell
+        // p5.image(tilesImages[this.id], 0, 0, 4 * size, 4 * size);
 
-        // Colored overlay depending on status
-        p5.noStroke();
-        if (this.canBeSet && this.status !== 'set') {
-            p5.fill(240, 255, 250, 100);
-            p5.rect(0, 0, 4 * size, 4 * size);
-        } else if (!this.canBeSet && this.status !== 'set') {
-            p5.fill(255, 240, 245, 180);
-            p5.rect(0, 0, 4 * size, 4 * size);
-        }
+        // // Colored overlay depending on status
+        // p5.noStroke();
+        // if (this.canBeSet && this.status !== 'set') {
+        //     p5.fill(240, 255, 250, 100);
+        //     p5.rect(0, 0, 4 * size, 4 * size);
+        // } else if (!this.canBeSet && this.status !== 'set') {
+        //     p5.fill(255, 240, 245, 180);
+        //     p5.rect(0, 0, 4 * size, 4 * size);
+        // }
 
-        p5.pop();
+        // p5.pop();
 
-        if (this.status === 'set') this.displayItems();
+        // if (this.status === 'set') this.displayItems();
+
+        const svg = `<g transform="translate(${_x} ${_y})"><image href="./img/tile${this.id}.jpg" height="${4 * config.size}" width="${4 * config.size}" transform="rotate(${r * 90})"/></g>`;
+        ui.addHTML('svg', svg);
     }
 
     displayItems() {
