@@ -30,8 +30,36 @@ body {
       padding: 0; }
 
 #canvas-wrap {
+  position: relative;
   flex: 1;
   background-color: #f5faff; }
+  #canvas-wrap #debug {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%; }
+    #canvas-wrap #debug::before, #canvas-wrap #debug::after {
+      content: "";
+      background-color: black;
+      position: absolute; }
+    #canvas-wrap #debug::before {
+      top: 0;
+      left: 50%;
+      width: 1px;
+      height: 100%;
+      z-index: 100; }
+    #canvas-wrap #debug::after {
+      top: 50%;
+      left: 5;
+      width: 100%;
+      height: 1px; }
+  #canvas-wrap #svg-wrap {
+    transform-origin: center center;
+    z-index: -1; }
+    #canvas-wrap #svg-wrap .cell:hover {
+      fill: black; }
 
 p {
   margin-bottom: 1em; }

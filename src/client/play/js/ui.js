@@ -18,6 +18,11 @@ export default {
         return elem[prop];
     },
 
+    setAttribute(id, attr, value) {
+        const elem = this.getById(id);
+        elem.setAttribute(attr, value); 
+    },
+
     remove(id) {
         const elem = this.getById(id);
         elem.remove();
@@ -28,8 +33,8 @@ export default {
         elem.classList.add(cl);
     },
 
-    hasClass(id, cl) {
-        const elem = this.getById(id);
-        return elem.classList.contains(cl);
+    hasClass(elOrID, cl) {
+        const elem = typeof elOrID === 'string' ? this.getById(id) : elOrID;
+        return elem.classList && elem.classList.contains(cl) ? true : false;
     }
 }

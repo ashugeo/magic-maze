@@ -10,11 +10,14 @@ import heroes from './heroes';
 import player from './player';
 import Tile from './tile';
 import tiles from './tiles';
+import ui from './ui';
 
 export default {
     action: '', // '', 'placing', 'hero'
     mouseIn: false,
     crystal: null,
+    keysDown: [],
+    hoveredCell: {},
 
     init() {
         /**
@@ -22,6 +25,8 @@ export default {
         * @param {Object} e event
         */
         document.addEventListener('keydown', e => {
+            if (!this.keysDown.includes(e.which)) this.keysDown.push(e.which);
+
             if (e.which === 67) { // C: engage tile placing
                 if (!game.isEnded()) this.newTile();
             } else if (e.which === 82) { // R: rotate tile counterclockwise
@@ -40,12 +45,29 @@ export default {
             }
         });
 
+        document.addEventListener('keyup', e => {
+            this.keysDown.splice(this.keysDown.indexOf(e.which), 1);
+        });
+
         document.addEventListener('mousedown', () => {
             if (!game.isEnded() && this.mouseIn) this.mouseDown();
         });
 
         document.addEventListener('mouseup', () => {
             if (!game.isEnded() && this.mouseIn) this.mouseUp();
+        });
+
+        document.addEventListener('mouseover', e => {
+            if (ui.hasClass(e.target, 'cell')) {
+                const x = e.target.getAttribute('data-x');
+                const y = e.target.getAttribute('data-y');
+
+                this.hoveredCell = { x, y };
+            }
+        });
+
+        document.addEventListener('mousemove', e => {
+            if (!game.isEnded() && this.mouseIn) this.mouseMove();
         });
 
         document.addEventListener('mousemove', () => {
@@ -72,7 +94,7 @@ export default {
         // Spectator can't click
         if (player.role.length === 0) return;
 
-        const cell = this.getHoveredCell();
+        const cell = this.hoveredCell;
 
         if (this.action === 'placing') {
             this.setTile(cell);
@@ -88,7 +110,7 @@ export default {
     oldHeroCell: {},
 
     mouseUp() {
-        const cell = this.getHoveredCell();
+        const cell = this.hoveredCell;
         const hero = this.hero;
 
         if (!hero) return;
@@ -121,7 +143,7 @@ export default {
     * Mouse movements events
     */
     mouseMove() {
-        const cell = this.getHoveredCell();
+        const cell = this.hoveredCell;
 
         if (this.action === 'hero') {
             const hero = this.hero;
@@ -130,19 +152,6 @@ export default {
                 hero.checkPath(cell);
             }
         }
-    },
-
-    /**
-    * Get hovered cell coordinates
-    * @return {Object} {x, y}
-    */
-    getHoveredCell() {
-        const x = p5.floor((p5.mouseX - p5.width / 2 + (camera.x * camera.zoomValue)) / (config.size * camera.zoomValue));
-        const y = p5.floor((p5.mouseY - p5.height / 2 + (camera.y * camera.zoomValue)) / (config.size * camera.zoomValue));
-
-        const cell = { x, y };
-
-        return cell;
     },
 
     /**
@@ -318,5 +327,9 @@ export default {
             const cell = board.get(hero.cell.x, hero.cell.y);
             if (!cell.isUsed()) cell.setUsed();
         }
+    },
+
+    isKeyDown(key) {
+        return this.keysDown.includes(key);
     }
 }

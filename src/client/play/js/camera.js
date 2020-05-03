@@ -1,5 +1,7 @@
 import board from './board';
 import config from './config';
+import events from './events';
+import ui from './ui';
 
 export default {
     x: 0,
@@ -12,9 +14,9 @@ export default {
     * Animate camera zoom
     */
     zoom() {
-        if (p5.keyIsDown(65)) { // A: zoom out
+        if (events.isKeyDown(65)) { // A: zoom out
             this.targetZoom -= .1;
-        } else if (p5.keyIsDown(69)) { // E: zoom in
+        } else if (events.isKeyDown(69)) { // E: zoom in
             this.targetZoom += .1;
         }
 
@@ -24,37 +26,34 @@ export default {
         this.targetZoom = Math.round(this.targetZoom * 10) / 10;
 
         // Easing
-        if (p5.abs(this.targetZoom - this.zoomValue) > .005) {
+        if (Math.abs(this.targetZoom - this.zoomValue) > .005) {
             this.zoomValue += (this.targetZoom - this.zoomValue) / config.zoomSpeed;
         } else {
             this.zoomValue = this.targetZoom;
         }
 
-        p5.scale(this.zoomValue);
+        // p5.scale(this.zoomValue);
     },
 
     /**
     * Move camera around
     */
-    move(x, y) {
-        if (x && y) {
-            this.x = x;
-            this.y = y;
-        }
-        if (p5.keyIsDown(90)) { // Z: move up
+    move() {
+        if (events.isKeyDown(90)) { // Z: move up
             this.y -= config.cameraSpeed;
         }
-        if (p5.keyIsDown(81)) { // Q: move left
+        if (events.isKeyDown(81)) { // Q: move left
             this.x -= config.cameraSpeed;
         }
-        if (p5.keyIsDown(83)) { // S: move down
+        if (events.isKeyDown(83)) { // S: move down
             this.y += config.cameraSpeed;
         }
-        if (p5.keyIsDown(68)) { // D: move right
+        if (events.isKeyDown(68)) { // D: move right
             this.x += config.cameraSpeed;
         }
 
-        p5.translate(-this.x, -this.y);
+        ui.setAttribute('svg-wrap', 'transform', `scale(${this.zoomValue})`);
+        ui.setAttribute('svg', 'transform', `translate(${-this.x} ${-this.y})`);
 
         if (config.cameraMouse) {
             const x1 = -this.x
@@ -80,8 +79,11 @@ export default {
     update() {
         if (!board.ready) return;
 
-        const width = p5.width;
-        const height = p5.height;
+        // const width = p5.width;
+        // const height = p5.height;
+
+        const width = 1140;
+        const height = 978;
 
         const allCells = board.getAll();
         
