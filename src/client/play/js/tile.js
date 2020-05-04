@@ -309,14 +309,14 @@ export default class Tile {
         // p5.rotate(this.rotation * p5.PI / 2);
         const x = this.x;
         const y = this.y;
-        const r = this.rotation;
+        // const r = this.rotation;
         // let _x = [x, y, - x - 4, - y - 4][r] * size;
         // let _y = [y, - x - 4, - y - 4, x][r] * size;
         // let _x = x * size;
         // let _y = y * size;
 
         // // Shift adjustment for images
-        const shift = this.shift;
+        // const shift = this.shift;
         // _x += [shift.x, shift.y, -shift.x, -shift.y][r];
         // _y += [shift.y, -shift.x, -shift.y, shift.x][r];
         // p5.translate(_x, _y);
@@ -341,7 +341,7 @@ export default class Tile {
 
         // if (this.status === 'set') this.displayItems();
 
-        const svg = `<image href="./img/tile${this.id}.jpg" height="${4 * config.size}" width="${4 * config.size}" transform="translate(${_x} ${_y}) rotate(0) translate(${-2 * size} ${-2 * size})"/>`;
+        const svg = `<image href="./img/tile${this.id}.jpg" height="${4 * config.size}" width="${4 * config.size}" transform="translate(${_x} ${_y}) rotate(${this.rotation * 90}) translate(${-2 * size} ${-2 * size})"/>`;
         ui.addHTML('svg', svg);
     }
 
