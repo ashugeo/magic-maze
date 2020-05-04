@@ -22,6 +22,7 @@ export default {
         game.init(options);
         const deck = this.buildDeck(options.scenario);
         board.init(options.board);
+        camera.init();
         tiles.init(deck, options.tiles);
         events.init();
         heroes.init(options.heroes);
@@ -35,6 +36,7 @@ export default {
             camera.move();
             
             tiles.display();
+            heroes.display();
             
             requestAnimationFrame(draw);
         }

@@ -10,6 +10,16 @@ export default {
     targetZoom: 4,
     autopan: false,
 
+    init() {
+        const width = ui.getById('canvas-wrap').clientWidth;
+        const height = ui.getById('canvas-wrap').clientHeight;
+
+        ui.setAttribute('svg-el', 'viewBox', `0 0 ${width} ${height}`);
+
+        this.x = -width / 2 + (config.firstTile.x + 2) * config.size - .85 * config.firstTile.y / 4 * config.size;
+        this.y = -height / 2 + (config.firstTile.y + 2) * config.size + .85 * config.firstTile.x / 4 * config.size;
+    },
+
     /**
     * Animate camera zoom
     */
@@ -40,18 +50,19 @@ export default {
     */
     move() {
         if (events.isKeyDown(90)) { // Z: move up
-            this.y -= config.cameraSpeed;
+            this.y -= config.cameraSpeed / this.zoomValue * 2;
         }
         if (events.isKeyDown(81)) { // Q: move left
-            this.x -= config.cameraSpeed;
+            this.x -= config.cameraSpeed / this.zoomValue * 2;
         }
         if (events.isKeyDown(83)) { // S: move down
-            this.y += config.cameraSpeed;
+            this.y += config.cameraSpeed / this.zoomValue * 2;
         }
         if (events.isKeyDown(68)) { // D: move right
-            this.x += config.cameraSpeed;
+            this.x += config.cameraSpeed / this.zoomValue * 2;
         }
 
+        // TODO: remove svg-wrap parent
         ui.setAttribute('svg-wrap', 'transform', `scale(${this.zoomValue})`);
         ui.setAttribute('svg', 'transform', `translate(${-this.x} ${-this.y})`);
 

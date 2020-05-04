@@ -49,6 +49,7 @@ body {
         left: 0;
         width: 100%;
         height: 100%;
+        pointer-events: none;
 
         &::before,
         &::after {
@@ -77,16 +78,15 @@ body {
         transform-origin: center center;
         z-index: -1;
         
-        .cell {
+        .tile {
             &:hover {
-                fill: black;
+                fill: rgba(0,0,0,.1);
             }
         }
 
-        image {
+        image,
+        .hero {
             pointer-events: none;
-            transform-origin: center center;
-            // opacity: .5;
         }
     }
 

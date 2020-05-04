@@ -39,7 +39,8 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%; }
+    height: 100%;
+    pointer-events: none; }
     #canvas-wrap #debug::before, #canvas-wrap #debug::after {
       content: "";
       background-color: black;
@@ -58,11 +59,11 @@ body {
   #canvas-wrap #svg-wrap {
     transform-origin: center center;
     z-index: -1; }
-    #canvas-wrap #svg-wrap .cell:hover {
-      fill: black; }
-    #canvas-wrap #svg-wrap image {
-      pointer-events: none;
-      transform-origin: center center; }
+    #canvas-wrap #svg-wrap .tile:hover {
+      fill: rgba(0, 0, 0, 0.1); }
+    #canvas-wrap #svg-wrap image,
+    #canvas-wrap #svg-wrap .hero {
+      pointer-events: none; }
 
 p {
   margin-bottom: 1em; }

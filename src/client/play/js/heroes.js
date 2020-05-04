@@ -3,6 +3,7 @@ import camera from './camera'
 import config from './config';
 import Hero from './hero';
 import tiles from './tiles';
+import ui from './ui';
 
 export default {
     all: [],
@@ -23,6 +24,10 @@ export default {
             }
             this.all[i].pos = this.all[i].target;
             this.all[i].status = 'set';
+
+            const color = config.colors[this.all[i].color];
+            const svg = `<circle class="hero" id="hero-${i}" cx="0" cy="0" r="8" fill="${color}" stroke="black" />`;
+            ui.addHTML('svg', svg);
         }
     },
 
@@ -37,7 +42,7 @@ export default {
     },
 
     display() {
-        p5.noStroke();
+        // p5.noStroke();
         for (let hero of this.all) {
 
             // Don't display hidden heroes
@@ -59,7 +64,7 @@ export default {
             }
 
             // Display path
-            p5.push();
+            // p5.push();
             const path = hero.path;
             for (let cell of path) {
                 const boardCell = board.get(cell.x, cell.y);
@@ -110,20 +115,20 @@ export default {
                 }
 
                 if (cell.reachable) {
-                    p5.fill(0, 255, 0, 40);
+                    // p5.fill(0, 255, 0, 40);
                 } else {
-                    p5.fill(255, 0, 0, 40);
+                    // p5.fill(255, 0, 0, 40);
                 }
 
-                p5.push();
-                p5.translate(cell.x * config.size + tileShift.x, cell.y * config.size + tileShift.y);
-                p5.rect(x1 * config.size, y1 * config.size, l * config.size, h * config.size);
-                p5.pop();
+                // p5.push();
+                // p5.translate(cell.x * config.size + tileShift.x, cell.y * config.size + tileShift.y);
+                // p5.rect(x1 * config.size, y1 * config.size, l * config.size, h * config.size);
+                // p5.pop();
             }
 
             // Display hero
-            p5.push();
-            p5.translate(hero.pos.x * config.size, hero.pos.y * config.size);
+            // p5.push();
+            // p5.translate(hero.pos.x * config.size, hero.pos.y * config.size);
 
             // Circle animation
             // p5.noFill();
@@ -132,23 +137,31 @@ export default {
             // p5.ellipse(config.size / 2, config.size / 2, 18 + Math.cos(p5.frameCount / 10));
 
             // Fade out animation
-            if (hero.hasExited()) hero.opacity -= 8;
+            // if (hero.hasExited()) hero.opacity -= 8;
 
             // Hexadecimal to p5 color array
-            let color = p5.color(config.colors[hero.color]).levels;
-            p5.fill(color[0], color[1], color[2], hero.opacity);
+            // let color = p5.color(config.colors[hero.color]).levels;
+            // p5.fill(color[0], color[1], color[2], hero.opacity);
 
             if (hero.status === 'selected') {
                 // Hero is selected, show it with a stroke
-                p5.stroke(0, 20 * hero.opacity / 255);
-                p5.strokeWeight(4);
-                p5.ellipse(config.size / 2, config.size / 2, 16);
+                // p5.stroke(0, 20 * hero.opacity / 255);
+                // p5.strokeWeight(4);
+                // p5.ellipse(config.size / 2, config.size / 2, 16);
             }
 
-            p5.stroke(0, 20 * hero.opacity / 255);
-            p5.strokeWeight(4);
-            p5.ellipse(config.size / 2, config.size/2, 12);
-            p5.pop();
+            // p5.stroke(0, 20 * hero.opacity / 255);
+            // p5.strokeWeight(4);
+            // p5.ellipse(config.size / 2, config.size/2, 12);
+            // p5.pop();
+
+            // const shiftX = [.5, .35, .2, 0][hero.pos.x % 4];
+            // const shiftY = [.5, .35, .2, 0][hero.pos.y % 4];
+
+            const x = hero.pos.x * config.size + 8 - 0.85 * Math.floor(hero.pos.y / 4) * config.size;
+            const y = hero.pos.y * config.size + 8 + 0.85 * Math.floor(hero.pos.x / 4) * config.size;
+
+            ui.setAttribute(`hero-${hero.id}`, 'transform', `translate(${x} ${y})`);
         }
     }
 }

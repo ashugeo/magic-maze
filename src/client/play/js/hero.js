@@ -63,8 +63,8 @@ export default class Hero {
         const tileCell = boardCell.tileCell;
 
         if (tile) {
-            x += [.25, .1, -.1, -.25][tileCell.x] + tile.shift.x / config.size;
-            y += [.25, .1, -.1, -.25][tileCell.y] + tile.shift.y / config.size;
+            x += [.5, .35, .2, 0][tileCell.x] + tile.shift.x / config.size;
+            y += [.5, .35, .2, 0][tileCell.y] + tile.shift.y / config.size;
         }
 
         this.target = {

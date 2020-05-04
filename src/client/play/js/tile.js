@@ -312,8 +312,8 @@ export default class Tile {
         const r = this.rotation;
         // let _x = [x, y, - x - 4, - y - 4][r] * size;
         // let _y = [y, - x - 4, - y - 4, x][r] * size;
-        let _x = x * size;
-        let _y = y * size;
+        // let _x = x * size;
+        // let _y = y * size;
 
         // // Shift adjustment for images
         const shift = this.shift;
@@ -334,11 +334,14 @@ export default class Tile {
         //     p5.rect(0, 0, 4 * size, 4 * size);
         // }
 
+        const _x = (x + 2) * size - y / 4 * .85 * size;
+        const _y = (y + 2) * size + x / 4 * .85 * size;
+
         // p5.pop();
 
         // if (this.status === 'set') this.displayItems();
 
-        const svg = `<g transform="translate(${_x} ${_y})"><image href="./img/tile${this.id}.jpg" height="${4 * config.size}" width="${4 * config.size}" transform="rotate(${r * 90})"/></g>`;
+        const svg = `<image href="./img/tile${this.id}.jpg" height="${4 * config.size}" width="${4 * config.size}" transform="translate(${_x} ${_y}) rotate(0) translate(${-2 * size} ${-2 * size})"/>`;
         ui.addHTML('svg', svg);
     }
 

@@ -17,7 +17,7 @@ export default {
     mouseIn: false,
     crystal: null,
     keysDown: [],
-    hoveredCell: {},
+    hoveredCell: null,
 
     init() {
         /**
@@ -49,29 +49,33 @@ export default {
             this.keysDown.splice(this.keysDown.indexOf(e.which), 1);
         });
 
-        document.addEventListener('mousedown', () => {
-            if (!game.isEnded() && this.mouseIn) this.mouseDown();
+        document.addEventListener('mousedown', e => {
+            if (!game.isEnded() && this.mouseIn) this.mouseDown(e);
         });
 
-        document.addEventListener('mouseup', () => {
-            if (!game.isEnded() && this.mouseIn) this.mouseUp();
+        document.addEventListener('mouseup', e => {
+            if (!game.isEnded() && this.mouseIn) this.mouseUp(e);
         });
 
         document.addEventListener('mouseover', e => {
-            if (ui.hasClass(e.target, 'cell')) {
-                const x = e.target.getAttribute('data-x');
-                const y = e.target.getAttribute('data-y');
+            if (ui.hasClass(e.target, 'tile')) {
+                const x = parseInt(e.target.getAttribute('data-x'));
+                const y = parseInt(e.target.getAttribute('data-y'));
 
-                this.hoveredCell = { x, y };
+                const bcr = e.target.getBoundingClientRect();
+
+                this.hoveredCell = { x, y, bcr };
+            }
+        });
+
+        document.addEventListener('mouseout', e => {
+            if (ui.hasClass(e.target, 'tile')) {
+                this.hoveredCell = null;
             }
         });
 
         document.addEventListener('mousemove', e => {
-            if (!game.isEnded() && this.mouseIn) this.mouseMove();
-        });
-
-        document.addEventListener('mousemove', () => {
-            if (!game.isEnded() && this.mouseIn) this.mouseMove();
+            if (!game.isEnded() && this.mouseIn) this.mouseMove(e);
         });
 
         document.getElementById('canvas-wrap').addEventListener('mouseleave', () => {
@@ -90,11 +94,11 @@ export default {
         }
     },
 
-    mouseDown() {
+    mouseDown(e) {
         // Spectator can't click
         if (player.role.length === 0) return;
 
-        const cell = this.hoveredCell;
+        const cell = this.getHoveredCell(e);
 
         if (this.action === 'placing') {
             this.setTile(cell);
@@ -109,8 +113,8 @@ export default {
 
     oldHeroCell: {},
 
-    mouseUp() {
-        const cell = this.hoveredCell;
+    mouseUp(e) {
+        const cell = this.getHoveredCell(e);
         const hero = this.hero;
 
         if (!hero) return;
@@ -139,11 +143,29 @@ export default {
 
     oldMouseCell: {},
 
+    getHoveredCell(e) {
+        if (!this.hoveredCell) return null;
+        let { x, y, bcr } = this.hoveredCell;
+
+        const _x = (e.clientX - bcr.left) / camera.zoomValue;
+        const _y = (e.clientY - bcr.top) / camera.zoomValue;
+
+        if (_x > 91) x += 3;
+        else if (_x > 64) x += 2;
+        else if (_x > 37) x += 1;
+
+        if (_y > 91) y += 3;
+        else if (_y > 64) y += 2;
+        else if (_y > 37) y += 1;
+
+        return { x, y };
+    },
+
     /**
     * Mouse movements events
     */
-    mouseMove() {
-        const cell = this.hoveredCell;
+    mouseMove(e) {
+        const cell = this.getHoveredCell(e);
 
         if (this.action === 'hero') {
             const hero = this.hero;
