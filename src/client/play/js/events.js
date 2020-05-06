@@ -17,7 +17,8 @@ export default {
     mouseIn: false,
     crystal: null,
     keysDown: [],
-    hoveredCell: null,
+    hoveredCell: {},
+    mouse: { x: 0, y: 0 },
 
     init() {
         /**
@@ -49,12 +50,12 @@ export default {
             this.keysDown.splice(this.keysDown.indexOf(e.which), 1);
         });
 
-        document.addEventListener('mousedown', e => {
-            if (!game.isEnded() && this.mouseIn) this.mouseDown(e);
+        document.addEventListener('mousedown', () => {
+            if (!game.isEnded() && this.mouseIn) this.mouseDown();
         });
 
-        document.addEventListener('mouseup', e => {
-            if (!game.isEnded() && this.mouseIn) this.mouseUp(e);
+        document.addEventListener('mouseup', () => {
+            if (!game.isEnded() && this.mouseIn) this.mouseUp();
         });
 
         document.addEventListener('mouseover', e => {
@@ -62,15 +63,13 @@ export default {
                 const x = parseInt(e.target.getAttribute('data-x'));
                 const y = parseInt(e.target.getAttribute('data-y'));
 
-                const bcr = e.target.getBoundingClientRect();
-
-                this.hoveredCell = { x, y, bcr };
+                this.hoveredCell = { x, y };
             }
         });
 
         document.addEventListener('mouseout', e => {
             if (ui.hasClass(e.target, 'tile')) {
-                this.hoveredCell = null;
+                this.hoveredCell = {};
             }
         });
 
@@ -94,11 +93,11 @@ export default {
         }
     },
 
-    mouseDown(e) {
+    mouseDown() {
         // Spectator can't click
         if (player.role.length === 0) return;
 
-        const cell = this.getHoveredCell(e);
+        const cell = this.getHoveredCell();
 
         if (this.action === 'placing') {
             this.setTile(cell);
@@ -113,8 +112,8 @@ export default {
 
     oldHeroCell: {},
 
-    mouseUp(e) {
-        const cell = this.getHoveredCell(e);
+    mouseUp() {
+        const cell = this.getHoveredCell();
         const hero = this.hero;
 
         if (!hero) return;
@@ -143,12 +142,12 @@ export default {
 
     oldMouseCell: {},
 
-    getHoveredCell(e) {
-        if (!this.hoveredCell) return null;
+    getHoveredCell() {
+        if (!this.hoveredCell.x) return null;
         let { x, y, bcr } = this.hoveredCell;
 
-        const _x = (e.clientX - bcr.left) / camera.zoomValue;
-        const _y = (e.clientY - bcr.top) / camera.zoomValue;
+        const _x = (this.mouse.x - bcr.left) / camera.zoomValue;
+        const _y = (this.mouse.y - bcr.top) / camera.zoomValue;
 
         if (_x > 91) x += 3;
         else if (_x > 64) x += 2;
@@ -165,7 +164,15 @@ export default {
     * Mouse movements events
     */
     mouseMove(e) {
-        const cell = this.getHoveredCell(e);
+        if (e) this.mouse = {
+            x: e.clientX,
+            y: e.clientY
+        };
+        
+        const bcr = document.elementFromPoint(this.mouse.x, this.mouse.y).getBoundingClientRect();
+        this.hoveredCell.bcr = bcr;
+
+        const cell = this.getHoveredCell();
         if (!cell) return;
 
         for (const hero of heroes.all) {

@@ -37,6 +37,8 @@ export default {
             
             tiles.display();
             heroes.display();
+
+            events.mouseMove();
             
             requestAnimationFrame(draw);
         }
