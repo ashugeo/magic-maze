@@ -85,8 +85,19 @@ body {
         }
 
         image,
-        .hero {
+        .hero,
+        .path {
             pointer-events: none;
+        }
+
+        rect {
+            &.path {
+                fill: rgba(255, 0, 0, .2);
+
+                &.reachable {
+                    fill: rgba(0, 255, 0, .3);
+                }
+            }
         }
     }
 

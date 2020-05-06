@@ -166,12 +166,19 @@ export default {
     */
     mouseMove(e) {
         const cell = this.getHoveredCell(e);
+        if (!cell) return;
+
+        for (const hero of heroes.all) {
+            if (hero.cell.x === cell.x && hero.cell.y === cell.y) hero.isHovered = true;
+            else hero.isHovered = false; 
+        }
 
         if (this.action === 'hero') {
             const hero = this.hero;
             if (cell.x !== this.oldMouseCell.x || cell.y !== this.oldMouseCell.y) {
                 this.oldMouseCell = cell;
                 hero.checkPath(cell);
+                hero.displayPath();
             }
         }
     },
@@ -302,6 +309,7 @@ export default {
             this.hero = hero;
             hero.checkPath();
         }
+        hero.displayPath();
     },
 
     checkForEvents(cell, hero) {

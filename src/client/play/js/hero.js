@@ -6,6 +6,7 @@ import game from './game';
 import heroes from './heroes';
 import player from './player';
 import tiles from './tiles';
+import ui from './ui';
 
 export default class Hero {
     constructor(id) {
@@ -235,6 +236,78 @@ export default class Hero {
                 }
             }
         }
+    }
+
+    displayPath() {
+        ui.getById('path').innerHTML = '';
+
+        const path = this.path;
+
+        let svg = '';
+
+        for (let cell of path) {
+            const boardCell = board.get(cell.x, cell.y);
+            const tileCell = boardCell.tileCell;
+
+            let x1 = 0;
+            let y1 = 0;
+            let l = 1;
+            let h = 1;
+
+            if (tileCell) {
+                const walls = boardCell.walls;
+
+                x1 += [.32, .16, 0, -.16][tileCell.x];
+                y1 += [.32, .16, 0, -.16][tileCell.y];
+                let x2 = 1 + [.16, 0, -.16, -.32][tileCell.x];
+                let y2 = 1 + [.16, 0, -.16, -.32][tileCell.y];
+
+                if (walls.left && tileCell.x === 3) {
+                    x1 += .22;
+                } else if (!walls.left && tileCell.x === 0) {
+                    x1 -= .32;
+                }
+
+                if (walls.right && tileCell.x === 0) {
+                    x2 -= .22;
+                } else if (!walls.right && tileCell.x === 3){
+                    x2 += .32;
+                }
+
+                if (walls.top && tileCell.y === 3) {
+                    y1 += .16;
+                } else if (!walls.top && tileCell.y === 0) {
+                    y1 -= .32;
+                }
+
+                if (walls.bottom && tileCell.y === 0) {
+                    y2 -= .22;
+                } else if (!walls.bottom && tileCell.y === 3) {
+                    y2 += .32;
+                }
+
+                l = x2 - x1;
+                h = y2 - y1;
+            }
+
+            if (cell.reachable) {
+                // p5.fill(0, 255, 0, 40);
+            } else {
+                // p5.fill(255, 0, 0, 40);
+            }
+
+            const x = (cell.x + x1 - Math.floor(cell.y / 4) * .85) * config.size;
+            const y = (cell.y + y1 + Math.floor(cell.x / 4) * .85) * config.size;
+
+            svg += `<rect class="path ${cell.reachable ? 'reachable' : ''}" x="${x}" y="${y}" width="${l * config.size}" height="${h * config.size}" fill="black" />`;
+
+            // p5.push();
+            // p5.translate(cell.x * config.size + tileShift.x, cell.y * config.size + tileShift.y);
+            // p5.rect(x1 * config.size, y1 * config.size, l * config.size, h * config.size);
+            // p5.pop();
+        }
+
+        ui.addHTML('path', svg);
     }
 
     /**

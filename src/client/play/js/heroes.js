@@ -27,7 +27,7 @@ export default {
 
             const color = config.colors[this.all[i].color];
             const svg = `<circle class="hero" id="hero-${i}" cx="0" cy="0" r="8" fill="${color}" stroke="black" />`;
-            ui.addHTML('svg', svg);
+            ui.addHTML('heroes', svg);
         }
     },
 
@@ -143,12 +143,12 @@ export default {
             // let color = p5.color(config.colors[hero.color]).levels;
             // p5.fill(color[0], color[1], color[2], hero.opacity);
 
-            if (hero.status === 'selected') {
-                // Hero is selected, show it with a stroke
-                // p5.stroke(0, 20 * hero.opacity / 255);
-                // p5.strokeWeight(4);
-                // p5.ellipse(config.size / 2, config.size / 2, 16);
-            }
+            // if (hero.status === 'selected') {
+            //     // Hero is selected, show it with a stroke
+            //     p5.stroke(0, 20 * hero.opacity / 255);
+            //     p5.strokeWeight(4);
+            //     p5.ellipse(config.size / 2, config.size / 2, 16);
+            // }
 
             // p5.stroke(0, 20 * hero.opacity / 255);
             // p5.strokeWeight(4);
@@ -162,6 +162,9 @@ export default {
             const y = hero.pos.y * config.size + 8 + 0.85 * Math.floor(hero.pos.x / 4) * config.size;
 
             ui.setAttribute(`hero-${hero.id}`, 'transform', `translate(${x} ${y})`);
+
+            if (hero.status === 'selected') ui.setAttribute(`hero-${hero.id}`, 'stroke-width', '2');
+            else ui.setAttribute(`hero-${hero.id}`, 'stroke-width', '1');
         }
     }
 }

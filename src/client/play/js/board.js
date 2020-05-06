@@ -47,7 +47,7 @@ export default {
             }    
         }
 
-        ui.setHTML('svg', svg);
+        ui.setHTML('board', svg);
         
         this.ready = true;
     },

@@ -342,7 +342,7 @@ export default class Tile {
         // if (this.status === 'set') this.displayItems();
 
         const svg = `<image href="./img/tile${this.id}.jpg" height="${4 * config.size}" width="${4 * config.size}" transform="translate(${_x} ${_y}) rotate(${this.rotation * 90}) translate(${-2 * size} ${-2 * size})"/>`;
-        ui.addHTML('svg', svg);
+        ui.addHTML('board', svg);
     }
 
     displayItems() {
