@@ -81,7 +81,11 @@ export default {
         // Change tile status to picked
         this.getTile(id).status = 'picked';
 
-        if (!index) return this.getTile(id);
+        const tile = this.getTile(id);
+
+        tile.createSVG();
+
+        if (!index) return tile;
     },
 
     putBackInStock() {

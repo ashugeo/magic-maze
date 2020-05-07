@@ -35,7 +35,7 @@ export default {
             camera.zoom();
             camera.move();
             
-            tiles.display();
+            // tiles.display();
             heroes.display();
 
             events.mouseMove();

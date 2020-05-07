@@ -18,6 +18,7 @@ export default {
     crystal: null,
     keysDown: [],
     hoveredCell: {},
+    hoveredTile: {},
     mouse: { x: 0, y: 0 },
 
     init() {
@@ -63,13 +64,13 @@ export default {
                 const x = parseInt(e.target.getAttribute('data-x'));
                 const y = parseInt(e.target.getAttribute('data-y'));
 
-                this.hoveredCell = { x, y };
+                this.hoveredTile = { x, y };
             }
         });
 
         document.addEventListener('mouseout', e => {
             if (ui.hasClass(e.target, 'tile')) {
-                this.hoveredCell = {};
+                this.hoveredTile = {};
             }
         });
 
@@ -110,15 +111,13 @@ export default {
         }
     },
 
-    oldHeroCell: {},
-
     mouseUp() {
         const cell = this.getHoveredCell();
         const hero = this.hero;
 
         if (!hero) return;
 
-        if (!(cell.x === this.oldHeroCell.x && cell.y === this.oldHeroCell.y)) {
+        if (!(cell.x === hero.cell.x && cell.y === hero.cell.y)) {
             if (this.action === 'hero' && hero.canGoTo(cell)) {
                 hero.set(cell.x, cell.y);
                 socket.emit('hero', {
@@ -140,11 +139,9 @@ export default {
         this.hero = false;
     },
 
-    oldMouseCell: {},
-
     getHoveredCell() {
-        if (!this.hoveredCell.x) return null;
-        let { x, y, bcr } = this.hoveredCell;
+        if (!this.hoveredTile.x || !this.hoveredTile.y || !this.hoveredTile.bcr) return null;
+        let { x, y, bcr } = this.hoveredTile;
 
         const _x = (this.mouse.x - bcr.left) / camera.zoomValue;
         const _y = (this.mouse.y - bcr.top) / camera.zoomValue;
@@ -164,16 +161,24 @@ export default {
     * Mouse movements events
     */
     mouseMove(e) {
+        const oldCell = this.hoveredCell;
+
         if (e) this.mouse = {
             x: e.clientX,
             y: e.clientY
         };
         
-        const bcr = document.elementFromPoint(this.mouse.x, this.mouse.y).getBoundingClientRect();
-        this.hoveredCell.bcr = bcr;
+        const el = document.elementFromPoint(this.mouse.x, this.mouse.y);
+        if (el.nodeName === 'rect') this.hoveredTile.bcr = el.getBoundingClientRect();
+        else this.hoveredTile.bcr = null;
 
         const cell = this.getHoveredCell();
+
         if (!cell) return;
+
+        if (!oldCell || cell.x === oldCell.x && cell.y === oldCell.y) return;
+
+        this.hoveredCell = cell;
 
         for (const hero of heroes.all) {
             if (hero.cell.x === cell.x && hero.cell.y === cell.y) hero.isHovered = true;
@@ -182,12 +187,15 @@ export default {
 
         if (this.action === 'hero') {
             const hero = this.hero;
-            if (cell.x !== this.oldMouseCell.x || cell.y !== this.oldMouseCell.y) {
+            // if (cell.x !== this.oldMouseCell.x || cell.y !== this.oldMouseCell.y) {
                 this.oldMouseCell = cell;
                 hero.checkPath(cell);
                 hero.displayPath();
-            }
+            // }
         }
+
+        const pickedTile = tiles.getPickedTile();
+        if (pickedTile) this.moveTile();
     },
 
     /**
@@ -270,7 +278,26 @@ export default {
             // Make sure no tile is already picked
             if (!tiles.isPickedTile()) {
                 tiles.getFromStock();
+                this.moveTile();
             }
+        }
+    },
+
+    moveTile() {
+        const pickedTile = tiles.getPickedTile();
+
+        if (pickedTile) {
+            // Hovered cell
+            const cell = this.getHoveredCell();
+            const o = pickedTile.getOrientation();
+    
+            // Place cursor on enter cell depending on orientation
+            const origin = pickedTile.getOrigin(cell.x, cell.y, o);
+
+            pickedTile.move(origin.x, origin.y);
+
+            // Display tile
+            // pickedTile.display();
         }
     },
 
@@ -280,7 +307,10 @@ export default {
     */
     rotateTile(dir) {
         const pickedTile = tiles.getPickedTile();
-        if (pickedTile) pickedTile.rotate(dir);
+        if (pickedTile) {
+            pickedTile.rotate(dir);
+            this.moveTile();
+        }
     },
 
     /**

@@ -59,8 +59,12 @@ body {
   #canvas-wrap #svg-wrap {
     transform-origin: center center;
     z-index: -1; }
-    #canvas-wrap #svg-wrap .tile:hover {
-      fill: rgba(0, 0, 0, 0.1); }
+    #canvas-wrap #svg-wrap image {
+      position: relative; }
+      #canvas-wrap #svg-wrap image.valid {
+        opacity: .8; }
+      #canvas-wrap #svg-wrap image.invalid {
+        opacity: .5; }
     #canvas-wrap #svg-wrap image,
     #canvas-wrap #svg-wrap .hero,
     #canvas-wrap #svg-wrap .path {

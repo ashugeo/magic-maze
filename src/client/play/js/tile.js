@@ -74,6 +74,20 @@ export default class Tile {
 
         // Check if tile can be set here
         if (target) this.canBeSet = this.checkCanBeSet(x, y);
+
+        // Update SVG transform
+        const _x = (this.x + 2) * size - this.y / 4 * .85 * size;
+        const _y = (this.y + 2) * size + this.x / 4 * .85 * size;
+
+        ui.setAttribute(`tile-${this.id}`, 'transform', `translate(${_x} ${_y}) rotate(${this.rotation * 90}) translate(${-2 * size} ${-2 * size})`);
+
+        if (this.canBeSet) {
+            ui.addClass(`tile-${this.id}`, 'valid');
+            ui.removeClass(`tile-${this.id}`, 'invalid');
+        } else {
+            ui.addClass(`tile-${this.id}`, 'invalid');
+            ui.removeClass(`tile-${this.id}`, 'valid');
+        }
     }
 
     /**
@@ -150,11 +164,11 @@ export default class Tile {
     * @param  {int}    o tile orientation
     * @return {Object}   {x, y}
     */
-    getGatePlusOne(x, y, o) {
-        x += [2, 4, 1, -1][o];
-        y += [-1, 2, 4, 1][o];
+    getGatePlusOne(x, y, o) {        
+        x += [1, 4, 2, -1][o];
+        y += [-1, 1, 4, 2][o];
 
-        return {x: x, y: y};
+        return { x, y };
     }
 
     /**
@@ -168,7 +182,7 @@ export default class Tile {
         x += [-1, 0, 0, 1][b];
         y += [0, 1, -1, 0][b];
 
-        return {x: x, y: y};
+        return { x, y };
     }
 
     /**
@@ -193,7 +207,7 @@ export default class Tile {
         let _x = [0, 1, 0, -1][corner];
         let _y = [-1, 0, 1, 0][corner];
 
-        return {x: _x, y: _y};
+        return { x: _x, y: _y };
     }
 
     /**
@@ -207,7 +221,7 @@ export default class Tile {
         x += [-2, -3, -1, 0][o];
         y += [0, -2, -3, -1][o];
 
-        return {x: x, y: y};
+        return { x, y };
     }
 
     set(x, y) {
@@ -215,6 +229,8 @@ export default class Tile {
         this.status = 'set';
         this.saveToBoard(x, y);
         tiles.setTile(this.id);
+
+        ui.removeClass(`tile-${this.id}`, 'valid invalid');
 
         this.display();
     }
@@ -307,8 +323,8 @@ export default class Tile {
         // p5.push();
         // // Rotate and translate tile
         // p5.rotate(this.rotation * p5.PI / 2);
-        const x = this.x;
-        const y = this.y;
+        // const x = this.x;
+        // const y = this.y;
         // const r = this.rotation;
         // let _x = [x, y, - x - 4, - y - 4][r] * size;
         // let _y = [y, - x - 4, - y - 4, x][r] * size;
@@ -334,14 +350,19 @@ export default class Tile {
         //     p5.rect(0, 0, 4 * size, 4 * size);
         // }
 
-        const _x = (x + 2) * size - y / 4 * .85 * size;
-        const _y = (y + 2) * size + x / 4 * .85 * size;
-
         // p5.pop();
 
         // if (this.status === 'set') this.displayItems();
 
-        const svg = `<image href="./img/tile${this.id}.jpg" height="${4 * config.size}" width="${4 * config.size}" transform="translate(${_x} ${_y}) rotate(${this.rotation * 90}) translate(${-2 * size} ${-2 * size})"/>`;
+        // const svg = `<image id="tile-${this.id}" href="./img/tile${this.id}.jpg" height="${4 * config.size}" width="${4 * config.size}" transform="translate(${_x} ${_y}) rotate(${this.rotation * 90}) translate(${-2 * size} ${-2 * size})"/>`;
+        // ui.addHTML('board', svg);
+    }
+
+    createSVG() {
+        // this.move(0, 0);
+
+        const svg = `<image id="tile-${this.id}" href="./img/tile${this.id}.jpg" height="${4 * config.size}" width="${4 * config.size}"/>`;
+
         ui.addHTML('board', svg);
     }
 

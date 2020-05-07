@@ -79,8 +79,23 @@ body {
         z-index: -1;
         
         .tile {
+            // fill: rgba(0,0,0,.1);
+
             &:hover {
-                fill: rgba(0,0,0,.1);
+                // fill: rgba(0,0,0,.1);
+            }
+        }
+
+        image {
+            // opacity: .5;
+            position: relative;
+
+            &.valid {
+                opacity: .8;
+            }
+
+            &.invalid {
+                opacity: .5;
             }
         }
 

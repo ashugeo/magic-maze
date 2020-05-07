@@ -38,6 +38,11 @@ export default {
         elem.classList.add(cl);
     },
 
+    removeClass(id, classes) {
+        const elem = this.getById(id);
+        classes.split(' ').forEach(cl => elem.classList.remove(cl));
+    },
+
     hasClass(elOrID, cl) {
         const elem = typeof elOrID === 'string' ? this.getById(id) : elOrID;
         return elem.classList && elem.classList.contains(cl) ? true : false;
