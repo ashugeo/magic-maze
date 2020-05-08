@@ -179,9 +179,8 @@ export default class Tile {
     * @return {Object}   {x, y}
     */
     getEnter(x, y, b) {
-        x += [-1, 0, 0, 1][b];
-        y += [0, 1, -1, 0][b];
-
+        x += [-1, 1, -1, 1][b];
+        y += [1, 1, -1, -1][b];
         return { x, y };
     }
 
