@@ -29,11 +29,11 @@ body {
       bottom: -100%;
       padding: 0; }
 
-#canvas-wrap {
+#game-wrap {
   position: relative;
   flex: 1;
   background-color: #f5faff; }
-  #canvas-wrap #debug {
+  #game-wrap #debug {
     display: none;
     position: absolute;
     top: 0;
@@ -41,40 +41,39 @@ body {
     width: 100%;
     height: 100%;
     pointer-events: none; }
-    #canvas-wrap #debug::before, #canvas-wrap #debug::after {
+    #game-wrap #debug::before, #game-wrap #debug::after {
       content: "";
       background-color: black;
       position: absolute; }
-    #canvas-wrap #debug::before {
+    #game-wrap #debug::before {
       top: 0;
       left: 50%;
       width: 1px;
       height: 100%;
       z-index: 100; }
-    #canvas-wrap #debug::after {
+    #game-wrap #debug::after {
       top: 50%;
       left: 5;
       width: 100%;
       height: 1px; }
-  #canvas-wrap #svg-wrap {
+  #game-wrap #svg-wrap {
     transform-origin: center center;
     z-index: -1; }
-    #canvas-wrap #svg-wrap .tile {
+    #game-wrap #svg-wrap #board rect {
       fill: transparent;
       stroke: none; }
-    #canvas-wrap #svg-wrap image {
-      position: relative; }
-      #canvas-wrap #svg-wrap image.valid {
-        opacity: .8; }
-      #canvas-wrap #svg-wrap image.invalid {
-        opacity: .5; }
-    #canvas-wrap #svg-wrap image,
-    #canvas-wrap #svg-wrap .hero,
-    #canvas-wrap #svg-wrap .path {
+    #game-wrap #svg-wrap #tiles *,
+    #game-wrap #svg-wrap #path *,
+    #game-wrap #svg-wrap #heroes *,
+    #game-wrap #svg-wrap #grid * {
       pointer-events: none; }
-    #canvas-wrap #svg-wrap rect.path {
+    #game-wrap #svg-wrap #tiles image.valid {
+      opacity: .8; }
+    #game-wrap #svg-wrap #tiles image.invalid {
+      opacity: .4; }
+    #game-wrap #svg-wrap #path rect.path {
       fill: rgba(255, 0, 0, 0.2); }
-      #canvas-wrap #svg-wrap rect.path.reachable {
+      #game-wrap #svg-wrap #path rect.path.reachable {
         fill: rgba(0, 255, 0, 0.3); }
 
 p {

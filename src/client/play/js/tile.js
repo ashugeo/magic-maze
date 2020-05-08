@@ -362,7 +362,7 @@ export default class Tile {
 
         const svg = `<image id="tile-${this.id}" href="./img/tile${this.id}.jpg" height="${4 * config.size}" width="${4 * config.size}"/>`;
 
-        ui.addHTML('board', svg);
+        ui.addHTML('tiles', svg);
     }
 
     removeSVG() {

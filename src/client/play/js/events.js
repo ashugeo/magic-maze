@@ -78,12 +78,12 @@ export default {
             if (!game.isEnded() && this.mouseIn) this.mouseMove(e);
         });
 
-        document.getElementById('canvas-wrap').addEventListener('mouseleave', () => {
+        document.getElementById('game-wrap').addEventListener('mouseleave', () => {
             this.mouseIn = false;
             camera.mouseIn = false;
         });
 
-        document.getElementById('canvas-wrap').addEventListener('mouseenter', () => {
+        document.getElementById('game-wrap').addEventListener('mouseenter', () => {
             this.mouseIn = true;
             camera.mouseIn = true;
         });

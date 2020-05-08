@@ -37,11 +37,12 @@ body {
     }
 }
 
-#canvas-wrap {
+#game-wrap {
     position: relative;
     flex: 1;
     background-color: rgb(245,250,255);
 
+    // TODO: remove this
     #debug {
         display: none;
         position: absolute;
@@ -77,47 +78,47 @@ body {
     #svg-wrap {
         transform-origin: center center;
         z-index: -1;
-        
-        .tile {
-            fill: transparent;
-            stroke: none;
-            // fill: rgba(0,0,0,.1);
 
-            &:hover {
-                // fill: rgba(0,0,0,.1);
+        #board {
+            rect {
+                fill: transparent;
+                stroke: none;
             }
         }
 
-        image {
-            // opacity: .5;
-            position: relative;
-
-            &.valid {
-                opacity: .8;
-            }
-
-            &.invalid {
-                opacity: .5;
+        #tiles,
+        #path,
+        #heroes,
+        #grid {
+            * {
+                pointer-events: none;
             }
         }
 
-        image,
-        .hero,
-        .path {
-            pointer-events: none;
+        #tiles {
+            image {
+                &.valid {
+                    opacity: .8;
+                }
+    
+                &.invalid {
+                    opacity: .4;
+                }
+            }
         }
 
-        rect {
-            &.path {
-                fill: rgba(255, 0, 0, .2);
-
-                &.reachable {
-                    fill: rgba(0, 255, 0, .3);
+        #path {
+            rect {
+                &.path {
+                    fill: rgba(255, 0, 0, .2);
+    
+                    &.reachable {
+                        fill: rgba(0, 255, 0, .3);
+                    }
                 }
             }
         }
     }
-
 }
 
 p {

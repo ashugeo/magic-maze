@@ -11,8 +11,8 @@ export default {
     autopan: false,
 
     init() {
-        const width = ui.getById('canvas-wrap').clientWidth;
-        const height = ui.getById('canvas-wrap').clientHeight;
+        const width = ui.getById('game-wrap').clientWidth;
+        const height = ui.getById('game-wrap').clientHeight;
 
         ui.setAttribute('svg-el', 'viewBox', `0 0 ${width} ${height}`);
 
