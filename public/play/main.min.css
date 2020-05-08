@@ -59,6 +59,9 @@ body {
   #canvas-wrap #svg-wrap {
     transform-origin: center center;
     z-index: -1; }
+    #canvas-wrap #svg-wrap .tile {
+      fill: transparent;
+      stroke: none; }
     #canvas-wrap #svg-wrap image {
       position: relative; }
       #canvas-wrap #svg-wrap image.valid {
