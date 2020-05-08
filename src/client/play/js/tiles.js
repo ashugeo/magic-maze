@@ -89,7 +89,9 @@ export default {
     },
 
     putBackInStock() {
-        this.getTile(this.pickedTile).status = 'stock';
+        const tile = this.getTile(this.pickedTile)
+        tile.removeSVG();
+        tile.status = 'stock';
         this.stock.unshift(this.pickedTile);
         this.pickedTile = false;
     },

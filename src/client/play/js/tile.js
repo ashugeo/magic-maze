@@ -365,6 +365,12 @@ export default class Tile {
         ui.addHTML('board', svg);
     }
 
+    removeSVG() {
+        ui.remove(`tile-${this.id}`);
+        this.x = null;
+        this.y = null;
+    }
+
     displayItems() {
         for (let j = 0; j < 4; j += 1) {
             for (let i = 0; i < 4; i += 1) {
