@@ -117,7 +117,7 @@ export default {
 
         if (!hero) return;
 
-        if (!(cell.x === hero.cell.x && cell.y === hero.cell.y)) {
+        if (cell && !(cell.x === hero.cell.x && cell.y === hero.cell.y)) {
             if (this.action === 'hero' && hero.canGoTo(cell)) {
                 hero.set(cell.x, cell.y);
                 socket.emit('hero', {
@@ -319,6 +319,7 @@ export default {
     * @return {Object|Boolean}
     */
     checkForHero(cell) {
+        if (!cell) return false;
         for (let hero of heroes.all) {
             if (hero.cell.x === cell.x && hero.cell.y === cell.y && hero.selectable) return hero;
         }
