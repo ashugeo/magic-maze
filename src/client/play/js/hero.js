@@ -106,38 +106,46 @@ export default class Hero {
             }
         }
 
-        if (hero.x !== target.x && hero.y !== target.y) {
-            // Not the same column or row
-            // Check for escalator
-            if (role.includes('escalator')) {
-                const escalator = board.get(hero.x, hero.y).escalator;
-                if (escalator && escalator.x === target.x && escalator.y === target.y) {
-                    path.push({x: hero.x, y: hero.y});
-                    path.push({x: target.x, y: target.y, reachable: true});
-                    return path;
-                }
+        // Check for escalator
+        if (role.includes('escalator')) {
+            const escalator = board.get(hero.x, hero.y).escalator;
+            if (escalator && escalator.x === target.x && escalator.y === target.y) {
+                path.push({x: hero.x, y: hero.y});
+                path.push({x: target.x, y: target.y, reachable: true});
+                return path;
             }
-
-            return;
         }
 
-        if (hero.x < target.x) {
+        const heroCell = { x: Math.floor(hero.x / 4), y: Math.floor(hero.y / 4) };
+        const targetCell = { x: Math.floor(target.x / 4), y: Math.floor(target.y / 4) };
+
+        const deltaX = heroCell.y - targetCell.y;
+        const deltaY = targetCell.x - heroCell.x;
+
+        const goingUp = hero.x === target.x + deltaX && hero.y > target.y;
+        const goingDown = hero.x === target.x + deltaX && hero.y < target.y;
+        const goingLeft = hero.y === target.y + deltaY && hero.x > target.x;
+        const goingRight = hero.y === target.y + deltaY && hero.x < target.x;
+
+        if (goingRight) {
             for (let i = hero.x; i <= target.x; i += 1) {
-                path.push({x: i, y: hero.y})
+                const deltaY = Math.floor(hero.x / 4) - Math.floor(i / 4);
+                path.push({ x: i, y: hero.y + deltaY });
             }
-        } else if (hero.x > target.x) {
+        } else if (goingLeft) {
             for (let i = hero.x; i >= target.x; i -= 1) {
-                path.push({x: i, y: hero.y})
+                const deltaY = Math.floor(hero.x / 4) - Math.floor(i / 4);
+                path.push({ x: i, y: hero.y + deltaY });
             }
-        }
-
-        if (hero.y < target.y) {
+        } else if (goingDown) {
             for (let i = hero.y; i <= target.y; i += 1) {
-                path.push({x: hero.x, y: i})
+                const deltaX = Math.floor(i / 4) - Math.floor(hero.y / 4);
+                path.push({ x: hero.x + deltaX, y: i });
             }
-        } else if (hero.y > target.y) {
+        } else if (goingUp) {
             for (let i = hero.y; i >= target.y; i -= 1) {
-                path.push({x: hero.x, y: i})
+                const deltaX = Math.floor(i / 4) - Math.floor(hero.y / 4);
+                path.push({ x: hero.x + deltaX, y: i });
             }
         }
         return path;
