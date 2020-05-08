@@ -43,7 +43,7 @@ export default {
                 if (game.isPaused()) game.resume();
                 else game.pause();
             } else if (e.which === 71) { // G
-                config.grid = !config.grid;
+                ui.toggleClass('grid', 'visible');
             }
         });
 
@@ -60,7 +60,7 @@ export default {
         });
 
         document.addEventListener('mouseover', e => {
-            if (ui.hasClass(e.target, 'tile')) {
+            if (ui.hasClass(e.target, 'hitbox')) {
                 const x = parseInt(e.target.getAttribute('data-x'));
                 const y = parseInt(e.target.getAttribute('data-y'));
 
@@ -69,7 +69,7 @@ export default {
         });
 
         document.addEventListener('mouseout', e => {
-            if (ui.hasClass(e.target, 'tile')) {
+            if (ui.hasClass(e.target, 'hitbox')) {
                 this.hoveredTile = {};
             }
         });
@@ -89,6 +89,7 @@ export default {
         });
 
         window.oncontextmenu = () => {
+            // Right click: rotate tile
             if (!game.isEnded()) this.rotateTile(1);
             return false;
         }

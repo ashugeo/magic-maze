@@ -35,7 +35,7 @@ export default {
                         const h = size + [5, -5, -5, 5][m];
 
                         // Draw cell
-                        // svg += `<rect class="cell" x="${_x}" y="${_y}" width="${w}" height="${h}" fill="white" stroke="red" data-x=${i * 4 + n} data-y="${j * 4 + m}" />`;
+                        gridHTML += `<rect x="${_x}" y="${_y}" width="${w}" height="${h}" fill="white" stroke="red" data-x=${i * 4 + n} data-y="${j * 4 + m}" />`;
 
                         const text = `${i * 4 + n}:${j * 4 + m}`;
 
@@ -45,7 +45,7 @@ export default {
                 }
 
                 // Draw tile
-                boardHTML += `<rect class="tile" x="${x}" y="${y}" width="${s}" height="${s}" fill="white" stroke="blue" data-x=${i * 4} data-y="${j * 4}" />`;
+                boardHTML += `<rect class="hitbox" x="${x}" y="${y}" width="${s}" height="${s}" fill="white" stroke="blue" data-x=${i * 4} data-y="${j * 4}" />`;
             }    
         }
 

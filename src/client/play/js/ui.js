@@ -43,8 +43,13 @@ export default {
         classes.split(' ').forEach(cl => elem.classList.remove(cl));
     },
 
+    toggleClass(id, cl) {
+        if (this.hasClass(id, cl)) this.removeClass(id, cl);
+        else this.addClass(id, cl);
+    },
+
     hasClass(elOrID, cl) {
-        const elem = typeof elOrID === 'string' ? this.getById(id) : elOrID;
+        const elem = typeof elOrID === 'string' ? this.getById(elOrID) : elOrID;
         return elem.classList && elem.classList.contains(cl) ? true : false;
     }
 }

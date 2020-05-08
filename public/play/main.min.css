@@ -66,7 +66,8 @@ body {
     #game-wrap #svg-wrap #path *,
     #game-wrap #svg-wrap #heroes *,
     #game-wrap #svg-wrap #grid * {
-      pointer-events: none; }
+      pointer-events: none;
+      user-select: none; }
     #game-wrap #svg-wrap #tiles image.valid {
       opacity: .8; }
     #game-wrap #svg-wrap #tiles image.invalid {
@@ -75,6 +76,13 @@ body {
       fill: rgba(255, 0, 0, 0.2); }
       #game-wrap #svg-wrap #path rect.path.reachable {
         fill: rgba(0, 255, 0, 0.3); }
+    #game-wrap #svg-wrap #grid {
+      display: none; }
+      #game-wrap #svg-wrap #grid.visible {
+        display: block; }
+      #game-wrap #svg-wrap #grid rect {
+        fill: transparent;
+        stroke-width: .25; }
 
 p {
   margin-bottom: 1em; }
