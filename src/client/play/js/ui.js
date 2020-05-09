@@ -56,5 +56,10 @@ export default {
     hasClass(elOrID, cl) {
         const elem = typeof elOrID === 'string' ? this.getById(elOrID) : elOrID;
         return elem.classList && elem.classList.contains(cl) ? true : false;
+    },
+
+    moveToEnd(elOrID) {
+        const elem = typeof elOrID === 'string' ? this.getById(elOrID) : elOrID;
+        if (elem) elem.parentElement.innerHTML = elem.parentElement.innerHTML.replace(elem.outerHTML, '') + elem.outerHTML;
     }
 }

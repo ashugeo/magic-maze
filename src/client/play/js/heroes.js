@@ -46,36 +46,7 @@ export default {
 
     display(force = false) {
         for (let hero of this.all) {
-            // Don't display hidden heroes
-            if (hero.display === false) continue;
-
-            const targetX = (hero.cell.x - Math.floor(hero.cell.y / 4) * .85 + [.5, .36, .18, 0][hero.cell.x % 4]) * config.size + 8;
-            const targetY = (hero.cell.y + Math.floor(hero.cell.x / 4) * .85 + [.5, .36, .18, 0][hero.cell.y % 4]) * config.size + 8;
-
-            if (force) {
-                hero.x = targetX;
-                hero.y = targetY;
-            }
-
-            let deltaX = targetX - hero.x;
-            let deltaY = targetY - hero.y;
-            let delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
-            
-            const x = hero.x + (deltaX < 0 ?
-                Math.max(-config.heroSpeed * Math.abs(deltaX / delta) * (1 + delta / 100), deltaX) :
-                Math.min(config.heroSpeed * Math.abs(deltaX / delta) * (1 + delta / 100), deltaX));
-
-            const y = hero.y + (deltaY < 0 ?
-                Math.max(-config.heroSpeed * Math.abs(deltaY / delta) * (1 + delta / 100), deltaY) :
-                Math.min(config.heroSpeed * Math.abs(deltaY / delta) * (1 + delta / 100), deltaY));
-
-            hero.x = x;
-            hero.y = y;
-
-            ui.setAttribute(`hero-${hero.id}`, 'transform', `translate(${x} ${y})`);
-
-            if (hero.status === 'selected') ui.setAttribute(`hero-${hero.id}`, 'stroke-width', '2');
-            else ui.setAttribute(`hero-${hero.id}`, 'stroke-width', '1');
+            hero.display(force);
         }
     }
 }

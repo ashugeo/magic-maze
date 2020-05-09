@@ -21,33 +21,7 @@ export default class Hero {
         this.status = 'set', // set, selected, exited
         this.selectable = true,
         this.path = [];
-        // this.opacity = 255;
     }
-
-    // /**
-    // * Move hero to cell
-    // * @param {Object} cell cell X and Y coordinates
-    // */
-    // move(force = false) {
-    //     if (force) {
-    //         this.pos = {x: this.target.x, y: this.target.y};
-    //         this.selectable = true;
-
-    //         // Check for events on this cell
-    //         events.checkForEvents(this.cell, this);
-
-    //         // Run AI again
-    //         ai.run();
-    //     } else {
-    //         let deltaX = this.target.x - this.pos.x;
-    //         let deltaY = this.target.y - this.pos.y;
-    //         let delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-    //         let x = this.pos.x + deltaX / delta / config.heroSpeed;
-    //         let y = this.pos.y + deltaY / delta / config.heroSpeed;
-    //         this.pos = {x, y};
-    //         this.selectable = false;
-    //     }
-    // }
 
     /**
     * Set hero on cell
@@ -56,22 +30,11 @@ export default class Hero {
     */
     set(x, y) {
         this.cell = { x, y };
-
-        // const boardCell = board.get(x, y);
-        // const tile = tiles.getTile(boardCell.tileID);
-        // const tileCell = boardCell.tileCell;
-
-        // if (tile) {
-        //     x += [.5, .35, .2, 0][tileCell.x] + tile.shift.x / config.size;
-        //     y += [.5, .35, .2, 0][tileCell.y] + tile.shift.y / config.size;
-        // }
-
-        // this.target = {
-        //     x: x,
-        //     y: y
-        // }
-
         this.path = [];
+        this.selectable = false;
+
+        // Move SVG element to bottom of parent (z-index hack)
+        ui.moveToEnd(`hero-${this.id}`);
     }
 
     /**
@@ -242,6 +205,49 @@ export default class Hero {
                 }
             }
         }
+    }
+
+    display(force) {
+        // Don't display hidden heroes
+        if (this.display === false) return;
+
+        const targetX = (this.cell.x - Math.floor(this.cell.y / 4) * .85 + [.5, .36, .18, 0][this.cell.x % 4]) * config.size + 8;
+        const targetY = (this.cell.y + Math.floor(this.cell.x / 4) * .85 + [.5, .36, .18, 0][this.cell.y % 4]) * config.size + 8;
+
+        if (force) {
+            this.x = targetX;
+            this.y = targetY;
+        }
+
+        let deltaX = targetX - this.x;
+        let deltaY = targetY - this.y;
+        let delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1 / 1000;
+
+        if (delta < 10 && !this.selectable) {
+            this.selectable = true;
+
+            // Check for events on this cell
+            events.checkForEvents(this.cell, this);
+
+            // Run AI again
+            ai.run();
+        }
+        
+        const x = this.x + (deltaX < 0 ?
+            Math.max(-config.heroSpeed * Math.abs(deltaX / delta) * (1 + delta / 20), deltaX) :
+            Math.min(config.heroSpeed * Math.abs(deltaX / delta) * (1 + delta / 20), deltaX));
+
+        const y = this.y + (deltaY < 0 ?
+            Math.max(-config.heroSpeed * Math.abs(deltaY / delta) * (1 + delta / 20), deltaY) :
+            Math.min(config.heroSpeed * Math.abs(deltaY / delta) * (1 + delta / 20), deltaY));
+
+        this.x = x;
+        this.y = y;
+
+        ui.setAttribute(`hero-${this.id}`, 'transform', `translate(${x} ${y})`);
+
+        if (this.status === 'selected') ui.setAttribute(`hero-${this.id}`, 'stroke-width', '2');
+        else ui.setAttribute(`hero-${this.id}`, 'stroke-width', '1');
     }
 
     displayPath() {
