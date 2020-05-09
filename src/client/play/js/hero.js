@@ -11,6 +11,8 @@ import ui from './ui';
 export default class Hero {
     constructor(id) {
         this.id = id,
+        this.x = 0,
+        this.y = 0,
         this.color = config.heroes[id],
         this.cell = {
             x: 0,
@@ -19,33 +21,33 @@ export default class Hero {
         this.status = 'set', // set, selected, exited
         this.selectable = true,
         this.path = [];
-        this.opacity = 255;
+        // this.opacity = 255;
     }
 
-    /**
-    * Move hero to cell
-    * @param {Object} cell cell X and Y coordinates
-    */
-    move(force = false) {
-        if (force) {
-            this.pos = {x: this.target.x, y: this.target.y};
-            this.selectable = true;
+    // /**
+    // * Move hero to cell
+    // * @param {Object} cell cell X and Y coordinates
+    // */
+    // move(force = false) {
+    //     if (force) {
+    //         this.pos = {x: this.target.x, y: this.target.y};
+    //         this.selectable = true;
 
-            // Check for events on this cell
-            events.checkForEvents(this.cell, this);
+    //         // Check for events on this cell
+    //         events.checkForEvents(this.cell, this);
 
-            // Run AI again
-            ai.run();
-        } else {
-            let deltaX = this.target.x - this.pos.x;
-            let deltaY = this.target.y - this.pos.y;
-            let delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-            let x = this.pos.x + deltaX / delta / config.heroSpeed;
-            let y = this.pos.y + deltaY / delta / config.heroSpeed;
-            this.pos = {x, y};
-            this.selectable = false;
-        }
-    }
+    //         // Run AI again
+    //         ai.run();
+    //     } else {
+    //         let deltaX = this.target.x - this.pos.x;
+    //         let deltaY = this.target.y - this.pos.y;
+    //         let delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    //         let x = this.pos.x + deltaX / delta / config.heroSpeed;
+    //         let y = this.pos.y + deltaY / delta / config.heroSpeed;
+    //         this.pos = {x, y};
+    //         this.selectable = false;
+    //     }
+    // }
 
     /**
     * Set hero on cell
@@ -53,25 +55,21 @@ export default class Hero {
     * @param {int} y cell Y coordinate
     */
     set(x, y) {
-        this.cell = {
-            x: x,
-            y: y
-        };
+        this.cell = { x, y };
 
+        // const boardCell = board.get(x, y);
+        // const tile = tiles.getTile(boardCell.tileID);
+        // const tileCell = boardCell.tileCell;
 
-        const boardCell = board.get(x, y);
-        const tile = tiles.getTile(boardCell.tileID);
-        const tileCell = boardCell.tileCell;
+        // if (tile) {
+        //     x += [.5, .35, .2, 0][tileCell.x] + tile.shift.x / config.size;
+        //     y += [.5, .35, .2, 0][tileCell.y] + tile.shift.y / config.size;
+        // }
 
-        if (tile) {
-            x += [.5, .35, .2, 0][tileCell.x] + tile.shift.x / config.size;
-            y += [.5, .35, .2, 0][tileCell.y] + tile.shift.y / config.size;
-        }
-
-        this.target = {
-            x: x,
-            y: y
-        }
+        // this.target = {
+        //     x: x,
+        //     y: y
+        // }
 
         this.path = [];
     }
@@ -298,21 +296,10 @@ export default class Hero {
                 h = y2 - y1;
             }
 
-            if (cell.reachable) {
-                // p5.fill(0, 255, 0, 40);
-            } else {
-                // p5.fill(255, 0, 0, 40);
-            }
-
             const x = (cell.x + x1 - Math.floor(cell.y / 4) * .85) * config.size;
             const y = (cell.y + y1 + Math.floor(cell.x / 4) * .85) * config.size;
 
             svg += `<rect class="path ${cell.reachable ? 'reachable' : ''}" x="${x}" y="${y}" width="${l * config.size}" height="${h * config.size}" fill="black" />`;
-
-            // p5.push();
-            // p5.translate(cell.x * config.size + tileShift.x, cell.y * config.size + tileShift.y);
-            // p5.rect(x1 * config.size, y1 * config.size, l * config.size, h * config.size);
-            // p5.pop();
         }
 
         ui.addHTML('path', svg);

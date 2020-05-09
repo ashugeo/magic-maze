@@ -141,7 +141,7 @@ export default {
     },
 
     getHoveredCell() {
-        if (!this.hoveredTile.x || !this.hoveredTile.y || !this.hoveredTile.bcr) return null;
+        if (this.hoveredTile.x === null || this.hoveredTile.y === null || !this.hoveredTile.bcr) return null;
         let { x, y, bcr } = this.hoveredTile;
 
         const _x = (this.mouse.x - bcr.left) / camera.zoomValue;

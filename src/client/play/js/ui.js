@@ -23,9 +23,14 @@ export default {
         return elem[prop];
     },
 
+    getAttribute(id, attr) {
+        const elem = this.getById(id);
+        return elem.getAttribute(attr);
+    },
+
     setAttribute(id, attr, value) {
         const elem = this.getById(id);
-        elem.setAttribute(attr, value); 
+        elem.setAttribute(attr, value);
     },
 
     remove(id) {

@@ -21,7 +21,7 @@ export default {
         purple: '#961c91',
         yellow: '#f7dc0a'
     },
-    heroSpeed: 16,
+    heroSpeed: 2,
     timer: 180,
     botsInterval: 1000
 }
