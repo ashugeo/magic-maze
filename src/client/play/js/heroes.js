@@ -59,9 +59,15 @@ export default {
 
             let deltaX = targetX - hero.x;
             let deltaY = targetY - hero.y;
+            let delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
             
-            const x = hero.x + (deltaX < 0 ? Math.max(-config.heroSpeed, deltaX) : Math.min(config.heroSpeed, deltaX));
-            const y = hero.y + (deltaY < 0 ? Math.max(-config.heroSpeed, deltaY) : Math.min(config.heroSpeed, deltaY));
+            const x = hero.x + (deltaX < 0 ?
+                Math.max(-config.heroSpeed * Math.abs(deltaX / delta) * (1 + delta / 100), deltaX) :
+                Math.min(config.heroSpeed * Math.abs(deltaX / delta) * (1 + delta / 100), deltaX));
+
+            const y = hero.y + (deltaY < 0 ?
+                Math.max(-config.heroSpeed * Math.abs(deltaY / delta) * (1 + delta / 100), deltaY) :
+                Math.min(config.heroSpeed * Math.abs(deltaY / delta) * (1 + delta / 100), deltaY));
 
             hero.x = x;
             hero.y = y;
