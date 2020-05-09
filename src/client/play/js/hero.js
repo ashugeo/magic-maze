@@ -46,6 +46,9 @@ export default class Hero {
         const hero = this.cell;
         const path = this.path = [];
 
+        const targetCell = board.get(target.x, target.y);
+        if (targetCell.isEmpty()) return;
+
         if (hero.x === target.x && hero.y === target.y) {
             // Same column and row = same cell
             path.push({x: hero.x, y: hero.y});
@@ -77,11 +80,11 @@ export default class Hero {
             }
         }
 
-        const heroCell = { x: Math.floor(hero.x / 4), y: Math.floor(hero.y / 4) };
-        const targetCell = { x: Math.floor(target.x / 4), y: Math.floor(target.y / 4) };
+        const heroTile = { x: Math.floor(hero.x / 4), y: Math.floor(hero.y / 4) };
+        const targetTile = { x: Math.floor(target.x / 4), y: Math.floor(target.y / 4) };
 
-        const deltaX = heroCell.y - targetCell.y;
-        const deltaY = targetCell.x - heroCell.x;
+        const deltaX = heroTile.y - targetTile.y;
+        const deltaY = targetTile.x - heroTile.x;
 
         const goingUp = hero.x === target.x + deltaX && hero.y > target.y;
         const goingDown = hero.x === target.x + deltaX && hero.y < target.y;
