@@ -175,30 +175,34 @@ export default class Hero {
                 const y = path[i - 1].y;
                 const cell = board.get(x, y);
                 const next = board.get(path[i].x, path[i].y);
-                if (path[i].x === x) {
-                    if (path[i].y > y) {
-                        // Going down
-                        path[i].reachable = !cell.walls.bottom && !next.walls.top;
-                        if (this.color === 'orange' && cell.walls.bottom === 'orange' && next.walls.top === 'orange') path[i].reachable = true;
-                        if (!role.includes('down')) path[i].reachable = false;
-                    } else {
-                        // Going up
-                        path[i].reachable = !cell.walls.top && !next.walls.bottom;
-                        if (this.color === 'orange' && cell.walls.top === 'orange' && next.walls.bottom === 'orange') path[i].reachable = true;
-                        if (!role.includes('up')) path[i].reachable = false;
-                    }
-                } else if (path[i].y === y) {
-                    if (path[i].x > x) {
-                        // Going right
-                        path[i].reachable = !cell.walls.right && !next.walls.left;
-                        if (this.color === 'orange' && cell.walls.right === 'orange' && next.walls.left === 'orange') path[i].reachable = true;
-                        if (!role.includes('right')) path[i].reachable = false;
-                    } else {
-                        // Going left
-                        path[i].reachable = !cell.walls.left && !next.walls.right;
-                        if (this.color === 'orange' && cell.walls.left === 'orange' && next.walls.right === 'orange') path[i].reachable = true;
-                        if (!role.includes('left')) path[i].reachable = false;
-                    }
+
+                const currentCellTile = { x: Math.floor(cell.coord.x / 4), y: Math.floor(cell.coord.y / 4) };
+                const nextCellTile = { x: Math.floor(next.coord.x / 4), y: Math.floor(next.coord.y / 4) };
+
+                const deltaX = currentCellTile.y - nextCellTile.y;
+                const deltaY = nextCellTile.x - currentCellTile.x;
+
+                const goingUp = cell.coord.x === next.coord.x + deltaX && cell.coord.y > next.coord.y;
+                const goingDown = cell.coord.x === next.coord.x + deltaX && cell.coord.y < next.coord.y;
+                const goingLeft = cell.coord.y === next.coord.y + deltaY && cell.coord.x > next.coord.x;
+                const goingRight = cell.coord.y === next.coord.y + deltaY && cell.coord.x < next.coord.x;
+
+                if (goingUp) {
+                    path[i].reachable = !cell.walls.top && !next.walls.bottom;
+                    if (this.color === 'orange' && cell.walls.top === 'orange' && next.walls.bottom === 'orange') path[i].reachable = true;
+                    if (!role.includes('up')) path[i].reachable = false;
+                } else if (goingDown) {
+                    path[i].reachable = !cell.walls.bottom && !next.walls.top;
+                    if (this.color === 'orange' && cell.walls.bottom === 'orange' && next.walls.top === 'orange') path[i].reachable = true;
+                    if (!role.includes('down')) path[i].reachable = false;
+                } else if (goingLeft) {
+                    path[i].reachable = !cell.walls.left && !next.walls.right;
+                    if (this.color === 'orange' && cell.walls.left === 'orange' && next.walls.right === 'orange') path[i].reachable = true;
+                    if (!role.includes('left')) path[i].reachable = false;
+                } else if (goingRight) {
+                    path[i].reachable = !cell.walls.right && !next.walls.left;
+                    if (this.color === 'orange' && cell.walls.right === 'orange' && next.walls.left === 'orange') path[i].reachable = true;
+                    if (!role.includes('right')) path[i].reachable = false;
                 }
 
                 // Can't go to time cells when two or more cameras are active
