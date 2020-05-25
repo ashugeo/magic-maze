@@ -230,8 +230,6 @@ export default class Tile {
         tiles.setTile(this.id);
 
         ui.removeClass(`tile-${this.id}`, 'valid invalid');
-
-        this.display();
     }
 
     saveToBoard(x, y) {
@@ -318,45 +316,6 @@ export default class Tile {
         }
     }
 
-    display() {
-        // p5.push();
-        // // Rotate and translate tile
-        // p5.rotate(this.rotation * p5.PI / 2);
-        // const x = this.x;
-        // const y = this.y;
-        // const r = this.rotation;
-        // let _x = [x, y, - x - 4, - y - 4][r] * size;
-        // let _y = [y, - x - 4, - y - 4, x][r] * size;
-        // let _x = x * size;
-        // let _y = y * size;
-
-        // // Shift adjustment for images
-        // const shift = this.shift;
-        // _x += [shift.x, shift.y, -shift.x, -shift.y][r];
-        // _y += [shift.y, -shift.x, -shift.y, shift.x][r];
-        // p5.translate(_x, _y);
-
-        // // Display image of cell
-        // p5.image(tilesImages[this.id], 0, 0, 4 * size, 4 * size);
-
-        // // Colored overlay depending on status
-        // p5.noStroke();
-        // if (this.canBeSet && this.status !== 'set') {
-        //     p5.fill(240, 255, 250, 100);
-        //     p5.rect(0, 0, 4 * size, 4 * size);
-        // } else if (!this.canBeSet && this.status !== 'set') {
-        //     p5.fill(255, 240, 245, 180);
-        //     p5.rect(0, 0, 4 * size, 4 * size);
-        // }
-
-        // p5.pop();
-
-        // if (this.status === 'set') this.displayItems();
-
-        // const svg = `<image id="tile-${this.id}" href="./img/tile${this.id}.jpg" height="${4 * config.size}" width="${4 * config.size}" transform="translate(${_x} ${_y}) rotate(${this.rotation * 90}) translate(${-2 * size} ${-2 * size})"/>`;
-        // ui.addHTML('board', svg);
-    }
-
     createSVG() {
         // this.move(0, 0);
 
@@ -369,23 +328,5 @@ export default class Tile {
         ui.remove(`tile-${this.id}`);
         this.x = null;
         this.y = null;
-    }
-
-    displayItems() {
-        for (let j = 0; j < 4; j += 1) {
-            for (let i = 0; i < 4; i += 1) {
-                const cell = board.get(this.x + i, this.y + j);
-                if (cell.isUsed()) {
-                    const shift = this.shift;
-                    const x = (cell.coord.x + 1 / 3 + [.25, .1, -.1, -.25][i]) * size + shift.x;
-                    const y = (cell.coord.y + 1 / 3 + [.25, .1, -.1, -.25][j]) * size + shift.y;
-
-                    p5.push();
-                    p5.translate(x, y);
-                    p5.image(usedImage, 0, 0, size / 3, size / 3);
-                    p5.pop();
-                }
-            }
-        }
     }
 }

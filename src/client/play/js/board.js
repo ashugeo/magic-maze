@@ -70,6 +70,13 @@ export default {
 
     setUsed(x, y) {
         this.layout[x][y].setUsed();
+
+        let _x = (x - Math.floor(y / 4) * .85 + [.5, .36, .18, 0][x % 4]) * config.size;
+        let _y = (y + Math.floor(x / 4) * .85 + [.5, .36, .18, 0][y % 4]) * config.size;
+
+        const itemHTML = `<image href="./img/used.png" height="${.5 * config.size}" width="${.5 * config.size}" transform="translate(${_x} ${_y})" />`;
+
+        ui.addHTML('items', itemHTML);
     },
 
     findItem(item) {

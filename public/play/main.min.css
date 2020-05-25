@@ -64,6 +64,7 @@ body {
       stroke: none; }
     #game-wrap #svg-wrap #tiles *,
     #game-wrap #svg-wrap #path *,
+    #game-wrap #svg-wrap #items *,
     #game-wrap #svg-wrap #heroes *,
     #game-wrap #svg-wrap #grid * {
       pointer-events: none;
