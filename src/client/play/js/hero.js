@@ -157,8 +157,8 @@ export default class Hero {
 
             if (i > 0) {
                 for (let hero of heroes.all) {
-                    if (path[i].x === hero.cell.x && path[i].y === hero.cell.y) {
-                        // Another hero blocking the way
+                    // Make sure there is no hero blocking the way (ignore exited heroes)
+                    if (path[i].x === hero.cell.x && path[i].y === hero.cell.y && !hero.hasExited()) {
                         path[i].reachable = false;
                         return;
                     }
@@ -214,12 +214,24 @@ export default class Hero {
         }
     }
 
-    display(force) {
+    display(force = false) {
         // Don't display hidden heroes
         if (this.display === false) return;
 
-        const targetX = (this.cell.x - Math.floor(this.cell.y / 4) * .85 + [.5, .36, .18, 0][this.cell.x % 4]) * config.size + 8;
-        const targetY = (this.cell.y + Math.floor(this.cell.x / 4) * .85 + [.5, .36, .18, 0][this.cell.y % 4]) * config.size + 8;
+        let targetX = (this.cell.x - Math.floor(this.cell.y / 4) * .85 + [.5, .36, .18, 0][this.cell.x % 4]) * config.size + 8;
+        let targetY = (this.cell.y + Math.floor(this.cell.x / 4) * .85 + [.5, .36, .18, 0][this.cell.y % 4]) * config.size + 8;
+
+        if (this.hasExited()) {
+            // Find exit cell (out of board)
+            const boardCell = board.get(this.cell.x, this.cell.y);
+            const tileCell = boardCell.tileCell;
+            const tileID = boardCell.tileID;
+            const tile = tiles.getTile(tileID);
+            const exit = tile.getExitPlusOne(tileCell.x, tileCell.y);
+
+            targetX += exit.x * config.size;
+            targetY += exit.y * config.size;
+        }
 
         if (force) {
             this.x = targetX;
@@ -345,18 +357,9 @@ export default class Hero {
 
     exit() {
         this.status = 'exited';
+        this.selectable = false;
 
-        // Find exit cell (out of of board)
-        const boardCell = board.get(this.cell.x, this.cell.y);
-        const tileCell = boardCell.tileCell;
-        const tileID = boardCell.tileID;
-        const tile = tiles.getTile(tileID);
-        const exit = tile.getExitPlusOne(tileCell.x, tileCell.y);
-
-        // Move out of board
-        const x = this.cell.x + exit.x;
-        const y = this.cell.y + exit.y;
-        this.set(x, y);
+        ui.addClass(`hero-${this.id}`, 'exited');
 
         // Run AI again
         ai.run();

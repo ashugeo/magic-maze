@@ -38,7 +38,8 @@ export default {
             } else if (e.which === 27) { // Esc: cancel current action
                 if (!game.isEnded()) this.cancel();
             } else if (e.which === 66) { // B
-                // this.steal();
+                // Steal
+                // game.setPhase(2);
             } else if (e.which === 80) { // P
                 if (game.isPaused()) game.resume();
                 else game.pause();

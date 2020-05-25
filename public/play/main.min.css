@@ -76,6 +76,10 @@ body {
       fill: rgba(255, 0, 0, 0.2); }
       #game-wrap #svg-wrap #path rect.path.reachable {
         fill: rgba(0, 255, 0, 0.3); }
+    #game-wrap #svg-wrap #heroes .hero {
+      transition: opacity .3s ease; }
+      #game-wrap #svg-wrap #heroes .hero.exited {
+        opacity: 0; }
     #game-wrap #svg-wrap #grid {
       display: none; }
       #game-wrap #svg-wrap #grid.visible {

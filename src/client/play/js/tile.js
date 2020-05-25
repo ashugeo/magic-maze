@@ -203,8 +203,8 @@ export default class Tile {
             corner = y === 0 ? 1 : 2;
         }
 
-        let _x = [0, 1, 0, -1][corner];
-        let _y = [-1, 0, 1, 0][corner];
+        const _x = [0, 1, 0, -1][corner];
+        const _y = [-1, 0, 1, 0][corner];
 
         return { x: _x, y: _y };
     }

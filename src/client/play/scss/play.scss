@@ -120,6 +120,16 @@ body {
             }
         }
 
+        #heroes {
+            .hero {
+                transition: opacity .3s ease;
+
+                &.exited {
+                    opacity: 0;
+                }
+            }
+        }
+
         #grid {
             display: none;
 
