@@ -7,7 +7,8 @@
         "start": "node ./src/server/server.js",
         "watch": "nodemon --config nodemon.json",
         "dev": "webpack --config webpack.config.js",
-        "prod": "NODE_ENV=production webpack --config webpack.config.js --progress"
+        "prod": "NODE_ENV=production webpack --config webpack.config.js --progress",
+        "heroku-postbuild": "npm run prod"
     },
     "repository": {
         "type": "git",
