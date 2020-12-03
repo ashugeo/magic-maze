@@ -3,6 +3,7 @@ import clock from './clock';
 import config from './config';
 import events from './events';
 import ui from './ui';
+import overlay from "./overlay";
 
 export default {
     scenario: 0,
@@ -63,6 +64,8 @@ export default {
         console.log('game won!');
         clock.stop();
         this.phase = 3;
+
+        overlay.showGameOver('Game won!');
     },
 
     lose() {
@@ -77,5 +80,7 @@ export default {
             // Admin is the only player, disable nextAction button
             ui.addClass('nextAction', 'disabled');
         }
+
+        overlay.showGameOver('Game lost!');
     }
 }

@@ -13,6 +13,12 @@ Online version of board game "Magic Maze"
 | Esc | Cancel current action |
 | P | Pause game |
 | G | Toggle grid |
+| S | Move map up |
+| D | Move map down |
+| D | Move map left |
+| Q | Move map right |
+| E | Zoom map in |
+| A | Zoom map out |
 
 ## Development
 

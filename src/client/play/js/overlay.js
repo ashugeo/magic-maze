@@ -5,6 +5,8 @@ export default {
     alertTimeout: null,
     alertHideTimeout: 500,
 
+    gameOverModal: null,
+
     showAlert(name) {
         this.forceCloseAlert();
 
@@ -30,5 +32,27 @@ export default {
         }
 
         window.clearTimeout(this.alertTimeout);
-    }
+    },
+
+    showGameOver(message) {
+        this.forceCloseGameOver();
+
+        const canvasWrap = document.getElementById("canvas-wrap");
+        if (canvasWrap === null || canvasWrap === undefined) {
+            return;
+        }
+
+        this.gameOverModal = document.createElement("div");
+        this.gameOverModal.classList.add("game-over-modal");
+        this.gameOverModal.innerHTML = `<div class="message">${message}</div>`;
+        canvasWrap.appendChild(this.gameOverModal);
+
+        this.gameOverModal.addEventListener('click', this.forceCloseGameOver.bind(this));
+    },
+
+    forceCloseGameOver() {
+        if (this.gameOverModal && this.gameOverModal.parentNode) {
+            this.gameOverModal.parentNode.removeChild(this.gameOverModal);
+        }
+    },
 }
