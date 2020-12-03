@@ -6,9 +6,17 @@ function init() {
     socket.on('home', room => {
         if (!room.members || room.members.length === 0) {
             $(`#${room.id}`).remove();
-        } else if (!$(`#${room.id}`)[0]) {
-            $('.row').prepend(`<div class="box" id="${room.id}">
-                <h4>${room.id}</h4>
+            return;
+        }
+
+        let roomElement = document.getElementById(room.id);
+
+        if (!roomElement) {
+            roomElement = document.createElement("div");
+            roomElement.id = room.id;
+            roomElement.classList.add("box");
+
+            roomElement.innerHTML = `<h4>${room.id}</h4>
                 <p>
                     <span class="players">0 player</span><br>
                     <span class="bots small">0 bot</span>
@@ -17,17 +25,16 @@ function init() {
                 <label for="nickname">Nickname</label>
                 <input type="text" id="nickname" placeholder="Enter a nickname…" required>
 
-                <button name="play">Play</button>
-            </div>`);
-        }
+                <button name="play">Play</button>`;
 
-        if (!room.members) return;
+            $('.row').prepend(roomElement);
+        }
 
         const botsCount = room.members.filter(m => m.isBot).length;
         const playersCount = room.members.length - botsCount;
 
-        $(`#${room.id} .players`).html(`${playersCount} player${playersCount > 1 ? 's' : ''}`);
-        $(`#${room.id} .bots`).html(`${botsCount} bot${botsCount > 1 ? 's' : ''}`);
+        roomElement.querySelector('.players').innerHTML = `${playersCount} player${playersCount > 1 ? 's' : ''}`;
+        roomElement.querySelector('.bots').innerHTML = `${botsCount} bot${botsCount > 1 ? 's' : ''}`;
     });
 }
 

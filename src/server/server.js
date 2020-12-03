@@ -20,18 +20,21 @@ const listener = http.listen(process.env.PORT || 3000, () => {
 });
 
 io.sockets.on('connection', socket => {
+    console.log("New connection", socket.id);
+
     // List all opened rooms on homepage
-    for (const roomID of Object.keys(io.sockets.adapter.rooms)) {
-        const room = io.sockets.adapter.rooms[roomID];
-        if (room.id) io.emit('home', room);
-    }
+    Object.values(io.sockets.adapter.rooms).forEach(room => {
+        if (room.id) {
+            io.emit('home', room);
+        }
+    });
 
     /**
      * New player entered a room
      * params: { room, name }
      */
     socket.on('join', params => {
-        console.log("Player joined", params.name);
+        console.log("Player joined: ", params.name);
 
         const roomID = params.room;
         socket.join(roomID);
@@ -86,7 +89,7 @@ io.sockets.on('connection', socket => {
 
     // User disconnected from a room
     socket.on('disconnect', () => {
-        console.log("Player disconnected", socket.name);
+        console.log("Player disconnected: ", socket.name);
 
         const roomID = socket.roomID;
         const room = io.sockets.adapter.rooms[roomID];
@@ -241,6 +244,7 @@ function start(room) {
     if (Object.keys(players).length === 0) return;
 
     // Update players count with bots
+    console.debug("Room members: ", room.members);
     io.to(room.id).emit('members', room.members);
 
     // Get all actions for that number of players
