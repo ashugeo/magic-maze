@@ -180,8 +180,14 @@ label {
 
     &:hover {
         font-size: 241%;
-        left: -11px;
-        top: -11px;
+        left: -12px;
+        top: -12px;
+    }
+
+    &:active {
+        font-size: 200%;
+        left: -9px;
+        top: -9px;
     }
 }
 
