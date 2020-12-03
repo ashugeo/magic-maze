@@ -4,6 +4,8 @@ import ui from './ui';
 export default {
     allActions: [],
     role: '',
+    id: '',
+    name: '',
 
     setRoles(roles) {
         // Save my role in window.role

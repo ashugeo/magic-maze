@@ -49,6 +49,13 @@ io.sockets.on('connection', socket => {
 
         // Tell everyone
         io.to(roomID).emit('members', room.members );
+
+        // Tell socket its player/member id and name
+        io.to(socket.id).emit('member', {
+            id: socket.id,
+            name: socket.name,
+        });
+
         io.emit('home', room);
 
         // First player, make it admin
@@ -153,6 +160,10 @@ io.sockets.on('connection', socket => {
     socket.on('ai', () => {
         const adminID = io.sockets.adapter.rooms[socket.roomID].adminID;
         io.to(adminID).emit('ai');
+    });
+
+    socket.on('alert', data => {
+        io.to(data.id).emit('alert', socket.name);
     });
 
     // socket.on('swap', () => {
