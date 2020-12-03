@@ -34,7 +34,7 @@ export default {
         });
 
         socket.on('prestart', isAdmin => {
-            const isSpectator = ui.getProperty('isSpectator', 'checked');
+            const isSpectator = ui.getProperty('isSpectator', 'checked') || false;
 
             if (isAdmin) {
                 // Ask admin for game parameters
@@ -47,9 +47,11 @@ export default {
         });
 
         socket.on('start', options => {
+            console.log("Game started");
             user.start(options);
 
-            this.updateMembers(options.players);
+            if (options.players !== undefined)
+                this.updateMembers(options.players);
 
             ui.remove('spectator-ui');
 
@@ -113,6 +115,12 @@ export default {
     },
 
     updateMembers(members) {
+        console.debug(members);
+        if (!members) {
+            console.error("Didn't receive valid members property");
+            return;
+        }
+
         const botsCount = members.filter(m => m.isBot).length;
 
         let html = members.length - botsCount;
@@ -124,7 +132,7 @@ export default {
         let membersHTML = '';
         for (const member of members) {
             membersHTML += `<div class="member">
-                ${member.roles && member.id !== player.id ?
+                ${!member.isBot && member.roles && member.id !== player.id ?
                   `<div class="alert" data-player="${member.id}">&#128276;</div>` : ''}
                 
                 <p class="${member.id !== player.id ? '' : 'current'}">${member.name}</p>

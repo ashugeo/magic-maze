@@ -54,7 +54,6 @@ export default {
     },
 
     setPaused(isPaused, byName) {
-        console.debug("New pause state: ", isPaused);
         this.paused = isPaused;
 
         if (this.isEnded()) {

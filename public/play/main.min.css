@@ -162,7 +162,7 @@ label {
     top: 8%;
     color: #ffffff;
     text-shadow: 2px 2px 2px #e93131, 0px 0px 5px #a59b9b;
-    transition: 3s all; }
+    transition: 1s all ease 0.5s; }
   .alert-modal.hide {
     box-shadow: none; }
     .alert-modal.hide .message {

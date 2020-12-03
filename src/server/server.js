@@ -34,7 +34,7 @@ io.sockets.on('connection', socket => {
      * params: { room, name }
      */
     socket.on('join', params => {
-        console.log("Player joined: ", params.name);
+        console.log("Player joined: ", params);
 
         const roomID = params.room;
         socket.join(roomID);
@@ -53,6 +53,7 @@ io.sockets.on('connection', socket => {
         // Game already started
         if (room.isStarted) {
             // Join as spectator
+            console.log("Room already started, joining player as spectator");
             room.members.find(m => m.id === socket.id).isSpectator = true;
             socket.scenario = room.options.scenario;
             io.to(room.adminID).emit('getStatus', socket.id);

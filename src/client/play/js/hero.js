@@ -9,22 +9,25 @@ import tiles from './tiles';
 
 export default class Hero {
     constructor(id) {
-        this.id = id,
-        this.color = config.heroes[id],
+        this.id = id;
+        this.color = config.heroes[id];
         this.cell = {
             x: 0,
             y: 0
-        },
-        this.status = 'set', // set, selected, exited
-        this.selectable = true,
+        };
+        this.target = this.cell;
+        this.pos = {x: this.target.x, y: this.target.y};
+
+        this.status = 'set'; // set, selected, exited
+        this.selectable = true;
         this.path = [];
         this.opacity = 255;
     }
 
     /**
-    * Move hero to cell
-    * @param {Object} cell cell X and Y coordinates
-    */
+     * Move hero to cell
+     * @param {Object} cell cell X and Y coordinates
+     */
     move(force = false) {
         if (force) {
             this.pos = {x: this.target.x, y: this.target.y};
@@ -47,10 +50,10 @@ export default class Hero {
     }
 
     /**
-    * Set hero on cell
-    * @param {int} x cell X coordinate
-    * @param {int} y cell Y coordinate
-    */
+     * Set hero on cell
+     * @param {int} x cell X coordinate
+     * @param {int} y cell Y coordinate
+     */
     set(x, y) {
         this.cell = {
             x: x,
@@ -76,10 +79,10 @@ export default class Hero {
     }
 
     /**
-    * Get path from this hero to a cell
-    * @param  {Object} target Target cell
-    * @return {Object}        Path
-    */
+     * Get path from this hero to a cell
+     * @param  {Object} target Target cell
+     * @return {Object}        Path
+     */
     getPath(target) {
         const hero = this.cell;
         const path = this.path = [];
@@ -143,9 +146,9 @@ export default class Hero {
     }
 
     /**
-    * Check path legality
-    * @param  {Object} target Target cell
-    */
+     * Check path legality
+     * @param  {Object} target Target cell
+     */
     checkPath(target) {
         // No specified target, check for self position (current cell)
         if (!target) target = this.cell;
@@ -230,7 +233,9 @@ export default class Hero {
 
                 // Can't go to time cells when two or more cameras are active
                 if (next.item && next.item.type === 'time') {
-                    const cameras = board.findItem('camera').filter(c => { return !c.isUsed() });
+                    const cameras = board.findItem('camera').filter(c => {
+                        return !c.isUsed()
+                    });
                     if (cameras.length >= 2) path[i].reachable = false;
                 }
             }
@@ -238,10 +243,10 @@ export default class Hero {
     }
 
     /**
-    * Check if hero can go to target cell
-    * @param  {Object}  target Target cell
-    * @return {Boolean}
-    */
+     * Check if hero can go to target cell
+     * @param  {Object}  target Target cell
+     * @return {Boolean}
+     */
     canGoTo(target) {
         const path = this.path;
 
