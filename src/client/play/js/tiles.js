@@ -1,6 +1,7 @@
 import config from './config';
 import helpers from './helpers';
 import Tile from './tile';
+import ui from "./ui";
 
 export default {
     all: [],           // Array of Tile objects
@@ -42,9 +43,11 @@ export default {
             }
 
             this.stock.unshift(firstTile);
-            
+
             this.getFromStock().set(config.firstTile.x, config.firstTile.y);
         }
+
+        this.display();
     },
 
     get() {
@@ -92,6 +95,7 @@ export default {
     setTile(id) {
         this.pickedTile = false;
         this.board.push(id);
+        this.display();
     },
 
     isPickedTile() {
@@ -182,5 +186,14 @@ export default {
         }
 
         return json;
+    },
+
+    allTilesOnBoard() {
+        return this.board.length === this.all.length;
+    },
+
+    display() {
+        ui.setHTML("tiles-used", this.board.length);
+        ui.setHTML("tiles-total", this.all.length);
     }
 }
