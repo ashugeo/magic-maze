@@ -78,6 +78,7 @@ io.sockets.on('connection', socket => {
     });
 
     socket.on('status', (data, user) => {
+        console.debug("Sending status to user: ", user);
         io.to(user).emit('start', {
             board: data.board,
             clock: data.clock,
@@ -159,7 +160,8 @@ io.sockets.on('connection', socket => {
             };
 
         // When the spectator status of everyone is known, the game can start
-        if (room.members.every(m => m.isSpectator !== undefined)) start(room);
+        if (room.members.every(m => m.isSpectator !== undefined))
+            start(room);
     });
 
     socket.on('hero', data => {
@@ -189,6 +191,14 @@ io.sockets.on('connection', socket => {
 
     socket.on('alert', data => {
         io.to(data.id).emit('alert', socket.name);
+    });
+
+    socket.on('pause', setPaused => {
+        console.debug(`${socket.name} changed game pause state to ${setPaused}`);
+        io.to(socket.roomID).emit('pause', {
+            paused: setPaused,
+            byName: socket.name,
+        });
     });
 
     // socket.on('swap', () => {

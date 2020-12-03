@@ -106,6 +106,10 @@ export default {
         socket.on('alert', data => {
             overlay.showAlert(data);
         });
+
+        socket.on('pause', data => {
+            game.setPaused(data.paused, data.byName);
+        });
     },
 
     updateMembers(members) {

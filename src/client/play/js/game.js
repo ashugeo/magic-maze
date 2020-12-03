@@ -45,14 +45,29 @@ export default {
 
     pause() {
         if (this.isEnded()) return;
-        this.paused = true;
+        events.pauseGame(true);
     },
 
     resume() {
         if (this.isEnded()) return;
-        this.paused = false;
+        events.pauseGame(false);
+    },
 
-        ai.run();
+    setPaused(isPaused, byName) {
+        console.debug("New pause state: ", isPaused);
+        this.paused = isPaused;
+
+        if (this.isEnded()) {
+            overlay.forceClosePause();
+            return;
+        }
+
+        if (isPaused) {
+            overlay.showPause(`Paused by ${byName}...`, () => this.resume());
+        } else {
+            overlay.forceClosePause();
+            ai.run();
+        }
     },
 
     isPaused() {

@@ -18,9 +18,9 @@ export default {
 
     init() {
         /**
-        * General key press actions
-        * @param {Object} e event
-        */
+         * General key press actions
+         * @param {Object} e event
+         */
         document.addEventListener('keydown', e => {
             if (e.which === 67) { // C: engage tile placing
                 if (!game.isEnded()) this.newTile();
@@ -119,8 +119,8 @@ export default {
     oldMouseCell: {},
 
     /**
-    * Mouse movements events
-    */
+     * Mouse movements events
+     */
     mouseMove() {
         const cell = this.getHoveredCell();
 
@@ -134,9 +134,9 @@ export default {
     },
 
     /**
-    * Get hovered cell coordinates
-    * @return {Object} {x, y}
-    */
+     * Get hovered cell coordinates
+     * @return {Object} {x, y}
+     */
     getHoveredCell() {
         const x = p5.floor((p5.mouseX - p5.width / 2 + (camera.x * camera.zoomValue)) / (config.size * camera.zoomValue));
         const y = p5.floor((p5.mouseY - p5.height / 2 + (camera.y * camera.zoomValue)) / (config.size * camera.zoomValue));
@@ -150,8 +150,8 @@ export default {
     },
 
     /**
-    * Cancel current action
-    */
+     * Cancel current action
+     */
     cancel() {
         if (this.action === 'placing') {
             tiles.putBackInStock();
@@ -160,9 +160,9 @@ export default {
     },
 
     /**
-    * Set picked tile
-    * @param {Object} cell {x, y} of cell to set tile onto
-    */
+     * Set picked tile
+     * @param {Object} cell {x, y} of cell to set tile onto
+     */
     setTile(cell) {
         // Select picked tile
         const tile = tiles.getPickedTile();
@@ -194,8 +194,8 @@ export default {
     },
 
     /**
-    * Get next tile from stock
-    */
+     * Get next tile from stock
+     */
     newTile() {
         if (!player.role.includes('explore') && !config.debug) return;
         if (tiles.getStockSize() === 0) return;
@@ -234,19 +234,19 @@ export default {
     },
 
     /**
-    * Rotate picked tile
-    * @param  {int} dir direction (1 for clockwise, -1 for counterclockwise)
-    */
+     * Rotate picked tile
+     * @param  {int} dir direction (1 for clockwise, -1 for counterclockwise)
+     */
     rotateTile(dir) {
         const pickedTile = tiles.getPickedTile();
         if (pickedTile) pickedTile.rotate(dir);
     },
 
     /**
-    * Check if there's a selectable hero in this cell
-    * @param  {Object}         cell cell to check
-    * @return {Object|Boolean}
-    */
+     * Check if there's a selectable hero in this cell
+     * @param  {Object}         cell cell to check
+     * @return {Object|Boolean}
+     */
     checkForHero(cell) {
         for (let hero of heroes.all) {
             if (hero.cell.x === cell.x && hero.cell.y === cell.y && hero.selectable) return hero;
@@ -255,9 +255,9 @@ export default {
     },
 
     /**
-    * Select or deselect hero
-    * @param  {Object} hero hero to select
-    */
+     * Select or deselect hero
+     * @param  {Object} hero hero to select
+     */
     toggleHero(hero) {
         for (let h of heroes.all) {
             // Prevent selection of multiple heroes
@@ -322,5 +322,9 @@ export default {
             const cell = board.get(hero.cell.x, hero.cell.y);
             if (!cell.isUsed()) cell.setUsed();
         }
+    },
+
+    pauseGame(setPaused) {
+        socket.emit('pause', setPaused);
     }
 }
