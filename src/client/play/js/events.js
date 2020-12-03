@@ -93,6 +93,7 @@ export default {
 
         if (!hero) return;
 
+        // If cell is not current hero cell
         if (!(cell.x === this.oldHeroCell.x && cell.y === this.oldHeroCell.y)) {
             if (this.action === 'hero' && hero.canGoTo(cell)) {
                 hero.set(cell.x, cell.y);
