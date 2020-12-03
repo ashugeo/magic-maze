@@ -47,7 +47,7 @@ export default {
                     this.pausedRun = false;
                     this.run();
                 }
-            }, config.botsInterval);
+            }, config.botsIntervalMin + Math.random() * (config.botsIntervalMax - config.botsIntervalMin));
         } else {
             this.pausedRun = true;
         }

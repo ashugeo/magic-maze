@@ -23,5 +23,6 @@ export default {
     },
     heroSpeed: 16,
     timer: 180,
-    botsInterval: 1000
+    botsIntervalMin: 600,
+    botsIntervalMax: 3400
 }
