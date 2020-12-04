@@ -276,6 +276,10 @@ export default {
             clock.invert();
             socket.emit('invertClock');
 
+            if (config.pauseGameOnInvertClock) {
+                game.pause();
+            }
+
             if (game.players === 1 && ai.bots.length === 0) {
                 // Admin is the only player, shuffle roles
                 player.allActions = helpers.shuffleArray(player.allActions);

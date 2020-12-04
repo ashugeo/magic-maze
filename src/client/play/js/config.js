@@ -24,5 +24,6 @@ export default {
     heroSpeed: 16,
     timer: 180,
     botsIntervalMin: 600,
-    botsIntervalMax: 3400
+    botsIntervalMax: 3400,
+    pauseGameOnInvertClock: true,
 }
