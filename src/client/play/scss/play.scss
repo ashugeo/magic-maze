@@ -195,6 +195,10 @@ label {
     .current {
         font-weight: bold;
     }
+
+    &.disconnected {
+        opacity: 0.3;
+    }
 }
 
 .modal {

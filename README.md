@@ -8,7 +8,7 @@ Online version of board game "Magic Maze"
 | Key | Command |
 | --- | --- |
 | C | Activate explore (double click on the tile to place) |
-| T | Rotate new tile clockwise |
+| T | Rotate new tile clockwise (or use Right Mouse click) |
 | R | Rotate new tile counter clockwise |
 | Esc | Cancel current action |
 | P | Pause game |

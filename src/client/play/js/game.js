@@ -14,8 +14,8 @@ export default {
 
     init(options) {
         this.scenario = options.scenario;
-        this.players = options.players;
-        this.setPhase(1);
+        this.players = options.members.filter(m => !m.isSpectator);
+        this.setPhase(options.gamePhase || 1);
 
         if (options.admin) {
             this.admin = true;

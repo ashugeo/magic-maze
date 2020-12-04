@@ -8,8 +8,8 @@ export default {
     targetZoom: 4,
 
     /**
-    * Animate camera zoom
-    */
+     * Animate camera zoom
+     */
     zoom() {
         if (p5.keyIsDown(65)) { // A: zoom out
             this.targetZoom -= .1;
@@ -33,8 +33,8 @@ export default {
     },
 
     /**
-    * Move camera around
-    */
+     * Move camera around
+     */
     move(x, y) {
         if (x && y) {
             this.x = x;
@@ -58,8 +58,8 @@ export default {
         if (config.cameraMouse) {
             const x1 = -this.x
             const y1 = -this.y;
-            const x2 = (-p5.width/2 + p5.mouseX) / this.zoomValue - this.x;
-            const y2 = (-p5.height/2 + p5.mouseY) / this.zoomValue - this.y;
+            const x2 = (-p5.width / 2 + p5.mouseX) / this.zoomValue - this.x;
+            const y2 = (-p5.height / 2 + p5.mouseY) / this.zoomValue - this.y;
 
             const dist = Math.round(p5.dist(x1, y1, x2, y2) * this.zoomValue);
             const angle = Math.atan2(y2 - y1, x2 - x1);
@@ -83,8 +83,13 @@ export default {
         const height = p5.height;
 
         const allCells = board.getAll();
-        
-        const minX = allCells.find(col => Object.values(col).some(cell => !cell.empty))[0].coord.x;
+
+        const firstNonEmptyCell = allCells.find(col => Object.values(col).some(cell => !cell.empty));
+        if (!firstNonEmptyCell)
+            // No non-empty cells found
+            return;
+
+        const minX = firstNonEmptyCell[0].coord.x;
 
         const maxX = [...allCells].reverse().find(col => Object.values(col).some(cell => !cell.empty))[0].coord.x;
 

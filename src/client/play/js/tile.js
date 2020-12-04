@@ -17,6 +17,8 @@ export default class Tile {
             x: 0,
             y: 0
         }
+        this.x = undefined;
+        this.y = undefined;
     }
 
     move(x, y) {
@@ -44,15 +46,15 @@ export default class Tile {
 
                 // Shift depends on position and orientation
                 if (target.tileCell.x === 0 && o === 1) {
-                    _y += [2*s, s, 0, -s][target.tileCell.y];
+                    _y += [2 * s, s, 0, -s][target.tileCell.y];
                 } else if (target.tileCell.x === 3 && o === 3) {
-                    _y += [s, 0, -s, 2*s][target.tileCell.y];
+                    _y += [s, 0, -s, 2 * s][target.tileCell.y];
                 }
 
                 if (target.tileCell.y === 3 && o === 0) {
-                    _x += [2*s, s, 0, 0][target.tileCell.x];
+                    _x += [2 * s, s, 0, 0][target.tileCell.x];
                 } else if (target.tileCell.y === 0 && o === 2) {
-                    _x += [0, 0, -s, -2*s][target.tileCell.x];
+                    _x += [0, 0, -s, -2 * s][target.tileCell.x];
                 }
 
                 // Add parent tile shift
@@ -76,18 +78,18 @@ export default class Tile {
     }
 
     /**
-    * Rotate tile
-    * @param  {int} turns 90° rotation (positive = clockwise, negative = counterclockwise)
-    */
+     * Rotate tile
+     * @param  {int} turns 90° rotation (positive = clockwise, negative = counterclockwise)
+     */
     rotate(turns) {
         this.rotation = (this.rotation + turns + 4) % 4;
     }
 
     /**
-    * Check if tile can be set at these coordinates
-    * @param  {int} x column
-    * @param  {int} y row
-    */
+     * Check if tile can be set at these coordinates
+     * @param  {int} x column
+     * @param  {int} y row
+     */
     checkCanBeSet(x, y) {
         if (this.id === 0) return false;
 
@@ -126,9 +128,9 @@ export default class Tile {
     }
 
     /**
-    * Get orientation of tile depending on enter position (top, right, bottom, left)
-    * @return {int} base rotation of tile
-    */
+     * Get orientation of tile depending on enter position (top, right, bottom, left)
+     * @return {int} base rotation of tile
+     */
     getOrientation() {
         // Find X coordinate of enter
         const enter = this.findItem('enter');
@@ -143,12 +145,12 @@ export default class Tile {
     }
 
     /**
-    * Get tile "gate+1" coordinates (cell out of tile)
-    * @param  {int}    x mouse X coordinate
-    * @param  {int}    y mouse Y coordinate
-    * @param  {int}    o tile orientation
-    * @return {Object}   {x, y}
-    */
+     * Get tile "gate+1" coordinates (cell out of tile)
+     * @param  {int}    x mouse X coordinate
+     * @param  {int}    y mouse Y coordinate
+     * @param  {int}    o tile orientation
+     * @return {Object}   {x, y}
+     */
     getGatePlusOne(x, y, o) {
         x += [2, 4, 1, -1][o];
         y += [-1, 2, 4, 1][o];
@@ -157,12 +159,12 @@ export default class Tile {
     }
 
     /**
-    * Get tile enter coordinates (cell inside tile)
-    * @param  {int}    x mouse X coordinate
-    * @param  {int}    y mouse Y coordinate
-    * @param  {int}    b gate X coordinate
-    * @return {Object}   {x, y}
-    */
+     * Get tile enter coordinates (cell inside tile)
+     * @param  {int}    x mouse X coordinate
+     * @param  {int}    y mouse Y coordinate
+     * @param  {int}    b gate X coordinate
+     * @return {Object}   {x, y}
+     */
     getEnter(x, y, b) {
         x += [-1, 0, 0, 1][b];
         y += [0, 1, -1, 0][b];
@@ -171,11 +173,11 @@ export default class Tile {
     }
 
     /**
-    * Get tile "exit+1" coordinates (cell out of tile)
-    * @param  {int}    x exit X coordinate
-    * @param  {int}    y exit Y coordinate
-    * @return {Object}   {x, y}
-    */
+     * Get tile "exit+1" coordinates (cell out of tile)
+     * @param  {int}    x exit X coordinate
+     * @param  {int}    y exit Y coordinate
+     * @return {Object}   {x, y}
+     */
     getExitPlusOne(x, y) {
         let corner;
         // Corners pattern:
@@ -196,12 +198,12 @@ export default class Tile {
     }
 
     /**
-    * Get tile origin coordinates (top left cell)
-    * @param  {int}    x mouse X coordinate
-    * @param  {int}    y mouse Y coordinate
-    * @param  {int}    b gate X coordinate
-    * @return {Object}   {x, y}
-    */
+     * Get tile origin coordinates (top left cell)
+     * @param  {int}    x mouse X coordinate
+     * @param  {int}    y mouse Y coordinate
+     * @param  {int}    b gate X coordinate
+     * @return {Object}   {x, y}
+     */
     getOrigin(x, y, o) {
         x += [-2, -3, -1, 0][o];
         y += [0, -2, -3, -1][o];
@@ -238,10 +240,10 @@ export default class Tile {
                 // (ex.: top wall becomes left wall after rotation)
                 let walls = ['top', 'right', 'bottom', 'left'];
                 const boardWalls = {
-                    top:    cell.walls[walls[(4 - r) % 4]],
-                    right:  cell.walls[walls[(5 - r) % 4]],
+                    top: cell.walls[walls[(4 - r) % 4]],
+                    right: cell.walls[walls[(5 - r) % 4]],
                     bottom: cell.walls[walls[(6 - r) % 4]],
-                    left:   cell.walls[walls[(3 - r) % 4]]
+                    left: cell.walls[walls[(3 - r) % 4]]
                 }
 
                 // Copy data
@@ -259,8 +261,8 @@ export default class Tile {
                 if (cell.escalator) {
                     let esc = Object.assign({}, cell.escalator);
                     const _esc = {
-                        x: x + [esc.x, - esc.y, - esc.x, esc.y][r] + [0, 3, 3, 0][r],
-                        y: y + [esc.y, esc.x, - esc.y, - esc.x][r] + [0, 0, 3, 3][r]
+                        x: x + [esc.x, -esc.y, -esc.x, esc.y][r] + [0, 3, 3, 0][r],
+                        y: y + [esc.y, esc.x, -esc.y, -esc.x][r] + [0, 0, 3, 3][r]
                     }
                     esc.x = _esc.x;
                     esc.y = _esc.y;
@@ -279,10 +281,10 @@ export default class Tile {
     }
 
     /**
-    * Find an item by key
-    * @param  {string} key  string to look for
-    * @return {Object}      cell coordinates of item
-    */
+     * Find an item by key
+     * @param  {string} key  string to look for
+     * @return {Object}      cell coordinates of item
+     */
     findItem(key) {
         for (let row in this.data) {
             row = parseInt(row);
@@ -307,8 +309,8 @@ export default class Tile {
         const x = this.x;
         const y = this.y;
         const r = this.rotation;
-        let _x = [x, y, - x - 4, - y - 4][r] * size;
-        let _y = [y, - x - 4, - y - 4, x][r] * size;
+        let _x = [x, y, -x - 4, -y - 4][r] * size;
+        let _y = [y, -x - 4, -y - 4, x][r] * size;
 
         // Shift adjustment for images
         const shift = this.shift;
@@ -338,16 +340,17 @@ export default class Tile {
         for (let j = 0; j < 4; j += 1) {
             for (let i = 0; i < 4; i += 1) {
                 const cell = board.get(this.x + i, this.y + j);
-                if (cell.isUsed()) {
-                    const shift = this.shift;
-                    const x = (cell.coord.x + 1 / 3 + [.25, .1, -.1, -.25][i]) * size + shift.x;
-                    const y = (cell.coord.y + 1 / 3 + [.25, .1, -.1, -.25][j]) * size + shift.y;
-
-                    p5.push();
-                    p5.translate(x, y);
-                    p5.image(usedImage, 0, 0, size / 3, size / 3);
-                    p5.pop();
+                if (!cell || !cell.isUsed()) {
+                    continue;
                 }
+
+                const shift = this.shift;
+                const x = (cell.coord.x + 1 / 3 + [.25, .1, -.1, -.25][i]) * size + shift.x;
+                const y = (cell.coord.y + 1 / 3 + [.25, .1, -.1, -.25][j]) * size + shift.y;
+                p5.push();
+                p5.translate(x, y);
+                p5.image(usedImage, 0, 0, size / 3, size / 3);
+                p5.pop();
             }
         }
     }
