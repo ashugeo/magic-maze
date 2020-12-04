@@ -13,7 +13,6 @@ import tiles from './tiles';
 
 export default {
     action: '', // '', 'placing', 'hero'
-    mouseIn: false,
     crystal: null,
 
     init() {
@@ -40,29 +39,19 @@ export default {
             }
         });
 
-        document.addEventListener('mousedown', () => {
-            if (!game.isEnded() && this.mouseIn) this.mouseDown();
+        document.getElementById('canvas-wrap').addEventListener('mousedown', () => {
+            if (!game.isEnded()) this.mouseDown();
         });
 
-        document.addEventListener('mouseup', () => {
-            if (!game.isEnded() && this.mouseIn) this.mouseUp();
+        document.getElementById('canvas-wrap').addEventListener('mouseup', () => {
+            if (!game.isEnded()) this.mouseUp();
         });
 
-        document.addEventListener('mousemove', () => {
-            if (!game.isEnded() && this.mouseIn) this.mouseMove();
+        document.getElementById('canvas-wrap').addEventListener('mousemove', (e) => {
+            if (!game.isEnded()) this.mouseMove();
         });
 
-        document.getElementById('canvas-wrap').addEventListener('mouseleave', () => {
-            this.mouseIn = false;
-            camera.mouseIn = false;
-        });
-
-        document.getElementById('canvas-wrap').addEventListener('mouseenter', () => {
-            this.mouseIn = true;
-            camera.mouseIn = true;
-        });
-
-        window.oncontextmenu = () => {
+        document.getElementById('canvas-wrap').oncontextmenu = () => {
             if (!game.isEnded()) this.rotateTile(1);
             return false;
         }
