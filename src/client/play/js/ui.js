@@ -35,7 +35,7 @@ export default {
     getProperty(id, prop) {
         const elem = this.getById(id);
         if (!elem) {
-            console.error("[getProperty] Could not find element with id", id);
+            console.error("[getProperty] Could not find element with id", id, prop);
             return undefined;
         }
         return elem[prop];
@@ -43,11 +43,18 @@ export default {
 
     getAttribute(id, attr) {
         const elem = this.getById(id);
+        if (!elem) {
+            console.error("[getAttribute] Could not find element with id", id, attr);
+            return undefined;
+        }
         return elem.getAttribute(attr);
     },
 
     setAttribute(id, attr, value) {
         const elem = this.getById(id);
+        if (!elem) {
+            return console.error("[setAttribute] Could not find element with id", id, attr);
+        }
         elem.setAttribute(attr, value);
     },
 
@@ -62,13 +69,16 @@ export default {
     addClass(id, cl) {
         const elem = this.getById(id);
         if (!elem) {
-            return console.error("[addClass] Could not find element with id", id);
+            return console.error("[addClass] Could not find element with id", id, cl);
         }
         elem.classList.add(cl);
     },
 
     removeClass(id, classes) {
         const elem = this.getById(id);
+        if (!elem) {
+            return console.error("[removeClass] Could not find element with id", id, classes);
+        }
         classes.split(' ').forEach(cl => elem.classList.remove(cl));
     },
 
@@ -80,14 +90,17 @@ export default {
     hasClass(elOrID, cl) {
         const elem = typeof elOrID === 'string' ? this.getById(elOrID) : elOrID;
         if (!elem) {
-            console.error("[hasClass] Could not find element with id", id);
+            console.error("[hasClass] Could not find element", elOrID, cl);
             return false;
         }
-        return elem.classList && elem.classList.contains(cl) ? true : false;
+        return elem.classList && elem.classList.contains(cl);
     },
 
     moveToEnd(elOrID) {
         const elem = typeof elOrID === 'string' ? this.getById(elOrID) : elOrID;
+        if (!elem) {
+            return console.error("[moveToEnd] Could not find element", elOrID);
+        }
         if (elem) elem.parentElement.innerHTML = elem.parentElement.innerHTML.replace(elem.outerHTML, '') + elem.outerHTML;
     },
 

@@ -51,11 +51,11 @@ export default {
             this.keysDown.splice(this.keysDown.indexOf(e.which), 1);
         });
 
-        document.getElementById('canvas-wrap').addEventListener('mousedown', () => {
+        document.getElementById('game-wrap').addEventListener('mousedown', () => {
             if (!game.isEnded()) this.mouseDown();
         });
 
-        document.getElementById('canvas-wrap').addEventListener('mouseup', () => {
+        document.getElementById('game-wrap').addEventListener('mouseup', () => {
             if (!game.isEnded()) this.mouseUp();
         });
 
@@ -74,11 +74,11 @@ export default {
             }
         });
 
-        document.getElementById('canvas-wrap').addEventListener('mousemove', (e) => {
+        document.getElementById('game-wrap').addEventListener('mousemove', (e) => {
             if (!game.isEnded()) this.mouseMove(e);
         });
 
-        document.getElementById('canvas-wrap').oncontextmenu = () => {
+        document.getElementById('game-wrap').oncontextmenu = () => {
             // Right click: rotate tile
             if (!game.isEnded()) this.rotateTile(1);
             return false;
@@ -132,7 +132,9 @@ export default {
     },
 
     getHoveredCell() {
-        if (this.hoveredTile.x === null || this.hoveredTile.y === null || !this.hoveredTile.bcr) return null;
+        if (this.hoveredTile.x === null || this.hoveredTile.y === null || !this.hoveredTile.bcr)
+            return null;
+
         let { x, y, bcr } = this.hoveredTile;
 
         const _x = (this.mouse.x - bcr.left) / camera.zoomValue;
@@ -278,19 +280,17 @@ export default {
     moveTile() {
         const pickedTile = tiles.getPickedTile();
 
-        if (pickedTile) {
-            // Hovered cell
-            const cell = this.getHoveredCell();
-            const o = pickedTile.getOrientation();
-
-            // Place cursor on enter cell depending on orientation
-            const origin = pickedTile.getOrigin(cell.x, cell.y, o);
-
-            pickedTile.move(origin.x, origin.y);
-
-            // Display tile
-            // pickedTile.display();
+        if (!pickedTile) {
+            return;
         }
+
+        const cell = this.getHoveredCell();
+        if (!cell) {
+            return console.error("Failed to get hovered cell: ", cell);
+        }
+        const o = pickedTile.getOrientation();
+        const origin = pickedTile.getOrigin(cell.x, cell.y, o);
+        pickedTile.move(origin.x, origin.y);
     },
 
     /**
