@@ -31,10 +31,65 @@ body {
       bottom: -100%;
       padding: 0; }
 
-#canvas-wrap {
+#game-wrap {
   position: relative;
   flex: 1;
   background-color: #f5faff; }
+  #game-wrap #debug {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; }
+    #game-wrap #debug::before, #game-wrap #debug::after {
+      content: "";
+      background-color: black;
+      position: absolute; }
+    #game-wrap #debug::before {
+      top: 0;
+      left: 50%;
+      width: 1px;
+      height: 100%;
+      z-index: 100; }
+    #game-wrap #debug::after {
+      top: 50%;
+      left: 5;
+      width: 100%;
+      height: 1px; }
+  #game-wrap #svg-wrap {
+    transform-origin: center center;
+    z-index: -1; }
+    #game-wrap #svg-wrap #board rect {
+      fill: transparent;
+      stroke: none; }
+    #game-wrap #svg-wrap #tiles *,
+    #game-wrap #svg-wrap #path *,
+    #game-wrap #svg-wrap #items *,
+    #game-wrap #svg-wrap #heroes *,
+    #game-wrap #svg-wrap #grid * {
+      pointer-events: none;
+      user-select: none; }
+    #game-wrap #svg-wrap #tiles image.valid {
+      opacity: .8; }
+    #game-wrap #svg-wrap #tiles image.invalid {
+      opacity: .4; }
+    #game-wrap #svg-wrap #path rect.path {
+      fill: rgba(255, 0, 0, 0.2); }
+      #game-wrap #svg-wrap #path rect.path.reachable {
+        fill: rgba(0, 255, 0, 0.3); }
+    #game-wrap #svg-wrap #heroes .hero {
+      transition: opacity .3s ease; }
+      #game-wrap #svg-wrap #heroes .hero.exited {
+        opacity: 0; }
+    #game-wrap #svg-wrap #grid {
+      display: none; }
+      #game-wrap #svg-wrap #grid.visible {
+        display: block; }
+      #game-wrap #svg-wrap #grid rect {
+        fill: transparent;
+        stroke-width: .25; }
 
 p {
   margin-bottom: 1em; }

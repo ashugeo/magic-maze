@@ -11,7 +11,7 @@ export default {
     showAlert(name) {
         this.forceCloseAlert();
 
-        const canvasWrap = document.getElementById("canvas-wrap");
+        const canvasWrap = document.getElementById("game-wrap");
         if (canvasWrap === null || canvasWrap === undefined) {
             return;
         }
@@ -39,7 +39,7 @@ export default {
     showGameOver(message) {
         this.forceCloseGameOver();
 
-        const canvasWrap = document.getElementById("canvas-wrap");
+        const canvasWrap = document.getElementById("game-wrap");
         if (canvasWrap === null || canvasWrap === undefined) {
             return;
         }
@@ -62,7 +62,7 @@ export default {
     showPause(message, callback) {
         this.forceClosePause();
 
-        const canvasWrap = document.getElementById("canvas-wrap");
+        const canvasWrap = document.getElementById("game-wrap");
         if (canvasWrap === null || canvasWrap === undefined) {
             return;
         }
