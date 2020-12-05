@@ -18,6 +18,8 @@ export default class Tile {
             x: 0,
             y: 0
         }
+        this.x = undefined;
+        this.y = undefined;
     }
 
     move(x, y) {
@@ -164,7 +166,7 @@ export default class Tile {
     * @param  {int}    o tile orientation
     * @return {Object}   {x, y}
     */
-    getGatePlusOne(x, y, o) {        
+    getGatePlusOne(x, y, o) {
         x += [1, 4, 2, -1][o];
         y += [-1, 1, 4, 2][o];
 

@@ -14,7 +14,6 @@ import ui from './ui';
 
 export default {
     action: '', // '', 'placing', 'hero'
-    mouseIn: false,
     crystal: null,
     keysDown: [],
     hoveredCell: {},
@@ -52,12 +51,12 @@ export default {
             this.keysDown.splice(this.keysDown.indexOf(e.which), 1);
         });
 
-        document.addEventListener('mousedown', () => {
-            if (!game.isEnded() && this.mouseIn) this.mouseDown();
+        document.getElementById('canvas-wrap').addEventListener('mousedown', () => {
+            if (!game.isEnded()) this.mouseDown();
         });
 
-        document.addEventListener('mouseup', () => {
-            if (!game.isEnded() && this.mouseIn) this.mouseUp();
+        document.getElementById('canvas-wrap').addEventListener('mouseup', () => {
+            if (!game.isEnded()) this.mouseUp();
         });
 
         document.addEventListener('mouseover', e => {
@@ -75,21 +74,11 @@ export default {
             }
         });
 
-        document.addEventListener('mousemove', e => {
-            if (!game.isEnded() && this.mouseIn) this.mouseMove(e);
+        document.getElementById('canvas-wrap').addEventListener('mousemove', (e) => {
+            if (!game.isEnded()) this.mouseMove(e);
         });
 
-        document.getElementById('game-wrap').addEventListener('mouseleave', () => {
-            this.mouseIn = false;
-            camera.mouseIn = false;
-        });
-
-        document.getElementById('game-wrap').addEventListener('mouseenter', () => {
-            this.mouseIn = true;
-            camera.mouseIn = true;
-        });
-
-        window.oncontextmenu = () => {
+        document.getElementById('canvas-wrap').oncontextmenu = () => {
             // Right click: rotate tile
             if (!game.isEnded()) this.rotateTile(1);
             return false;
@@ -362,6 +351,10 @@ export default {
             // Time cell, invert clock
             clock.invert();
             socket.emit('invertClock');
+
+            if (config.pauseGameOnInvertClock) {
+                game.pause();
+            }
 
             if (game.players === 1 && ai.bots.length === 0) {
                 // Admin is the only player, shuffle roles

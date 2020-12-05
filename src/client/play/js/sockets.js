@@ -34,7 +34,7 @@ export default {
         });
 
         socket.on('prestart', isAdmin => {
-            const isSpectator = ui.getProperty('isSpectator', 'checked');
+            const isSpectator = ui.getProperty('isSpectator', 'checked') || false;
 
             if (isAdmin) {
                 // Ask admin for game parameters
@@ -47,9 +47,11 @@ export default {
         });
 
         socket.on('start', options => {
+            console.debug("Game started with options: ", options);
             user.start(options);
 
-            this.updateMembers(options.players);
+            if (options.members !== undefined)
+                this.updateMembers(options.members);
 
             ui.remove('spectator-ui');
 
@@ -78,7 +80,6 @@ export default {
             const tile = tiles.getTile(data.tile.id);
             tile.rotation = data.tile.rotation;
             tile.set(data.x, data.y);
-            tiles.board.push(tile.id);
         });
 
         socket.on('getStatus', user => {
@@ -86,7 +87,8 @@ export default {
                 board: board.getAll(),
                 clock: clock.get(),
                 heroes: heroes.get(),
-                tiles: tiles.get()
+                tiles: tiles.get(),
+                gamePhase: game.phase,
             }
             socket.emit('status', data, user);
         });
@@ -113,6 +115,11 @@ export default {
     },
 
     updateMembers(members) {
+        if (!members) {
+            console.error("Didn't receive valid members property");
+            return;
+        }
+
         const botsCount = members.filter(m => m.isBot).length;
 
         let html = members.length - botsCount;
@@ -121,14 +128,22 @@ export default {
 
         ui.setHTML('people', html);
 
+        // Sort that spectators are last
+        members = members.sort((a, b) => a.isSpectator - b.isSpectator)
+
         let membersHTML = '';
         for (const member of members) {
-            membersHTML += `<div class="member">
-                ${member.roles && member.id !== player.id ?
+            membersHTML += `
+            <div class="member ${member.isConnected ? '' : 'disconnected'}"
+                title="${member.isSpectator ? 'Spectator' : (member.isBot ? 'Bot' : 'Player')}">
+                ${!member.isBot && member.roles && member.roles.length > 0 && member.id !== player.id ?
                   `<div class="alert" data-player="${member.id}">&#128276;</div>` : ''}
                 
-                <p class="${member.id !== player.id ? '' : 'current'}">${member.name}</p>
-                <p class="small">${member.roles ? `Role(s): ${member.roles.join(', ')}` : ''}</p>
+                <p class="${member.id !== player.id ? '' : 'current'}">
+                    ${member.isSpectator ? '&#128065;' : ''}
+                    ${member.name}
+                </p>
+                <p class="small">${member.roles && member.roles.length > 0 ? `Role(s): ${member.roles.join(', ')}` : ''}</p>
             </div>`;
         }
         ui.setHTML('list', membersHTML);

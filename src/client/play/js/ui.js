@@ -8,6 +8,9 @@ export default {
 
     setHTML(id, html) {
         const elem = this.getById(id);
+        if (!elem) {
+            return console.error("[setHTML] Could not find element with id", id);
+        }
         elem.innerHTML = html;
     },
 
@@ -18,6 +21,9 @@ export default {
 
     addEvent(id, ev, f) {
         const elem = this.getById(id);
+        if (!elem) {
+            return console.error("[addEvent] Could not find element with id", id);
+        }
         elem.addEventListener(ev, f);
     },
 
@@ -28,6 +34,10 @@ export default {
 
     getProperty(id, prop) {
         const elem = this.getById(id);
+        if (!elem) {
+            console.error("[getProperty] Could not find element with id", id);
+            return undefined;
+        }
         return elem[prop];
     },
 
@@ -43,11 +53,17 @@ export default {
 
     remove(id) {
         const elem = this.getById(id);
+        if (!elem) {
+            return console.warn("[remove] Element already removed, with id", id);
+        }
         elem.remove();
     },
 
     addClass(id, cl) {
         const elem = this.getById(id);
+        if (!elem) {
+            return console.error("[addClass] Could not find element with id", id);
+        }
         elem.classList.add(cl);
     },
 
@@ -63,6 +79,10 @@ export default {
 
     hasClass(elOrID, cl) {
         const elem = typeof elOrID === 'string' ? this.getById(elOrID) : elOrID;
+        if (!elem) {
+            console.error("[hasClass] Could not find element with id", id);
+            return false;
+        }
         return elem.classList && elem.classList.contains(cl) ? true : false;
     },
 
