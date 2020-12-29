@@ -22,27 +22,18 @@ module.exports = {
             {
                 test: /\.scss$/,
                 use: [
-                    {
-                        loader: 'file-loader',
-                        options: {
-                            name: '[name]/main.min.css',
-                        }
-                    },
-                    {
-                        loader: 'extract-loader'
-                    },
-                    {
-                        loader: 'css-loader'
-                    },
-                    {
-                        loader: 'sass-loader'
-                    }
-                ]
+                    // Creates `style` nodes from JS strings
+                    "style-loader",
+                    // Translates CSS into CommonJS
+                    "css-loader",
+                    // Compiles Sass to CSS
+                    "sass-loader",
+                ],
             }
         ]
     },
     optimization: {
-        minimizer: process.env.NODE_ENV === 'production' ? [new UglifyJsPlugin()] : [],
+        // minimizer: process.env.NODE_ENV === 'production' ? [new UglifyJsPlugin()] : [],
     },
     watch: process.env.NODE_ENV === 'production' ? false : true
 }
