@@ -8,11 +8,17 @@ import player from './player';
 import ui from './ui';
 import user from './user';
 import tiles from './tiles';
+import overlay from "./overlay";
 
 export default {
     init() {
         socket.on('members', members => {
             this.updateMembers(members);
+        });
+
+        socket.on('member', member => {
+            player.id = member.id;
+            player.name = member.name;
         });
 
         socket.on('admin', () => {
@@ -22,26 +28,30 @@ export default {
             <button id="start">Start game</button>`;
 
             ui.setHTML('admin', html);
-            ui.addEvent('start', 'click', () => { socket.emit('prestart'); });
+            ui.addEvent('start', 'click', () => {
+                socket.emit('prestart');
+            });
         });
 
         socket.on('prestart', isAdmin => {
-            const isSpectator = ui.getProperty('isSpectator', 'checked');
+            const isSpectator = ui.getProperty('isSpectator', 'checked') || false;
 
             if (isAdmin) {
                 // Ask admin for game parameters
                 const bots = parseInt(ui.getProperty('bots', 'value'));
                 const scenario = parseInt(ui.getProperty('scenario', 'value'));
-                socket.emit('settings', { bots, scenario, isSpectator });
+                socket.emit('settings', {bots, scenario, isSpectator});
             } else {
-                socket.emit('settings', { isSpectator });
+                socket.emit('settings', {isSpectator});
             }
         });
 
         socket.on('start', options => {
+            console.debug("Game started with options: ", options);
             user.start(options);
 
-            this.updateMembers(options.players);
+            if (options.members !== undefined)
+                this.updateMembers(options.members);
 
             ui.remove('spectator-ui');
 
@@ -70,7 +80,6 @@ export default {
             const tile = tiles.getTile(data.tile.id);
             tile.rotation = data.tile.rotation;
             tile.set(data.x, data.y);
-            tiles.board.push(tile.id);
         });
 
         socket.on('getStatus', user => {
@@ -78,7 +87,8 @@ export default {
                 board: board.getAll(),
                 clock: clock.get(),
                 heroes: heroes.get(),
-                tiles: tiles.get()
+                tiles: tiles.get(),
+                gamePhase: game.phase,
             }
             socket.emit('status', data, user);
         });
@@ -94,10 +104,22 @@ export default {
         socket.on('ai', data => {
             ai.run();
         });
+
+        socket.on('alert', data => {
+            overlay.showAlert(data);
+        });
+
+        socket.on('pause', data => {
+            game.setPaused(data.paused, data.byName);
+        });
     },
 
     updateMembers(members) {
-        console.log(members);
+        if (!members) {
+            console.error("Didn't receive valid members property");
+            return;
+        }
+
         const botsCount = members.filter(m => m.isBot).length;
 
         let html = members.length - botsCount;
@@ -106,13 +128,34 @@ export default {
 
         ui.setHTML('people', html);
 
+        // Sort that spectators are last
+        members = members.sort((a, b) => a.isSpectator - b.isSpectator)
+
         let membersHTML = '';
         for (const member of members) {
-            membersHTML += `<div class="member">
-                <p>${member.name}</p>
-                <p class="small">${member.roles ? `Role(s): ${member.roles.join(', ')}` : ''}</p>
+            membersHTML += `
+            <div class="member ${member.isConnected ? '' : 'disconnected'}"
+                title="${member.isSpectator ? 'Spectator' : (member.isBot ? 'Bot' : 'Player')}">
+                ${!member.isBot && member.roles && member.roles.length > 0 && member.id !== player.id ?
+                  `<div class="alert" data-player="${member.id}">&#128276;</div>` : ''}
+                
+                <p class="${member.id !== player.id ? '' : 'current'}">
+                    ${member.isSpectator ? '&#128065;' : ''}
+                    ${member.name}
+                </p>
+                <p class="small">${member.roles && member.roles.length > 0 ? `Role(s): ${member.roles.join(', ')}` : ''}</p>
             </div>`;
         }
         ui.setHTML('list', membersHTML);
-    }
+
+        ui.addEventForClass('alert', 'click', (e) => {
+            this.alertPlayer(e.target.dataset.player);
+        });
+    },
+
+    alertPlayer(playerId) {
+        socket.emit('alert', {
+            id: playerId,
+        });
+    },
 }

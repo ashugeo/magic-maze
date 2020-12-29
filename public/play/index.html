@@ -10,7 +10,8 @@
 <body>
     <div id="ui">
         <p>Time remaining: <span id="clock">- m - - s</span></p>
-        
+        <p>Tiles: <span id="tiles-used">0</span>/<span id="tiles-total">0</span></p>
+
         <p><strong id="people">1 player online</strong></p>
 
         <div id="list"></div>
@@ -24,6 +25,20 @@
 
         <div id="admin"></div>
     </div>
-    <div id="canvas-wrap"></div>
+    <div id="game-wrap">
+        <svg id="svg-el" viewBox="0 0 0 0" xmlns="http://www.w3.org/2000/svg">
+            <g id="svg-wrap">
+                <g id="svg">
+                    <g id="board"></g>
+                    <g id="tiles"></g>
+                    <g id="path"></g>
+                    <g id="items"></g>
+                    <g id="heroes"></g>
+                    <g id="grid"></g>
+                </g>
+            </g>
+        </svg>
+        <div id="debug"></div>
+    </div>
 </body>
 </html>

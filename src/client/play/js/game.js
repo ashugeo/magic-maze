@@ -3,6 +3,7 @@ import clock from './clock';
 import config from './config';
 import events from './events';
 import ui from './ui';
+import overlay from "./overlay";
 
 export default {
     scenario: 0,
@@ -13,8 +14,8 @@ export default {
 
     init(options) {
         this.scenario = options.scenario;
-        this.players = options.players;
-        this.setPhase(1);
+        this.players = options.members.filter(m => !m.isSpectator);
+        this.setPhase(options.gamePhase || 1);
 
         if (options.admin) {
             this.admin = true;
@@ -44,14 +45,28 @@ export default {
 
     pause() {
         if (this.isEnded()) return;
-        this.paused = true;
+        events.pauseGame(true);
     },
 
     resume() {
         if (this.isEnded()) return;
-        this.paused = false;
+        events.pauseGame(false);
+    },
 
-        ai.run();
+    setPaused(isPaused, byName) {
+        this.paused = isPaused;
+
+        if (this.isEnded()) {
+            overlay.forceClosePause();
+            return;
+        }
+
+        if (isPaused) {
+            overlay.showPause(`Paused by ${byName}...`, () => this.resume());
+        } else {
+            overlay.forceClosePause();
+            ai.run();
+        }
     },
 
     isPaused() {
@@ -63,6 +78,8 @@ export default {
         console.log('game won!');
         clock.stop();
         this.phase = 3;
+
+        overlay.showGameOver('Game won!');
     },
 
     lose() {
@@ -77,5 +94,7 @@ export default {
             // Admin is the only player, disable nextAction button
             ui.addClass('nextAction', 'disabled');
         }
+
+        overlay.showGameOver('Game lost!');
     }
 }

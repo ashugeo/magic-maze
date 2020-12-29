@@ -6,6 +6,7 @@ const io = require('socket.io')(http);
 
 // TODO: move this
 const actions = require('../client/play/data/actions.json');
+const Member = require("./member");
 
 app.use(express.static(path.resolve('public')));
 
@@ -20,35 +21,63 @@ const listener = http.listen(process.env.PORT || 3000, () => {
 });
 
 io.sockets.on('connection', socket => {
-    // List all opened rooms on homepage
-    for (const roomID of Object.keys(io.sockets.adapter.rooms)) {
-        const room = io.sockets.adapter.rooms[roomID];
-        if (room.id) io.emit('home', room);
-    }
+    console.debug("New connection", socket.id);
 
-    // New player entered a room
+    // List all opened rooms on homepage
+    Object.values(io.sockets.adapter.rooms).forEach(room => {
+        if (room.id) {
+            io.emit('home', room);
+        }
+    });
+
+    /**
+     * New player entered a room
+     * params: { room, name }
+     */
     socket.on('join', params => {
+        console.log("Player joined: ", params);
+
         const roomID = params.room;
         socket.join(roomID);
         socket.roomID = roomID;
         socket.name = params.name;
 
+        // Init room
         const room = io.sockets.adapter.rooms[roomID];
-
         room.id = roomID;
+        if (!room.members)
+            room.members = [];
 
-        room.members = Object.keys(room.sockets).map(socketID => ({ id: socketID, name: io.sockets.sockets[socketID].name }));
+        // Add/update joined member
+        const member = room.members.find(member => member.name === socket.name);
+        if (member) {
+            console.log("Player rejoined room after being disconnected");
+            member.id = socket.id;
+            member.isConnected = true;
+        } else {
+            room.members.push(new Member(
+                socket.id,
+                socket.name,
+                room.isStarted,
+            ));
+        }
 
-        // Game already started
         if (room.isStarted) {
-            // Join as spectator
-            room.members.find(m => m.id === socket.id).isSpectator = true;
+            console.log("Room already started");
             socket.scenario = room.options.scenario;
             io.to(room.adminID).emit('getStatus', socket.id);
         }
 
+        // Tell socket its player/member id and name
+        io.to(socket.id).emit('member', {
+            id: socket.id,
+            name: socket.name,
+        });
+
         // Tell everyone
-        io.to(roomID).emit('members', room.members );
+        console.debug("Room members: ", room.members);
+        io.to(roomID).emit('members', room.members);
+
         io.emit('home', room);
 
         // First player, make it admin
@@ -59,46 +88,72 @@ io.sockets.on('connection', socket => {
     });
 
     socket.on('status', (data, user) => {
+        console.debug("Sending status to user: ", user);
+
+        const room = io.sockets.adapter.rooms[socket.roomID];
+        const member = room.members.find(m => m.id === user);
+
         io.to(user).emit('start', {
             board: data.board,
             clock: data.clock,
             heroes: data.heroes,
             tiles: data.tiles,
-            scenario: io.sockets.sockets[user].scenario
+            scenario: io.sockets.sockets[user].scenario,
+            gamePhase: data.gamePhase,
+            roles: member.roles || null,
+            members: room.members,
         });
     });
 
     // User disconnected from a room
     socket.on('disconnect', () => {
+        console.log("Player disconnected: ", socket.name);
+
         const roomID = socket.roomID;
         const room = io.sockets.adapter.rooms[roomID];
 
         // No more players, room gets deleted
-        if (roomID && !room) io.emit('home', { id: roomID });
+        if (roomID && !room) io.emit('home', {id: roomID});
         if (!room) return;
 
-        // Tell everyone
-        room.members = Object.keys(room.sockets).map(socketID => ({ id: socketID, name: io.sockets.sockets[socketID].name }));
+        // Remove player if room hasn't started or player is spectator, else mark player as disconnected
+        const member = room.members.find(member => member.id === socket.id);
+        if (!room.isStarted || member.isSpectator) {
+            console.log("Removing player from room");
+            room.members = room.members.filter(member => member.id !== socket.id);
+        } else {
+            console.log("Marking player as disconnected");
+            if (member) {
+                member.isConnected = false;
+            }
+        }
 
-        // TODO: update bots count
+        // Tell everyone
         io.to(roomID).emit('members', room.members);
         io.emit('home', room);
 
         // It was the admin, set a new admin
-        if (socket.id === room.adminID) {
-            const users = Object.keys(room.sockets);
-            const adminID = users[0];
-            room.adminID = adminID;
+        if (socket.id !== room.adminID)
+            return;
 
-            // Tell him
-            io.to(adminID).emit('admin');
+        const newAdminMember = room.members.find(m => m.isConnected
+                                                      && !m.isSpectator
+                                                      && !m.isBot);
+        if (!newAdminMember) {
+            console.log("No new competent admin found");
+            return;
         }
 
-        // TODO: remove from spectators
+        room.adminID = newAdminMember.id;
+
+        if (!room.isStarted) {
+            io.to(newAdminMember.id).emit('admin');
+        }
     });
 
     // Admin has clicked start, get each player's settings
     socket.on('prestart', () => {
+        console.debug("Collect users settings");
         const roomID = socket.roomID;
         const room = io.sockets.adapter.rooms[roomID];
         const users = Object.keys(room.sockets);
@@ -117,6 +172,7 @@ io.sockets.on('connection', socket => {
 
     // Getting player settings (wait for everyone then start with options)
     socket.on('settings', settings => {
+        console.debug("Received player settings: ", settings);
         const roomID = socket.roomID;
         const room = io.sockets.adapter.rooms[roomID];
         const adminID = room.adminID;
@@ -124,10 +180,15 @@ io.sockets.on('connection', socket => {
         room.members.find(m => m.id === socket.id).isSpectator = settings.isSpectator;
 
         // If admin, build options object with additional data
-        if (socket.id === adminID) room.options = { bots: settings.bots, scenario: settings.scenario };
+        if (socket.id === adminID)
+            room.options = {
+                bots: settings.bots,
+                scenario: settings.scenario
+            };
 
         // When the spectator status of everyone is known, the game can start
-        if (room.members.every(m => m.isSpectator !== undefined)) start(room);
+        if (room.members.every(m => m.isSpectator !== undefined))
+            start(room);
     });
 
     socket.on('hero', data => {
@@ -153,6 +214,18 @@ io.sockets.on('connection', socket => {
     socket.on('ai', () => {
         const adminID = io.sockets.adapter.rooms[socket.roomID].adminID;
         io.to(adminID).emit('ai');
+    });
+
+    socket.on('alert', data => {
+        io.to(data.id).emit('alert', socket.name);
+    });
+
+    socket.on('pause', setPaused => {
+        console.debug(`${socket.name} changed game pause state to ${setPaused}`);
+        io.to(socket.roomID).emit('pause', {
+            paused: setPaused,
+            byName: socket.name,
+        });
     });
 
     // socket.on('swap', () => {
@@ -187,16 +260,19 @@ io.sockets.on('connection', socket => {
 });
 
 function start(room) {
+    console.info("Starting room: ", room);
     room.isStarted = true;
 
-    // Add bots to players
+    // Add bots to players, but first remove some old bots
+    room.members = room.members.filter(m => !m.isBot);
     if (room.options.bots) {
         for (let i = 0; i < room.options.bots; i += 1) {
-            room.members.push({
-                id: 'bot' + i,
-                name: 'bot' + i,
-                isBot: true
-            });
+            room.members.push(new Member(
+                'bot' + i,
+                'bot' + i,
+                false,
+                true,
+            ));
         }
     }
 
@@ -207,13 +283,15 @@ function start(room) {
     if (Object.keys(players).length === 0) return;
 
     // Update players count with bots
+    console.debug("Room members: ", room.members);
     io.to(room.id).emit('members', room.members);
 
     // Get all actions for that number of players
     let roles = [];
-    for (const i in actions) {
-        if (actions[i].players.includes(Object.keys(players).length)) roles.push(actions[i].roles);
-    }
+    Object.values(actions).forEach(action => {
+        if (action.players.includes(Object.keys(players).length))
+            roles.push(action.roles);
+    });
 
     // Set roles to players
     if (players.length === 1) {
@@ -238,7 +316,7 @@ function start(room) {
             io.to(member.id).emit('start', {
                 roles: member.roles || null,
                 scenario: room.options.scenario,
-                players,
+                members: room.members,
                 bots,
                 admin: true
             });
@@ -246,7 +324,7 @@ function start(room) {
             io.to(member.id).emit('start', {
                 roles: member.roles || null,
                 scenario: room.options.scenario,
-                players
+                members: room.members,
             });
         }
     }

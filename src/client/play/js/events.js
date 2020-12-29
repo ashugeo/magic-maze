@@ -10,18 +10,24 @@ import heroes from './heroes';
 import player from './player';
 import Tile from './tile';
 import tiles from './tiles';
+import ui from './ui';
 
 export default {
     action: '', // '', 'placing', 'hero'
-    mouseIn: false,
     crystal: null,
+    keysDown: [],
+    hoveredCell: {},
+    hoveredTile: {},
+    mouse: { x: 0, y: 0 },
 
     init() {
         /**
-        * General key press actions
-        * @param {Object} e event
-        */
+         * General key press actions
+         * @param {Object} e event
+         */
         document.addEventListener('keydown', e => {
+            if (!this.keysDown.includes(e.which)) this.keysDown.push(e.which);
+
             if (e.which === 67) { // C: engage tile placing
                 if (!game.isEnded()) this.newTile();
             } else if (e.which === 82) { // R: rotate tile counterclockwise
@@ -31,38 +37,49 @@ export default {
             } else if (e.which === 27) { // Esc: cancel current action
                 if (!game.isEnded()) this.cancel();
             } else if (e.which === 66) { // B
-                // this.steal();
+                // Steal
+                // game.setPhase(2);
             } else if (e.which === 80) { // P
                 if (game.isPaused()) game.resume();
                 else game.pause();
             } else if (e.which === 71) { // G
-                config.grid = !config.grid;
+                ui.toggleClass('grid', 'visible');
             }
         });
 
-        document.addEventListener('mousedown', () => {
-            if (!game.isEnded() && this.mouseIn) this.mouseDown();
+        document.addEventListener('keyup', e => {
+            this.keysDown.splice(this.keysDown.indexOf(e.which), 1);
         });
 
-        document.addEventListener('mouseup', () => {
-            if (!game.isEnded() && this.mouseIn) this.mouseUp();
+        document.getElementById('game-wrap').addEventListener('mousedown', () => {
+            if (!game.isEnded()) this.mouseDown();
         });
 
-        document.addEventListener('mousemove', () => {
-            if (!game.isEnded() && this.mouseIn) this.mouseMove();
+        document.getElementById('game-wrap').addEventListener('mouseup', () => {
+            if (!game.isEnded()) this.mouseUp();
         });
 
-        document.getElementById('canvas-wrap').addEventListener('mouseleave', () => {
-            this.mouseIn = false;
-            camera.mouseIn = false;
+        document.addEventListener('mouseover', e => {
+            if (ui.hasClass(e.target, 'hitbox')) {
+                const x = parseInt(e.target.getAttribute('data-x'));
+                const y = parseInt(e.target.getAttribute('data-y'));
+
+                this.hoveredTile = { x, y };
+            }
         });
 
-        document.getElementById('canvas-wrap').addEventListener('mouseenter', () => {
-            this.mouseIn = true;
-            camera.mouseIn = true;
+        document.addEventListener('mouseout', e => {
+            if (ui.hasClass(e.target, 'hitbox')) {
+                this.hoveredTile = {};
+            }
         });
 
-        window.oncontextmenu = () => {
+        document.getElementById('game-wrap').addEventListener('mousemove', (e) => {
+            if (!game.isEnded()) this.mouseMove(e);
+        });
+
+        document.getElementById('game-wrap').oncontextmenu = () => {
+            // Right click: rotate tile
             if (!game.isEnded()) this.rotateTile(1);
             return false;
         }
@@ -85,15 +102,14 @@ export default {
         }
     },
 
-    oldHeroCell: {},
-
     mouseUp() {
         const cell = this.getHoveredCell();
         const hero = this.hero;
 
         if (!hero) return;
 
-        if (!(cell.x === this.oldHeroCell.x && cell.y === this.oldHeroCell.y)) {
+        // If cell is not current hero cell
+        if (cell && !(cell.x === hero.cell.x && cell.y === hero.cell.y)) {
             if (this.action === 'hero' && hero.canGoTo(cell)) {
                 hero.set(cell.x, cell.y);
                 socket.emit('hero', {
@@ -115,42 +131,70 @@ export default {
         this.hero = false;
     },
 
-    oldMouseCell: {},
+    getHoveredCell() {
+        if (this.hoveredTile.x === null || this.hoveredTile.y === null || !this.hoveredTile.bcr)
+            return null;
+
+        let { x, y, bcr } = this.hoveredTile;
+
+        const _x = (this.mouse.x - bcr.left) / camera.zoomValue;
+        const _y = (this.mouse.y - bcr.top) / camera.zoomValue;
+
+        if (_x > 91) x += 3;
+        else if (_x > 64) x += 2;
+        else if (_x > 37) x += 1;
+
+        if (_y > 91) y += 3;
+        else if (_y > 64) y += 2;
+        else if (_y > 37) y += 1;
+
+        return { x, y };
+    },
 
     /**
     * Mouse movements events
     */
-    mouseMove() {
+    mouseMove(e) {
+        const oldCell = this.hoveredCell;
+
+        if (e) this.mouse = {
+            x: e.clientX,
+            y: e.clientY
+        };
+
+        const el = document.elementFromPoint(this.mouse.x, this.mouse.y);
+        if (el.nodeName === 'rect') this.hoveredTile.bcr = el.getBoundingClientRect();
+        else this.hoveredTile.bcr = null;
+
         const cell = this.getHoveredCell();
+
+        if (!cell) return;
+
+        if (!oldCell || cell.x === oldCell.x && cell.y === oldCell.y) return;
+
+        this.hoveredCell = cell;
+
+        for (const hero of heroes.all) {
+            if (hero.cell.x === cell.x && hero.cell.y === cell.y) hero.isHovered = true;
+            else hero.isHovered = false;
+        }
 
         if (this.action === 'hero') {
             const hero = this.hero;
-            if (cell.x !== this.oldMouseCell.x || cell.y !== this.oldMouseCell.y) {
+            // if (cell.x !== this.oldMouseCell.x || cell.y !== this.oldMouseCell.y) {
                 this.oldMouseCell = cell;
                 hero.checkPath(cell);
-            }
+                hero.displayPath();
+            // }
         }
+
+        const pickedTile = tiles.getPickedTile();
+        if (pickedTile) this.moveTile();
     },
 
     /**
-    * Get hovered cell coordinates
-    * @return {Object} {x, y}
-    */
-    getHoveredCell() {
-        const x = p5.floor((p5.mouseX - p5.width / 2 + (camera.x * camera.zoomValue)) / (config.size * camera.zoomValue));
-        const y = p5.floor((p5.mouseY - p5.height / 2 + (camera.y * camera.zoomValue)) / (config.size * camera.zoomValue));
-
-        const cell = {
-            'x': x,
-            'y': y
-        }
-
-        return cell;
-    },
-
-    /**
-    * Cancel current action
-    */
+     * Cancel current action
+     */
     cancel() {
         if (this.action === 'placing') {
             tiles.putBackInStock();
@@ -159,9 +203,9 @@ export default {
     },
 
     /**
-    * Set picked tile
-    * @param {Object} cell {x, y} of cell to set tile onto
-    */
+     * Set picked tile
+     * @param {Object} cell {x, y} of cell to set tile onto
+     */
     setTile(cell) {
         // Select picked tile
         const tile = tiles.getPickedTile();
@@ -193,8 +237,8 @@ export default {
     },
 
     /**
-    * Get next tile from stock
-    */
+     * Get next tile from stock
+     */
     newTile() {
         if (!player.role.includes('explore') && !config.debug) return;
         if (tiles.getStockSize() === 0) return;
@@ -228,25 +272,46 @@ export default {
             // Make sure no tile is already picked
             if (!tiles.isPickedTile()) {
                 tiles.getFromStock();
+                this.moveTile();
             }
         }
     },
 
-    /**
-    * Rotate picked tile
-    * @param  {int} dir direction (1 for clockwise, -1 for counterclockwise)
-    */
-    rotateTile(dir) {
+    moveTile() {
         const pickedTile = tiles.getPickedTile();
-        if (pickedTile) pickedTile.rotate(dir);
+
+        if (!pickedTile) {
+            return;
+        }
+
+        const cell = this.getHoveredCell();
+        if (!cell) {
+            return console.error("Failed to get hovered cell: ", cell);
+        }
+        const o = pickedTile.getOrientation();
+        const origin = pickedTile.getOrigin(cell.x, cell.y, o);
+        pickedTile.move(origin.x, origin.y);
     },
 
     /**
-    * Check if there's a selectable hero in this cell
-    * @param  {Object}         cell cell to check
-    * @return {Object|Boolean}
-    */
+     * Rotate picked tile
+     * @param  {int} dir direction (1 for clockwise, -1 for counterclockwise)
+     */
+    rotateTile(dir) {
+        const pickedTile = tiles.getPickedTile();
+        if (pickedTile) {
+            pickedTile.rotate(dir);
+            this.moveTile();
+        }
+    },
+
+    /**
+     * Check if there's a selectable hero in this cell
+     * @param  {Object}         cell cell to check
+     * @return {Object|Boolean}
+     */
     checkForHero(cell) {
+        if (!cell) return false;
         for (let hero of heroes.all) {
             if (hero.cell.x === cell.x && hero.cell.y === cell.y && hero.selectable) return hero;
         }
@@ -254,9 +319,9 @@ export default {
     },
 
     /**
-    * Select or deselect hero
-    * @param  {Object} hero hero to select
-    */
+     * Select or deselect hero
+     * @param  {Object} hero hero to select
+     */
     toggleHero(hero) {
         for (let h of heroes.all) {
             // Prevent selection of multiple heroes
@@ -274,6 +339,7 @@ export default {
             this.hero = hero;
             hero.checkPath();
         }
+        hero.displayPath();
     },
 
     checkForEvents(cell, hero) {
@@ -285,6 +351,10 @@ export default {
             // Time cell, invert clock
             clock.invert();
             socket.emit('invertClock');
+
+            if (config.pauseGameOnInvertClock) {
+                game.pause();
+            }
 
             if (game.players === 1 && ai.bots.length === 0) {
                 // Admin is the only player, shuffle roles
@@ -321,5 +391,13 @@ export default {
             const cell = board.get(hero.cell.x, hero.cell.y);
             if (!cell.isUsed()) cell.setUsed();
         }
+    },
+
+    isKeyDown(key) {
+        return this.keysDown.includes(key);
+    },
+
+    pauseGame(setPaused) {
+        socket.emit('pause', setPaused);
     }
 }

@@ -3,6 +3,7 @@ import config from './config';
 import heroes from './heroes';
 import symbols from './symbols';
 import tiles from './tiles';
+import ui from './ui';
 
 const size = config.size;
 
@@ -17,6 +18,8 @@ export default class Tile {
             x: 0,
             y: 0
         }
+        this.x = undefined;
+        this.y = undefined;
     }
 
     move(x, y) {
@@ -73,6 +76,20 @@ export default class Tile {
 
         // Check if tile can be set here
         if (target) this.canBeSet = this.checkCanBeSet(x, y);
+
+        // Update SVG transform
+        const _x = (this.x + 2) * size - this.y / 4 * .85 * size;
+        const _y = (this.y + 2) * size + this.x / 4 * .85 * size;
+
+        ui.setAttribute(`tile-${this.id}`, 'transform', `translate(${_x} ${_y}) rotate(${this.rotation * 90}) translate(${-2 * size} ${-2 * size})`);
+
+        if (this.canBeSet) {
+            ui.addClass(`tile-${this.id}`, 'valid');
+            ui.removeClass(`tile-${this.id}`, 'invalid');
+        } else {
+            ui.addClass(`tile-${this.id}`, 'invalid');
+            ui.removeClass(`tile-${this.id}`, 'valid');
+        }
     }
 
     /**
@@ -150,10 +167,10 @@ export default class Tile {
     * @return {Object}   {x, y}
     */
     getGatePlusOne(x, y, o) {
-        x += [2, 4, 1, -1][o];
-        y += [-1, 2, 4, 1][o];
+        x += [1, 4, 2, -1][o];
+        y += [-1, 1, 4, 2][o];
 
-        return {x: x, y: y};
+        return { x, y };
     }
 
     /**
@@ -164,10 +181,9 @@ export default class Tile {
     * @return {Object}   {x, y}
     */
     getEnter(x, y, b) {
-        x += [-1, 0, 0, 1][b];
-        y += [0, 1, -1, 0][b];
-
-        return {x: x, y: y};
+        x += [-1, 1, -1, 1][b];
+        y += [1, 1, -1, -1][b];
+        return { x, y };
     }
 
     /**
@@ -189,10 +205,10 @@ export default class Tile {
             corner = y === 0 ? 1 : 2;
         }
 
-        let _x = [0, 1, 0, -1][corner];
-        let _y = [-1, 0, 1, 0][corner];
+        const _x = [0, 1, 0, -1][corner];
+        const _y = [-1, 0, 1, 0][corner];
 
-        return {x: _x, y: _y};
+        return { x: _x, y: _y };
     }
 
     /**
@@ -206,7 +222,7 @@ export default class Tile {
         x += [-2, -3, -1, 0][o];
         y += [0, -2, -3, -1][o];
 
-        return {x: x, y: y};
+        return { x, y };
     }
 
     set(x, y) {
@@ -214,6 +230,8 @@ export default class Tile {
         this.status = 'set';
         this.saveToBoard(x, y);
         tiles.setTile(this.id);
+
+        ui.removeClass(`tile-${this.id}`, 'valid invalid');
     }
 
     saveToBoard(x, y) {
@@ -300,55 +318,17 @@ export default class Tile {
         }
     }
 
-    display() {
-        p5.push();
-        // Rotate and translate tile
-        p5.rotate(this.rotation * p5.PI / 2);
-        const x = this.x;
-        const y = this.y;
-        const r = this.rotation;
-        let _x = [x, y, - x - 4, - y - 4][r] * size;
-        let _y = [y, - x - 4, - y - 4, x][r] * size;
+    createSVG() {
+        // this.move(0, 0);
 
-        // Shift adjustment for images
-        const shift = this.shift;
-        _x += [shift.x, shift.y, -shift.x, -shift.y][r];
-        _y += [shift.y, -shift.x, -shift.y, shift.x][r];
-        p5.translate(_x, _y);
+        const svg = `<image id="tile-${this.id}" href="./img/tile${this.id}.jpg" height="${4 * config.size}" width="${4 * config.size}"/>`;
 
-        // Display image of cell
-        p5.image(tilesImages[this.id], 0, 0, 4 * size, 4 * size);
-
-        // Colored overlay depending on status
-        p5.noStroke();
-        if (this.canBeSet && this.status !== 'set') {
-            p5.fill(240, 255, 250, 100);
-            p5.rect(0, 0, 4 * size, 4 * size);
-        } else if (!this.canBeSet && this.status !== 'set') {
-            p5.fill(255, 240, 245, 180);
-            p5.rect(0, 0, 4 * size, 4 * size);
-        }
-
-        p5.pop();
-
-        if (this.status === 'set') this.displayItems();
+        ui.addHTML('tiles', svg);
     }
 
-    displayItems() {
-        for (let j = 0; j < 4; j += 1) {
-            for (let i = 0; i < 4; i += 1) {
-                const cell = board.get(this.x + i, this.y + j);
-                if (cell.isUsed()) {
-                    const shift = this.shift;
-                    const x = (cell.coord.x + 1 / 3 + [.25, .1, -.1, -.25][i]) * size + shift.x;
-                    const y = (cell.coord.y + 1 / 3 + [.25, .1, -.1, -.25][j]) * size + shift.y;
-
-                    p5.push();
-                    p5.translate(x, y);
-                    p5.image(usedImage, 0, 0, size / 3, size / 3);
-                    p5.pop();
-                }
-            }
-        }
+    removeSVG() {
+        ui.remove(`tile-${this.id}`);
+        this.x = null;
+        this.y = null;
     }
 }

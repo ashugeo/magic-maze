@@ -26,15 +26,20 @@ const sketch = p5 => {
     }
 
     p5.draw = () => {
-        camera.update();
+        if (camera.autopan) camera.update();
 
         p5.clear();
-        p5.background(245, 250, 255);
-        
+
+        if (tiles.allTilesOnBoard()) {
+            p5.background(174, 179, 184);
+        }else {
+            p5.background(245, 250, 255);
+        }
+
         // Zoom with focus point at the center of screen
         p5.translate(p5.width/2, p5.height/2);
         camera.zoom();
-        
+
         p5.push();
         camera.move();
 

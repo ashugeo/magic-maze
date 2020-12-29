@@ -6,44 +6,24 @@ import game from './game';
 import heroes from './heroes';
 import player from './player';
 import tiles from './tiles';
+import ui from './ui';
 
 export default class Hero {
     constructor(id) {
-        this.id = id,
-        this.color = config.heroes[id],
+        this.id = id;
+        this.x = 0;
+        this.y = 0;
+        this.color = config.heroes[id];
         this.cell = {
             x: 0,
             y: 0
-        },
-        this.status = 'set', // set, selected, exited
-        this.selectable = true,
+        };
+        this.target = this.cell;
+        this.pos = {x: this.target.x, y: this.target.y};
+
+        this.status = 'set'; // set, selected, exited
+        this.selectable = true;
         this.path = [];
-        this.opacity = 255;
-    }
-
-    /**
-    * Move hero to cell
-    * @param {Object} cell cell X and Y coordinates
-    */
-    move(force = false) {
-        if (force) {
-            this.pos = {x: this.target.x, y: this.target.y};
-            this.selectable = true;
-
-            // Check for events on this cell
-            events.checkForEvents(this.cell, this);
-
-            // Run AI again
-            ai.run();
-        } else {
-            let deltaX = this.target.x - this.pos.x;
-            let deltaY = this.target.y - this.pos.y;
-            let delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-            let x = this.pos.x + deltaX / delta / config.heroSpeed;
-            let y = this.pos.y + deltaY / delta / config.heroSpeed;
-            this.pos = {x, y};
-            this.selectable = false;
-        }
     }
 
     /**
@@ -52,27 +32,12 @@ export default class Hero {
     * @param {int} y cell Y coordinate
     */
     set(x, y) {
-        this.cell = {
-            x: x,
-            y: y
-        };
-
-
-        const boardCell = board.get(x, y);
-        const tile = tiles.getTile(boardCell.tileID);
-        const tileCell = boardCell.tileCell;
-
-        if (tile) {
-            x += [.25, .1, -.1, -.25][tileCell.x] + tile.shift.x / config.size;
-            y += [.25, .1, -.1, -.25][tileCell.y] + tile.shift.y / config.size;
-        }
-
-        this.target = {
-            x: x,
-            y: y
-        }
-
+        this.cell = { x, y };
         this.path = [];
+        this.selectable = false;
+
+        // Move SVG element to bottom of parent (z-index hack)
+        ui.moveToEnd(`hero-${this.id}`);
     }
 
     /**
@@ -83,6 +48,9 @@ export default class Hero {
     getPath(target) {
         const hero = this.cell;
         const path = this.path = [];
+
+        const targetCell = board.get(target.x, target.y);
+        if (targetCell.isEmpty()) return;
 
         if (hero.x === target.x && hero.y === target.y) {
             // Same column and row = same cell
@@ -105,38 +73,46 @@ export default class Hero {
             }
         }
 
-        if (hero.x !== target.x && hero.y !== target.y) {
-            // Not the same column or row
-            // Check for escalator
-            if (role.includes('escalator')) {
-                const escalator = board.get(hero.x, hero.y).escalator;
-                if (escalator && escalator.x === target.x && escalator.y === target.y) {
-                    path.push({x: hero.x, y: hero.y});
-                    path.push({x: target.x, y: target.y, reachable: true});
-                    return path;
-                }
+        // Check for escalator
+        if (role.includes('escalator')) {
+            const escalator = board.get(hero.x, hero.y).escalator;
+            if (escalator && escalator.x === target.x && escalator.y === target.y) {
+                path.push({x: hero.x, y: hero.y});
+                path.push({x: target.x, y: target.y, reachable: true});
+                return path;
             }
-
-            return;
         }
 
-        if (hero.x < target.x) {
+        const heroTile = { x: Math.floor(hero.x / 4), y: Math.floor(hero.y / 4) };
+        const targetTile = { x: Math.floor(target.x / 4), y: Math.floor(target.y / 4) };
+
+        const deltaX = heroTile.y - targetTile.y;
+        const deltaY = targetTile.x - heroTile.x;
+
+        const goingUp = hero.x === target.x + deltaX && hero.y > target.y;
+        const goingDown = hero.x === target.x + deltaX && hero.y < target.y;
+        const goingLeft = hero.y === target.y + deltaY && hero.x > target.x;
+        const goingRight = hero.y === target.y + deltaY && hero.x < target.x;
+
+        if (goingRight) {
             for (let i = hero.x; i <= target.x; i += 1) {
-                path.push({x: i, y: hero.y})
+                const deltaY = Math.floor(hero.x / 4) - Math.floor(i / 4);
+                path.push({ x: i, y: hero.y + deltaY });
             }
-        } else if (hero.x > target.x) {
+        } else if (goingLeft) {
             for (let i = hero.x; i >= target.x; i -= 1) {
-                path.push({x: i, y: hero.y})
+                const deltaY = Math.floor(hero.x / 4) - Math.floor(i / 4);
+                path.push({ x: i, y: hero.y + deltaY });
             }
-        }
-
-        if (hero.y < target.y) {
+        } else if (goingDown) {
             for (let i = hero.y; i <= target.y; i += 1) {
-                path.push({x: hero.x, y: i})
+                const deltaX = Math.floor(i / 4) - Math.floor(hero.y / 4);
+                path.push({ x: hero.x + deltaX, y: i });
             }
-        } else if (hero.y > target.y) {
+        } else if (goingUp) {
             for (let i = hero.y; i >= target.y; i -= 1) {
-                path.push({x: hero.x, y: i})
+                const deltaX = Math.floor(i / 4) - Math.floor(hero.y / 4);
+                path.push({ x: hero.x + deltaX, y: i });
             }
         }
         return path;
@@ -184,8 +160,8 @@ export default class Hero {
 
             if (i > 0) {
                 for (let hero of heroes.all) {
-                    if (path[i].x === hero.cell.x && path[i].y === hero.cell.y) {
-                        // Another hero blocking the way
+                    // Make sure there is no hero blocking the way (ignore exited heroes)
+                    if (path[i].x === hero.cell.x && path[i].y === hero.cell.y && !hero.hasExited()) {
                         path[i].reachable = false;
                         return;
                     }
@@ -202,39 +178,161 @@ export default class Hero {
                 const y = path[i - 1].y;
                 const cell = board.get(x, y);
                 const next = board.get(path[i].x, path[i].y);
-                if (path[i].x === x) {
-                    if (path[i].y > y) {
-                        // Going down
-                        path[i].reachable = !cell.walls.bottom && !next.walls.top;
-                        if (this.color === 'orange' && cell.walls.bottom === 'orange' && next.walls.top === 'orange') path[i].reachable = true;
-                        if (!role.includes('down')) path[i].reachable = false;
-                    } else {
-                        // Going up
-                        path[i].reachable = !cell.walls.top && !next.walls.bottom;
-                        if (this.color === 'orange' && cell.walls.top === 'orange' && next.walls.bottom === 'orange') path[i].reachable = true;
-                        if (!role.includes('up')) path[i].reachable = false;
-                    }
-                } else if (path[i].y === y) {
-                    if (path[i].x > x) {
-                        // Going right
-                        path[i].reachable = !cell.walls.right && !next.walls.left;
-                        if (this.color === 'orange' && cell.walls.right === 'orange' && next.walls.left === 'orange') path[i].reachable = true;
-                        if (!role.includes('right')) path[i].reachable = false;
-                    } else {
-                        // Going left
-                        path[i].reachable = !cell.walls.left && !next.walls.right;
-                        if (this.color === 'orange' && cell.walls.left === 'orange' && next.walls.right === 'orange') path[i].reachable = true;
-                        if (!role.includes('left')) path[i].reachable = false;
-                    }
+
+                const currentCellTile = { x: Math.floor(cell.coord.x / 4), y: Math.floor(cell.coord.y / 4) };
+                const nextCellTile = { x: Math.floor(next.coord.x / 4), y: Math.floor(next.coord.y / 4) };
+
+                const deltaX = currentCellTile.y - nextCellTile.y;
+                const deltaY = nextCellTile.x - currentCellTile.x;
+
+                const goingUp = cell.coord.x === next.coord.x + deltaX && cell.coord.y > next.coord.y;
+                const goingDown = cell.coord.x === next.coord.x + deltaX && cell.coord.y < next.coord.y;
+                const goingLeft = cell.coord.y === next.coord.y + deltaY && cell.coord.x > next.coord.x;
+                const goingRight = cell.coord.y === next.coord.y + deltaY && cell.coord.x < next.coord.x;
+
+                if (goingUp) {
+                    path[i].reachable = !cell.walls.top && !next.walls.bottom;
+                    if (this.color === 'orange' && cell.walls.top === 'orange' && next.walls.bottom === 'orange') path[i].reachable = true;
+                    if (!role.includes('up')) path[i].reachable = false;
+                } else if (goingDown) {
+                    path[i].reachable = !cell.walls.bottom && !next.walls.top;
+                    if (this.color === 'orange' && cell.walls.bottom === 'orange' && next.walls.top === 'orange') path[i].reachable = true;
+                    if (!role.includes('down')) path[i].reachable = false;
+                } else if (goingLeft) {
+                    path[i].reachable = !cell.walls.left && !next.walls.right;
+                    if (this.color === 'orange' && cell.walls.left === 'orange' && next.walls.right === 'orange') path[i].reachable = true;
+                    if (!role.includes('left')) path[i].reachable = false;
+                } else if (goingRight) {
+                    path[i].reachable = !cell.walls.right && !next.walls.left;
+                    if (this.color === 'orange' && cell.walls.right === 'orange' && next.walls.left === 'orange') path[i].reachable = true;
+                    if (!role.includes('right')) path[i].reachable = false;
                 }
 
                 // Can't go to time cells when two or more cameras are active
                 if (next.item && next.item.type === 'time') {
-                    const cameras = board.findItem('camera').filter(c => { return !c.isUsed() });
+                    const cameras = board.findItem('camera').filter(c => {
+                        return !c.isUsed()
+                    });
                     if (cameras.length >= 2) path[i].reachable = false;
                 }
             }
         }
+    }
+
+    display(force = false) {
+        // Don't display hidden heroes
+        if (this.display === false) return;
+
+        let targetX = (this.cell.x - Math.floor(this.cell.y / 4) * .85 + [.5, .36, .18, 0][this.cell.x % 4]) * config.size + 8;
+        let targetY = (this.cell.y + Math.floor(this.cell.x / 4) * .85 + [.5, .36, .18, 0][this.cell.y % 4]) * config.size + 8;
+
+        if (this.hasExited()) {
+            // Find exit cell (out of board)
+            const boardCell = board.get(this.cell.x, this.cell.y);
+            const tileCell = boardCell.tileCell;
+            const tileID = boardCell.tileID;
+            const tile = tiles.getTile(tileID);
+            const exit = tile.getExitPlusOne(tileCell.x, tileCell.y);
+
+            targetX += exit.x * config.size;
+            targetY += exit.y * config.size;
+        }
+
+        if (force) {
+            this.x = targetX;
+            this.y = targetY;
+        }
+
+        let deltaX = targetX - this.x;
+        let deltaY = targetY - this.y;
+        let delta = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1 / 1000;
+
+        if (delta < 10 && !this.selectable) {
+            this.selectable = true;
+
+            // Check for events on this cell
+            events.checkForEvents(this.cell, this);
+
+            // Run AI again
+            ai.run();
+        }
+
+        const x = this.x + (deltaX < 0 ?
+            Math.max(-config.heroSpeed * Math.abs(deltaX / delta) * (1 + delta / 20), deltaX) :
+            Math.min(config.heroSpeed * Math.abs(deltaX / delta) * (1 + delta / 20), deltaX));
+
+        const y = this.y + (deltaY < 0 ?
+            Math.max(-config.heroSpeed * Math.abs(deltaY / delta) * (1 + delta / 20), deltaY) :
+            Math.min(config.heroSpeed * Math.abs(deltaY / delta) * (1 + delta / 20), deltaY));
+
+        this.x = x;
+        this.y = y;
+
+        ui.setAttribute(`hero-${this.id}`, 'transform', `translate(${x} ${y})`);
+
+        if (this.status === 'selected') ui.setAttribute(`hero-${this.id}`, 'stroke-width', '2');
+        else ui.setAttribute(`hero-${this.id}`, 'stroke-width', '1');
+    }
+
+    displayPath() {
+        ui.getById('path').innerHTML = '';
+
+        const path = this.path;
+
+        let svg = '';
+
+        for (let cell of path) {
+            const boardCell = board.get(cell.x, cell.y);
+            const tileCell = boardCell.tileCell;
+
+            let x1 = 0;
+            let y1 = 0;
+            let l = 1;
+            let h = 1;
+
+            if (tileCell) {
+                const walls = boardCell.walls;
+
+                x1 += [.32, .16, 0, -.16][tileCell.x];
+                y1 += [.32, .16, 0, -.16][tileCell.y];
+                let x2 = 1 + [.16, 0, -.16, -.32][tileCell.x];
+                let y2 = 1 + [.16, 0, -.16, -.32][tileCell.y];
+
+                if (walls.left && tileCell.x === 3) {
+                    x1 += .22;
+                } else if (!walls.left && tileCell.x === 0) {
+                    x1 -= .32;
+                }
+
+                if (walls.right && tileCell.x === 0) {
+                    x2 -= .22;
+                } else if (!walls.right && tileCell.x === 3){
+                    x2 += .32;
+                }
+
+                if (walls.top && tileCell.y === 3) {
+                    y1 += .16;
+                } else if (!walls.top && tileCell.y === 0) {
+                    y1 -= .32;
+                }
+
+                if (walls.bottom && tileCell.y === 0) {
+                    y2 -= .22;
+                } else if (!walls.bottom && tileCell.y === 3) {
+                    y2 += .32;
+                }
+
+                l = x2 - x1;
+                h = y2 - y1;
+            }
+
+            const x = (cell.x + x1 - Math.floor(cell.y / 4) * .85) * config.size;
+            const y = (cell.y + y1 + Math.floor(cell.x / 4) * .85) * config.size;
+
+            svg += `<rect class="path ${cell.reachable ? 'reachable' : ''}" x="${x}" y="${y}" width="${l * config.size}" height="${h * config.size}" fill="black" />`;
+        }
+
+        ui.addHTML('path', svg);
     }
 
     /**
@@ -264,18 +362,9 @@ export default class Hero {
 
     exit() {
         this.status = 'exited';
+        this.selectable = false;
 
-        // Find exit cell (out of of board)
-        const boardCell = board.get(this.cell.x, this.cell.y);
-        const tileCell = boardCell.tileCell;
-        const tileID = boardCell.tileID;
-        const tile = tiles.getTile(tileID);
-        const exit = tile.getExitPlusOne(tileCell.x, tileCell.y);
-
-        // Move out of board
-        const x = this.cell.x + exit.x;
-        const y = this.cell.y + exit.y;
-        this.set(x, y);
+        ui.addClass(`hero-${this.id}`, 'exited');
 
         // Run AI again
         ai.run();

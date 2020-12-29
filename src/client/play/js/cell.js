@@ -19,8 +19,8 @@ export default class Cell {
 
         // If gate goes into set tile, it can be considered as explored
         if (data.item && data.item.type === 'gate') {
-            const _x = [-1, 0, 0, 1][data.tileCell.x];
-            const _y = [0, 1, -1, 0][data.tileCell.x];
+            const _x = [-1, 1, -1, 1][data.tileCell.x];
+            const _y = [-1, 1, -1, 1][data.tileCell.y];
             const cell = board.get(this.coord.x + _x, this.coord.y + _y);
             if (!cell || cell.isEmpty()) return;
             this.setExplored();
