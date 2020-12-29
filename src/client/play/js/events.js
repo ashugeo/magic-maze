@@ -23,9 +23,9 @@ export default {
 
     init() {
         /**
-        * General key press actions
-        * @param {Object} e event
-        */
+         * General key press actions
+         * @param {Object} e event
+         */
         document.addEventListener('keydown', e => {
             if (!this.keysDown.includes(e.which)) this.keysDown.push(e.which);
 
@@ -119,6 +119,7 @@ export default {
 
         if (!hero) return;
 
+        // If cell is not current hero cell
         if (cell && !(cell.x === hero.cell.x && cell.y === hero.cell.y)) {
             if (this.action === 'hero' && hero.canGoTo(cell)) {
                 hero.set(cell.x, cell.y);
@@ -169,7 +170,7 @@ export default {
             x: e.clientX,
             y: e.clientY
         };
-        
+
         const el = document.elementFromPoint(this.mouse.x, this.mouse.y);
         if (el.nodeName === 'rect') this.hoveredTile.bcr = el.getBoundingClientRect();
         else this.hoveredTile.bcr = null;
@@ -184,7 +185,7 @@ export default {
 
         for (const hero of heroes.all) {
             if (hero.cell.x === cell.x && hero.cell.y === cell.y) hero.isHovered = true;
-            else hero.isHovered = false; 
+            else hero.isHovered = false;
         }
 
         if (this.action === 'hero') {
@@ -201,8 +202,8 @@ export default {
     },
 
     /**
-    * Cancel current action
-    */
+     * Cancel current action
+     */
     cancel() {
         if (this.action === 'placing') {
             tiles.putBackInStock();
@@ -211,9 +212,9 @@ export default {
     },
 
     /**
-    * Set picked tile
-    * @param {Object} cell {x, y} of cell to set tile onto
-    */
+     * Set picked tile
+     * @param {Object} cell {x, y} of cell to set tile onto
+     */
     setTile(cell) {
         // Select picked tile
         const tile = tiles.getPickedTile();
@@ -245,8 +246,8 @@ export default {
     },
 
     /**
-    * Get next tile from stock
-    */
+     * Get next tile from stock
+     */
     newTile() {
         if (!player.role.includes('explore') && !config.debug) return;
         if (tiles.getStockSize() === 0) return;
@@ -292,7 +293,7 @@ export default {
             // Hovered cell
             const cell = this.getHoveredCell();
             const o = pickedTile.getOrientation();
-    
+
             // Place cursor on enter cell depending on orientation
             const origin = pickedTile.getOrigin(cell.x, cell.y, o);
 
@@ -304,9 +305,9 @@ export default {
     },
 
     /**
-    * Rotate picked tile
-    * @param  {int} dir direction (1 for clockwise, -1 for counterclockwise)
-    */
+     * Rotate picked tile
+     * @param  {int} dir direction (1 for clockwise, -1 for counterclockwise)
+     */
     rotateTile(dir) {
         const pickedTile = tiles.getPickedTile();
         if (pickedTile) {
@@ -316,10 +317,10 @@ export default {
     },
 
     /**
-    * Check if there's a selectable hero in this cell
-    * @param  {Object}         cell cell to check
-    * @return {Object|Boolean}
-    */
+     * Check if there's a selectable hero in this cell
+     * @param  {Object}         cell cell to check
+     * @return {Object|Boolean}
+     */
     checkForHero(cell) {
         if (!cell) return false;
         for (let hero of heroes.all) {
@@ -329,9 +330,9 @@ export default {
     },
 
     /**
-    * Select or deselect hero
-    * @param  {Object} hero hero to select
-    */
+     * Select or deselect hero
+     * @param  {Object} hero hero to select
+     */
     toggleHero(hero) {
         for (let h of heroes.all) {
             // Prevent selection of multiple heroes
@@ -401,5 +402,9 @@ export default {
 
     isKeyDown(key) {
         return this.keysDown.includes(key);
+    },
+
+    pauseGame(setPaused) {
+        socket.emit('pause', setPaused);
     }
 }

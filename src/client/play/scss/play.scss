@@ -16,10 +16,12 @@ body {
     position: relative;
     width: 300px;
     height: 100vh;
-    background-color: transparentize($primary-color, .9);
+    background-color: #EFEBF8;
     color: black;
     padding: 2em;
     font-family: sans-serif;
+    border-right: #DCCCFE;
+    z-index: 10;
 
     #admin {
         position: absolute;
@@ -57,7 +59,7 @@ body {
             content: "";
             background-color: black;
             position: absolute;
-    
+
         }
         &::before {
             top: 0;
@@ -66,7 +68,7 @@ body {
             height: 100%;
             z-index: 100;
         }
-    
+
         &::after {
             top: 50%;
             left: 5;
@@ -102,7 +104,7 @@ body {
                 &.valid {
                     opacity: .8;
                 }
-    
+
                 &.invalid {
                     opacity: .4;
                 }
@@ -113,7 +115,7 @@ body {
             rect {
                 &.path {
                     fill: rgba(255, 0, 0, .2);
-    
+
                     &.reachable {
                         fill: rgba(0, 255, 0, .3);
                     }
@@ -137,7 +139,7 @@ body {
             &.visible {
                 display: block;
             }
-            
+
             rect {
                 fill: transparent;
                 stroke-width: .25;
@@ -266,4 +268,91 @@ label {
     user-select: none;
     color: $primary-color;
     opacity: .6;
+}
+
+.alert {
+    cursor: pointer;
+    padding: 2px 5px;
+    font-size: 100%;
+    width: 2px;
+    height: 0;
+    float: right;
+    margin-top: 5px;
+    position: relative;
+    user-select: none;
+
+    &:hover {
+        font-size: 241%;
+        left: -12px;
+        top: -12px;
+    }
+
+    &:active {
+        font-size: 200%;
+        left: -9px;
+        top: -9px;
+    }
+}
+
+.member {
+    .current {
+        font-weight: bold;
+    }
+}
+
+.modal {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+
+    .message {
+        width: 100%;
+        text-align: center;
+        position: absolute;
+        font-size: 31pt;
+    }
+}
+
+.alert-modal {
+    box-shadow: 0 0 200px inset #ff0000;
+    transition: 3s all;
+    user-select: none;
+
+    .message {
+        top: 8%;
+        color: #ffffff;
+        text-shadow: 2px 2px 2px #e93131, 0px 0px 5px #a59b9b;
+        transition: 3s all;
+    }
+
+    &.hide {
+        box-shadow: none;
+
+        .message {
+            opacity: 0.0;
+        }
+    }
+}
+
+.game-over-modal {
+    background-color: rgba(0, 0, 0, 0.4);
+
+    .message {
+        top: 20%;
+        color: #6F6581;
+        background-color: #F8F7FC;
+        padding: 40px 30px;
+        box-shadow: 0px 2px 7px #5d5d5d;
+    }
+}
+
+.pause-modal {
+    background-color: rgb(188, 183, 199);
+
+    .message {
+        top: 50%;
+        transform: translateY(-50%);
+        color: #827697;
+    }
 }

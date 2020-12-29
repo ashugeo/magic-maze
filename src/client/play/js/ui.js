@@ -2,6 +2,9 @@ export default {
     getById(id) {
         return document.getElementById(id);
     },
+    getByClass(className) {
+        return document.getElementsByClassName(className);
+    },
 
     setHTML(id, html) {
         const elem = this.getById(id);
@@ -16,6 +19,11 @@ export default {
     addEvent(id, ev, f) {
         const elem = this.getById(id);
         elem.addEventListener(ev, f);
+    },
+
+    addEventForClass(className, ev, f) {
+        const elem = this.getByClass(className);
+        Array.from(elem).forEach(el => el.addEventListener(ev, f));
     },
 
     getProperty(id, prop) {
@@ -61,5 +69,10 @@ export default {
     moveToEnd(elOrID) {
         const elem = typeof elOrID === 'string' ? this.getById(elOrID) : elOrID;
         if (elem) elem.parentElement.innerHTML = elem.parentElement.innerHTML.replace(elem.outerHTML, '') + elem.outerHTML;
+    },
+
+    getTransitionDurationForElement(element) {
+        const transitionDurationString = window.getComputedStyle(element).transitionDuration;
+        return transitionDurationString.substring(0, transitionDurationString.length - 1) * 1000;
     }
 }

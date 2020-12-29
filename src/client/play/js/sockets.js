@@ -8,11 +8,17 @@ import player from './player';
 import ui from './ui';
 import user from './user';
 import tiles from './tiles';
+import overlay from "./overlay";
 
 export default {
     init() {
         socket.on('members', members => {
             this.updateMembers(members);
+        });
+
+        socket.on('member', member => {
+            player.id = member.id;
+            player.name = member.name;
         });
 
         socket.on('admin', () => {
@@ -22,7 +28,9 @@ export default {
             <button id="start">Start game</button>`;
 
             ui.setHTML('admin', html);
-            ui.addEvent('start', 'click', () => { socket.emit('prestart'); });
+            ui.addEvent('start', 'click', () => {
+                socket.emit('prestart');
+            });
         });
 
         socket.on('prestart', isAdmin => {
@@ -32,9 +40,9 @@ export default {
                 // Ask admin for game parameters
                 const bots = parseInt(ui.getProperty('bots', 'value'));
                 const scenario = parseInt(ui.getProperty('scenario', 'value'));
-                socket.emit('settings', { bots, scenario, isSpectator });
+                socket.emit('settings', {bots, scenario, isSpectator});
             } else {
-                socket.emit('settings', { isSpectator });
+                socket.emit('settings', {isSpectator});
             }
         });
 
@@ -94,10 +102,17 @@ export default {
         socket.on('ai', data => {
             ai.run();
         });
+
+        socket.on('alert', data => {
+            overlay.showAlert(data);
+        });
+
+        socket.on('pause', data => {
+            game.setPaused(data.paused, data.byName);
+        });
     },
 
     updateMembers(members) {
-        console.log(members);
         const botsCount = members.filter(m => m.isBot).length;
 
         let html = members.length - botsCount;
@@ -109,10 +124,23 @@ export default {
         let membersHTML = '';
         for (const member of members) {
             membersHTML += `<div class="member">
-                <p>${member.name}</p>
+                ${member.roles && member.id !== player.id ?
+                  `<div class="alert" data-player="${member.id}">&#128276;</div>` : ''}
+                
+                <p class="${member.id !== player.id ? '' : 'current'}">${member.name}</p>
                 <p class="small">${member.roles ? `Role(s): ${member.roles.join(', ')}` : ''}</p>
             </div>`;
         }
         ui.setHTML('list', membersHTML);
-    }
+
+        ui.addEventForClass('alert', 'click', (e) => {
+            this.alertPlayer(e.target.dataset.player);
+        });
+    },
+
+    alertPlayer(playerId) {
+        socket.emit('alert', {
+            id: playerId,
+        });
+    },
 }

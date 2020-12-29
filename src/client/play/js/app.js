@@ -13,8 +13,4 @@ window.onload = () => {
         socket.emit('join', { room, name });
         document.title = `Magic Maze · ${room}`;
     }
-
-    socket.on('msg', msg => {
-        console.log(msg);
-    });
 }

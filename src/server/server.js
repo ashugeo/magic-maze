@@ -20,14 +20,22 @@ const listener = http.listen(process.env.PORT || 3000, () => {
 });
 
 io.sockets.on('connection', socket => {
-    // List all opened rooms on homepage
-    for (const roomID of Object.keys(io.sockets.adapter.rooms)) {
-        const room = io.sockets.adapter.rooms[roomID];
-        if (room.id) io.emit('home', room);
-    }
+    console.log("New connection", socket.id);
 
-    // New player entered a room
+    // List all opened rooms on homepage
+    Object.values(io.sockets.adapter.rooms).forEach(room => {
+        if (room.id) {
+            io.emit('home', room);
+        }
+    });
+
+    /**
+     * New player entered a room
+     * params: { room, name }
+     */
     socket.on('join', params => {
+        console.log("Player joined: ", params.name);
+
         const roomID = params.room;
         socket.join(roomID);
         socket.roomID = roomID;
@@ -37,7 +45,10 @@ io.sockets.on('connection', socket => {
 
         room.id = roomID;
 
-        room.members = Object.keys(room.sockets).map(socketID => ({ id: socketID, name: io.sockets.sockets[socketID].name }));
+        room.members = Object.keys(room.sockets).map(socketID => ({
+            id: socketID,
+            name: io.sockets.sockets[socketID].name,
+        }));
 
         // Game already started
         if (room.isStarted) {
@@ -47,8 +58,16 @@ io.sockets.on('connection', socket => {
             io.to(room.adminID).emit('getStatus', socket.id);
         }
 
+        // Tell socket its player/member id and name
+        io.to(socket.id).emit('member', {
+            id: socket.id,
+            name: socket.name,
+        });
+
         // Tell everyone
-        io.to(roomID).emit('members', room.members );
+        console.debug("Room members: ", room.members);
+        io.to(roomID).emit('members', room.members);
+
         io.emit('home', room);
 
         // First player, make it admin
@@ -59,6 +78,7 @@ io.sockets.on('connection', socket => {
     });
 
     socket.on('status', (data, user) => {
+        console.debug("Sending status to user: ", user);
         io.to(user).emit('start', {
             board: data.board,
             clock: data.clock,
@@ -70,17 +90,24 @@ io.sockets.on('connection', socket => {
 
     // User disconnected from a room
     socket.on('disconnect', () => {
+        console.log("Player disconnected: ", socket.name);
+
         const roomID = socket.roomID;
         const room = io.sockets.adapter.rooms[roomID];
 
         // No more players, room gets deleted
-        if (roomID && !room) io.emit('home', { id: roomID });
+        if (roomID && !room) io.emit('home', {id: roomID});
         if (!room) return;
 
-        // Tell everyone
-        room.members = Object.keys(room.sockets).map(socketID => ({ id: socketID, name: io.sockets.sockets[socketID].name }));
+        // Collect remaining room members
+        room.members = Object.keys(room.sockets).map(socketID => ({
+            id: socketID,
+            name: io.sockets.sockets[socketID].name,
+            isSpectator: room.members.some(m => m.id === socketID && m.isSpectator),
+        }));
 
         // TODO: update bots count
+        // Tell everyone
         io.to(roomID).emit('members', room.members);
         io.emit('home', room);
 
@@ -99,6 +126,7 @@ io.sockets.on('connection', socket => {
 
     // Admin has clicked start, get each player's settings
     socket.on('prestart', () => {
+        console.debug("Collect users settings");
         const roomID = socket.roomID;
         const room = io.sockets.adapter.rooms[roomID];
         const users = Object.keys(room.sockets);
@@ -117,6 +145,7 @@ io.sockets.on('connection', socket => {
 
     // Getting player settings (wait for everyone then start with options)
     socket.on('settings', settings => {
+        console.debug("Received player settings: ", settings);
         const roomID = socket.roomID;
         const room = io.sockets.adapter.rooms[roomID];
         const adminID = room.adminID;
@@ -124,10 +153,15 @@ io.sockets.on('connection', socket => {
         room.members.find(m => m.id === socket.id).isSpectator = settings.isSpectator;
 
         // If admin, build options object with additional data
-        if (socket.id === adminID) room.options = { bots: settings.bots, scenario: settings.scenario };
+        if (socket.id === adminID)
+            room.options = {
+                bots: settings.bots,
+                scenario: settings.scenario
+            };
 
         // When the spectator status of everyone is known, the game can start
-        if (room.members.every(m => m.isSpectator !== undefined)) start(room);
+        if (room.members.every(m => m.isSpectator !== undefined))
+            start(room);
     });
 
     socket.on('hero', data => {
@@ -153,6 +187,18 @@ io.sockets.on('connection', socket => {
     socket.on('ai', () => {
         const adminID = io.sockets.adapter.rooms[socket.roomID].adminID;
         io.to(adminID).emit('ai');
+    });
+
+    socket.on('alert', data => {
+        io.to(data.id).emit('alert', socket.name);
+    });
+
+    socket.on('pause', setPaused => {
+        console.debug(`${socket.name} changed game pause state to ${setPaused}`);
+        io.to(socket.roomID).emit('pause', {
+            paused: setPaused,
+            byName: socket.name,
+        });
     });
 
     // socket.on('swap', () => {
@@ -187,16 +233,17 @@ io.sockets.on('connection', socket => {
 });
 
 function start(room) {
+    console.debug("Start room: ", room);
     room.isStarted = true;
 
     // Add bots to players
     if (room.options.bots) {
         for (let i = 0; i < room.options.bots; i += 1) {
             room.members.push({
-                id: 'bot' + i,
-                name: 'bot' + i,
-                isBot: true
-            });
+                                  id: 'bot' + i,
+                                  name: 'bot' + i,
+                                  isBot: true
+                              });
         }
     }
 
@@ -207,13 +254,15 @@ function start(room) {
     if (Object.keys(players).length === 0) return;
 
     // Update players count with bots
+    console.debug("Room members: ", room.members);
     io.to(room.id).emit('members', room.members);
 
     // Get all actions for that number of players
     let roles = [];
-    for (const i in actions) {
-        if (actions[i].players.includes(Object.keys(players).length)) roles.push(actions[i].roles);
-    }
+    Object.values(actions).forEach(action => {
+        if (action.players.includes(Object.keys(players).length))
+            roles.push(action.roles);
+    });
 
     // Set roles to players
     if (players.length === 1) {
