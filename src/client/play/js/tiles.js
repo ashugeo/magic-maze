@@ -4,50 +4,72 @@ import Tile from './tile';
 import ui from "./ui";
 
 export default {
-    all: [],           // Array of Tile objects
-    deck: [],          // Array of IDs (growing order)
-    stock: [],         // Array of IDs (to be mixed)
-    board: [],         // Array of IDs (chronologically)
+    all: [],           // Array of all available Tile objects for the scenario
+    stock: [],         // Array of IDs (to be mixed) of undiscovered tiles to be picked from
+    board: [],         // Array of IDs (chronologically) of discovered tiles laying on the board
     pickedTile: false, // ID or false
 
     init(deck, tiles) {
+        console.debug("Init tiles...");
+
+        if (tiles) {
+            this.initTilesFromExistingTiles(tiles);
+        } else {
+            this.initTilesFromNewDeck(deck);
+        }
+
+        this.displayNumbers();
+    },
+
+    initTilesFromExistingTiles(tiles) {
+        this.stock = tiles.stock;
+
+        // Init tiles as objects
+        this.all = tiles.all.map(t => {
+            const tile = new Tile(t);
+            tile.rotation = t.rotation;
+            tile.status = t.status;
+            tile.canBeSet = t.canBeSet;
+            tile.shift = t.shift;
+            return tile;
+        });
+
+        // Place tiles on board if they must be on the board
+        tiles.all.forEach(t => {
+            if (!tiles.board.includes(t.id))
+                return;
+
+            this.getTile(t.id).set(t.x, t.y);
+        });
+    },
+
+    initTilesFromNewDeck(deck) {
         for (let id of Object.keys(deck.tiles)) {
             id = parseInt(id);
 
-            if (tiles) {
-                const tile = new Tile(this.stringToTile(id, deck.tiles[id]));
-
-                if (tiles.board.includes(id)) {
-                    const t = tiles.all.find(t => t.id === id);
-                    tile.set(t.x, t.y);
-                }
-
-                this.all.push(tile);
-            } else {
-                this.deck.push(id);
-                this.stock.push(id);
-                const tile = this.stringToTile(id, deck.tiles[id]);
-                this.all.push(new Tile(tile));
-            }
+            this.stock.push(id);
+            const tile = new Tile(this.stringToTile(id, deck.tiles[id]));
+            this.all.push(tile);
         }
 
-        if (!tiles) {
-            const firstTile = this.stock[0];
-            this.stock.shift();
-            this.stock = helpers.shuffleArray(this.stock);
+        this.shuffleStockAndGetFirstTile(deck);
+    },
 
-            if (deck.firstInStock) {
-                const index = this.stock.indexOf(deck.firstInStock);
-                this.stock.splice(index, 1);
-                this.stock.unshift(deck.firstInStock);
-            }
+    shuffleStockAndGetFirstTile(deck) {
+        console.debug("  Shuffle tiles...");
+        const firstTile = this.stock[0];
+        this.stock.shift();
+        this.stock = helpers.shuffleArray(this.stock);
 
-            this.stock.unshift(firstTile);
-
-            this.getFromStock().set(config.firstTile.x, config.firstTile.y);
+        if (deck.firstInStock) {
+            const index = this.stock.indexOf(deck.firstInStock);
+            this.stock.splice(index, 1);
+            this.stock.unshift(deck.firstInStock);
         }
 
-        this.display();
+        this.stock.unshift(firstTile);
+
+        this.getFromStock().set(config.firstTile.x, config.firstTile.y);
     },
 
     display() {
@@ -63,7 +85,6 @@ export default {
     get() {
         const data = {
             all: this.all,
-            deck: this.deck,
             stock: this.stock,
             board: this.board
         }
@@ -105,13 +126,25 @@ export default {
     },
 
     getTile(id) {
-        return this.all.find(t => { return t.id === id; });
+        return this.all.find(t => {
+            return t.id === id;
+        });
     },
 
     setTile(id) {
+        console.debug("Place tile: ", id);
+
         this.pickedTile = false;
         this.board.push(id);
-        this.display();
+
+        // Remove id from stock (only needed if this client isn't the exploration client
+        // OR this client doesn't contain the original stock array (due to connection refresh))
+        const idStockIndex = this.stock.indexOf(id);
+        if (idStockIndex >= 0) {
+            this.stock.splice(idStockIndex, 1);
+        }
+
+        this.displayNumbers();
     },
 
     isPickedTile() {
@@ -208,7 +241,7 @@ export default {
         return this.board.length === this.all.length;
     },
 
-    display() {
+    displayNumbers() {
         ui.setHTML("tiles-used", this.board.length);
         ui.setHTML("tiles-total", this.all.length);
     }

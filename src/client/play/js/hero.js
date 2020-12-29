@@ -10,16 +10,19 @@ import ui from './ui';
 
 export default class Hero {
     constructor(id) {
-        this.id = id,
-        this.x = 0,
-        this.y = 0,
-        this.color = config.heroes[id],
+        this.id = id;
+        this.x = 0;
+        this.y = 0;
+        this.color = config.heroes[id];
         this.cell = {
             x: 0,
             y: 0
-        },
-        this.status = 'set', // set, selected, exited
-        this.selectable = true,
+        };
+        this.target = this.cell;
+        this.pos = {x: this.target.x, y: this.target.y};
+
+        this.status = 'set'; // set, selected, exited
+        this.selectable = true;
         this.path = [];
     }
 
@@ -207,7 +210,9 @@ export default class Hero {
 
                 // Can't go to time cells when two or more cameras are active
                 if (next.item && next.item.type === 'time') {
-                    const cameras = board.findItem('camera').filter(c => { return !c.isUsed() });
+                    const cameras = board.findItem('camera').filter(c => {
+                        return !c.isUsed()
+                    });
                     if (cameras.length >= 2) path[i].reachable = false;
                 }
             }
@@ -251,7 +256,7 @@ export default class Hero {
             // Run AI again
             ai.run();
         }
-        
+
         const x = this.x + (deltaX < 0 ?
             Math.max(-config.heroSpeed * Math.abs(deltaX / delta) * (1 + delta / 20), deltaX) :
             Math.min(config.heroSpeed * Math.abs(deltaX / delta) * (1 + delta / 20), deltaX));

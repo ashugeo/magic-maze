@@ -97,8 +97,13 @@ export default {
         const height = 978;
 
         const allCells = board.getAll();
-        
-        const minX = allCells.find(col => Object.values(col).some(cell => !cell.empty))[0].coord.x;
+
+        const firstNonEmptyCell = allCells.find(col => Object.values(col).some(cell => !cell.empty));
+        if (!firstNonEmptyCell)
+            // No non-empty cells found
+            return;
+
+        const minX = firstNonEmptyCell[0].coord.x;
 
         const maxX = [...allCells].reverse().find(col => Object.values(col).some(cell => !cell.empty))[0].coord.x;
 
