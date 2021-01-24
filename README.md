@@ -14,7 +14,7 @@ Online version of board game "Magic Maze"
 | P | Pause game |
 | G | Toggle grid |
 | S | Move map up |
-| D | Move map down |
+| Z | Move map down |
 | D | Move map left |
 | Q | Move map right |
 | E | Zoom map in |
