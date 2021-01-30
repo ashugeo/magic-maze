@@ -80,6 +80,8 @@ export default {
             const tile = tiles.getTile(data.tile.id);
             tile.rotation = data.tile.rotation;
             tile.set(data.x, data.y);
+            tile.createSVG();
+            ui.setAttribute(`tile-${tile.id}`, 'transform', data.transform);
         });
 
         socket.on('getStatus', user => {
