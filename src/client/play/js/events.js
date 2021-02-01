@@ -216,10 +216,12 @@ export default {
 
             // Set tile at origin
             const origin = tile.getOrigin(cell.x, cell.y, o);
+            const transform = ui.getAttribute(`tile-${tile.id}`, 'transform');
             tile.set(origin.x, origin.y);
             socket.emit('tile', {
                 x: origin.x,
                 y: origin.y,
+                transform: transform,
                 tile: tile
             });
 

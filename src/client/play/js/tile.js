@@ -318,6 +318,10 @@ export default class Tile {
         }
     }
 
+    /**
+     * Creates the corresponding <image/> element for this tile and
+     * adds it to the list of tiles.
+     */
     createSVG() {
         // this.move(0, 0);
 
