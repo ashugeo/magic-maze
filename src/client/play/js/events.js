@@ -39,7 +39,7 @@ export default {
         /**
          * General key press actions
          * @param {Object} e event
-        */
+         */
         document.addEventListener('keydown', e => {
             if (!this.keysDown.includes(e.code)) this.keysDown.push(e.code);
 
