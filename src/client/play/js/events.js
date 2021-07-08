@@ -74,6 +74,14 @@ export default {
             if (!game.isEnded()) this.mouseUp();
         });
 
+        document.getElementById('game-wrap').addEventListener('wheel', (e) => {
+            if (e.deltaY < 0) {
+                camera.zoomIn();
+            } else if (e.deltaY > 0) {
+                camera.zoomOut();
+            }
+        });
+
         document.addEventListener('mouseover', e => {
             if (ui.hasClass(e.target, 'hitbox')) {
                 const x = parseInt(e.target.getAttribute('data-x'));
