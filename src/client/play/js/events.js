@@ -23,7 +23,7 @@ const KEY_ZOOM_IN = "KeyE";
 const KEY_EXPLORE = "KeyC";
 const KEY_ROTATE_TILE_CLOCKWISE = "KeyR";
 const KEY_ROTATE_TILE_COUNTER_CLOCKWISE = "KeyT";
-const KEY_CANCEP = "Escape";
+const KEY_CANCEL = "Escape";
 const KEY_PAUSE = "Space";
 const KEY_TOGGLE_GRID = "KeyG";
 
@@ -49,7 +49,7 @@ export default {
                 if (!game.isEnded()) this.rotateTile(-1);
             } else if (e.code === KEY_ROTATE_TILE_COUNTER_CLOCKWISE) { // rotate tile clockwise
                 if (!game.isEnded()) this.rotateTile(1);
-            } else if (e.code === KEY_CANCEP) { // cancel current action
+            } else if (e.code === KEY_CANCEL) { // cancel current action
                 if (!game.isEnded()) this.cancel();
             } else if (e.code === 66) { // B
                 // Steal
@@ -151,6 +151,7 @@ export default {
         if (cell && !(cell.x === hero.cell.x && cell.y === hero.cell.y)) {
             if (this.action === 'hero' && hero.canGoTo(cell)) {
                 hero.set(cell.x, cell.y);
+                this.checkForEvents(cell, hero);
                 socket.emit('hero', {
                     id: hero.id,
                     cell: cell
@@ -202,6 +203,10 @@ export default {
         };
 
         const el = document.elementFromPoint(this.mouse.x, this.mouse.y);
+        if (el === undefined || el === null) {
+            console.log(el);
+            debugger;
+        }
         if (el.nodeName === 'rect') this.hoveredTile.bcr = el.getBoundingClientRect();
         else this.hoveredTile.bcr = null;
 
