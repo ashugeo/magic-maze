@@ -12,6 +12,21 @@ import Tile from './tile';
 import tiles from './tiles';
 import ui from './ui';
 
+const KEY_UP = "KeyW";
+const KEY_DOWN = "KeyS";
+const KEY_LEFT = "KeyA";
+const KEY_RIGHT = "KeyD";
+
+const KEY_ZOOM_OUT = "KeyQ";
+const KEY_ZOOM_IN = "KeyE";
+
+const KEY_EXPLORE = "KeyC";
+const KEY_ROTATE_TILE_CLOCKWISE = "KeyR";
+const KEY_ROTATE_TILE_COUNTER_CLOCKWISE = "KeyT";
+const KEY_CANCEL = "Escape";
+const KEY_PAUSE = "Space";
+const KEY_TOGGLE_GRID = "KeyG";
+
 export default {
     action: '', // '', 'placing', 'hero'
     crystal: null,
@@ -26,29 +41,29 @@ export default {
          * @param {Object} e event
          */
         document.addEventListener('keydown', e => {
-            if (!this.keysDown.includes(e.which)) this.keysDown.push(e.which);
+            if (!this.keysDown.includes(e.code)) this.keysDown.push(e.code);
 
-            if (e.which === 67) { // C: engage tile placing
+            if (e.code === KEY_EXPLORE) { // tile placing
                 if (!game.isEnded()) this.newTile();
-            } else if (e.which === 82) { // R: rotate tile counterclockwise
+            } else if (e.code === KEY_ROTATE_TILE_CLOCKWISE) { // rotate tile counterclockwise
                 if (!game.isEnded()) this.rotateTile(-1);
-            } else if (e.which === 84) { // T: rotate tile clockwise
+            } else if (e.code === KEY_ROTATE_TILE_COUNTER_CLOCKWISE) { // rotate tile clockwise
                 if (!game.isEnded()) this.rotateTile(1);
-            } else if (e.which === 27) { // Esc: cancel current action
+            } else if (e.code === KEY_CANCEL) { // cancel current action
                 if (!game.isEnded()) this.cancel();
-            } else if (e.which === 66) { // B
+            } else if (e.code === 66) { // B
                 // Steal
                 // game.setPhase(2);
-            } else if (e.which === 80) { // P
+            } else if (e.code === KEY_PAUSE) { // pause the game
                 if (game.isPaused()) game.resume();
                 else game.pause();
-            } else if (e.which === 71) { // G
+            } else if (e.code === KEY_TOGGLE_GRID) { // toggle grid visibility
                 ui.toggleClass('grid', 'visible');
             }
         });
 
         document.addEventListener('keyup', e => {
-            this.keysDown.splice(this.keysDown.indexOf(e.which), 1);
+            this.keysDown.splice(this.keysDown.indexOf(e.code), 1);
         });
 
         document.getElementById('game-wrap').addEventListener('mousedown', () => {
@@ -85,6 +100,30 @@ export default {
         }
     },
 
+    isMovingUp() {
+        return this.isKeyDown(KEY_UP);
+    },
+
+    isMovingDown() {
+        return this.isKeyDown(KEY_DOWN);
+    },
+
+    isMovingLeft() {
+        return this.isKeyDown(KEY_LEFT);
+    },
+
+    isMovingRight() {
+        return this.isKeyDown(KEY_RIGHT);
+    },
+
+    isZoomingOut() {
+        return this.isKeyDown(KEY_ZOOM_OUT);
+    },
+
+    isZoomingIn() {
+        return this.isKeyDown(KEY_ZOOM_IN);
+    },
+
     mouseDown() {
         // Spectator can't click
         if (player.role.length === 0) return;
@@ -112,6 +151,7 @@ export default {
         if (cell && !(cell.x === hero.cell.x && cell.y === hero.cell.y)) {
             if (this.action === 'hero' && hero.canGoTo(cell)) {
                 hero.set(cell.x, cell.y);
+                this.checkForEvents(cell, hero);
                 socket.emit('hero', {
                     id: hero.id,
                     cell: cell
@@ -163,6 +203,10 @@ export default {
         };
 
         const el = document.elementFromPoint(this.mouse.x, this.mouse.y);
+        if (el === undefined || el === null) {
+            console.log(el);
+            debugger;
+        }
         if (el.nodeName === 'rect') this.hoveredTile.bcr = el.getBoundingClientRect();
         else this.hoveredTile.bcr = null;
 

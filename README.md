@@ -5,20 +5,20 @@ Online version of board game "Magic Maze"
 
 ### Keyboard commands
 
-| Key | Command |
-| --- | --- |
-| C | Activate explore (double click on the tile to place) |
-| T | Rotate new tile clockwise (or use Right Mouse click) |
-| R | Rotate new tile counter clockwise |
-| Esc | Cancel current action |
-| P | Pause game |
-| G | Toggle grid |
-| S | Move map up |
-| Z | Move map down |
-| D | Move map left |
-| Q | Move map right |
-| E | Zoom map in |
-| A | Zoom map out |
+| Command | AZERTY | QWERTY | 
+| --- | --- | --- | 
+| Activate explore (double click on the tile to place) | C | C |
+| Rotate new tile clockwise (or use Right Mouse click) | T | T |
+| Rotate new tile counter clockwise | R | R |
+| Cancel current action | Esc | Esc |
+| Pause game | Spacebar | Spacebar |
+| Toggle grid | G | G |
+| Move map up | S | W |
+| Move map down | Z | S |
+| Move map left | D | A |
+| Move map right | Q | D |
+| Zoom map in | E | E |
+| Zoom map out | A | Q |
 
 ## Development
 

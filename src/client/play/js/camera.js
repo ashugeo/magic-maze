@@ -24,9 +24,9 @@ export default {
     * Animate camera zoom
     */
     zoom() {
-        if (events.isKeyDown(65)) { // A: zoom out
+        if (events.isZoomingOut()) {
             this.targetZoom -= .1;
-        } else if (events.isKeyDown(69)) { // E: zoom in
+        } else if (events.isZoomingIn()) {
             this.targetZoom += .1;
         }
 
@@ -49,16 +49,16 @@ export default {
     * Move camera around
     */
     move() {
-        if (events.isKeyDown(90)) { // Z: move up
+        if (events.isMovingUp()) {
             this.y -= config.cameraSpeed / this.zoomValue * 2;
         }
-        if (events.isKeyDown(81)) { // Q: move left
+        if (events.isMovingLeft()) {
             this.x -= config.cameraSpeed / this.zoomValue * 2;
         }
-        if (events.isKeyDown(83)) { // S: move down
+        if (events.isMovingDown()) {
             this.y += config.cameraSpeed / this.zoomValue * 2;
         }
-        if (events.isKeyDown(68)) { // D: move right
+        if (events.isMovingRight()) {
             this.x += config.cameraSpeed / this.zoomValue * 2;
         }
 
