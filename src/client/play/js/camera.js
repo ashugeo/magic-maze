@@ -20,16 +20,28 @@ export default {
         this.y = -height / 2 + (config.firstTile.y + 2) * config.size + .85 * config.firstTile.x / 4 * config.size;
     },
 
+    zoomIn() {
+        this.targetZoom += .1;
+        this.updateZoomValue();
+    },
+
+    zoomOut() {
+        this.targetZoom -= .1;
+        this.updateZoomValue();
+    },
+
     /**
     * Animate camera zoom
     */
     zoom() {
         if (events.isZoomingOut()) {
-            this.targetZoom -= .1;
+            this.zoomOut();
         } else if (events.isZoomingIn()) {
-            this.targetZoom += .1;
+            this.zoomIn();
         }
+    },
 
+    updateZoomValue() {
         // Bound to min and max zoom
         this.targetZoom = Math.min(Math.max(this.targetZoom, config.zoomMin), config.zoomMax);
         // Round to one decimal
