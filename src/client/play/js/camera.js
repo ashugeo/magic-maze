@@ -35,9 +35,9 @@ export default {
     */
     zoom() {
         if (events.isZoomingOut()) {
-            this.zoomIn();
-        } else if (events.isZoomingIn()) {
             this.zoomOut();
+        } else if (events.isZoomingIn()) {
+            this.zoomIn();
         }
     },
 
