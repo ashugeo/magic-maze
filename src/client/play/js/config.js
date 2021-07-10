@@ -1,5 +1,7 @@
 export default {
-    debug: true,
+    // set this to true to allow a player to have all the roles for
+    // testing purposes
+    debug: false,
     grid: true,
     cameraSpeed: 5,
     cameraMouse: false,
