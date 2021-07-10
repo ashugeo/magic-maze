@@ -62,14 +62,11 @@ export default class Hero {
 
         // Check for vortex
         if (role.includes('vortex')) {
-            const item = board.get(hero.x, hero.y).item;
-            if (item && item.type === 'vortex' && item.color === this.color) {
-                const targetItem = board.get(target.x, target.y).item;
-                if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
-                    path.push({x: hero.x, y: hero.y});
-                    path.push({x: target.x, y: target.y, reachable: game.isPhase(1)});
-                    return path;
-                }
+            const targetItem = board.get(target.x, target.y).item;
+            if (targetItem && targetItem.type === 'vortex' && targetItem.color === this.color) {
+                path.push({x: hero.x, y: hero.y});
+                path.push({x: target.x, y: target.y, reachable: game.isPhase(1)});
+                return path;
             }
         }
 
