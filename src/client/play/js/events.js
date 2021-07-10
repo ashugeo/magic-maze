@@ -211,11 +211,11 @@ export default {
         };
 
         const el = document.elementFromPoint(this.mouse.x, this.mouse.y);
-        if (el === undefined || el === null) {
-            console.log(el);
-            debugger;
-        }
-        if (el.nodeName === 'rect') this.hoveredTile.bcr = el.getBoundingClientRect();
+        // the element may be undefined which implies the mouse is
+        // currently outside of the bounds of the game window, this may
+        // happen when the browser window is being resized, consider
+        // ourselves as not currently hovering over any tile then
+        if (el && el.nodeName === 'rect') this.hoveredTile.bcr = el.getBoundingClientRect();
         else this.hoveredTile.bcr = null;
 
         const cell = this.getHoveredCell();
