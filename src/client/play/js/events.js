@@ -70,7 +70,9 @@ export default {
             if (!game.isEnded()) this.mouseDown();
         });
 
-        document.getElementById('game-wrap').addEventListener('mouseup', () => {
+        // always release all held actions regardless of whether the
+        // mouse was released inside or outside the game's bounds
+        document.addEventListener('mouseup', () => {
             if (!game.isEnded()) this.mouseUp();
         });
 
@@ -179,8 +181,14 @@ export default {
         this.hero = false;
     },
 
+    hasValidHoveredTile() {
+        return this.hoveredTile.bcr !== undefined && this.hoveredTile.bcr !== null &&
+            this.hoveredTile.x !== undefined && this.hoveredTile.x !== null &&
+            this.hoveredTile.y !== undefined && this.hoveredTile.y !== null;
+    },
+
     getHoveredCell() {
-        if (this.hoveredTile.x === null || this.hoveredTile.y === null || !this.hoveredTile.bcr)
+        if (!this.hasValidHoveredTile())
             return null;
 
         let { x, y, bcr } = this.hoveredTile;
