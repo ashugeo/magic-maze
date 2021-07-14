@@ -138,7 +138,7 @@ export default {
             membersHTML += `
             <div class="member ${member.isConnected ? '' : 'disconnected'}"
                 title="${member.isSpectator ? 'Spectator' : (member.isBot ? 'Bot' : 'Player')}">
-                ${!member.isBot && member.roles && member.roles.length > 0 && member.id !== player.id ?
+                ${!game.isScenario(15) && !member.isBot && member.roles && member.roles.length > 0 && member.id !== player.id ?
                   `<div class="alert" data-player="${member.id}">&#128276;</div>` : ''}
                 
                 <p class="${member.id !== player.id ? '' : 'current'}">

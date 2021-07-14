@@ -46,7 +46,7 @@ export default {
     },
 
     buildDeck(scenario) {
-        if (scenario > 7) scenario = 7;
+        if (scenario > 7 && scenario !== 15) scenario = 7;
         let deck = { tiles: [], firstInStock: null };
         const ids = scenarios[scenario].tiles;
 
