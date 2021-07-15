@@ -1,7 +1,6 @@
 import board from './board';
 import config from './config';
 import heroes from './heroes';
-import symbols from './symbols';
 import tiles from './tiles';
 import ui from './ui';
 
