@@ -53,8 +53,6 @@ export default {
         } else {
             this.zoomValue = this.targetZoom;
         }
-
-        // p5.scale(this.zoomValue);
     },
 
     /**
@@ -77,33 +75,10 @@ export default {
         // TODO: remove svg-wrap parent
         ui.setAttribute('svg-wrap', 'transform', `scale(${this.zoomValue})`);
         ui.setAttribute('svg', 'transform', `translate(${-this.x} ${-this.y})`);
-
-        if (config.cameraMouse) {
-            const x1 = -this.x
-            const y1 = -this.y;
-            const x2 = (-p5.width/2 + p5.mouseX) / this.zoomValue - this.x;
-            const y2 = (-p5.height/2 + p5.mouseY) / this.zoomValue - this.y;
-
-            const dist = Math.round(p5.dist(x1, y1, x2, y2) * this.zoomValue);
-            const angle = Math.atan2(y2 - y1, x2 - x1);
-
-            const distX = Math.round(Math.cos(angle) * dist);
-            if (Math.abs(distX) > p5.width / 2 - 100) {
-                this.x += Math.sign(distX) * config.cameraSpeed;
-            }
-
-            const distY = Math.round(Math.sin(angle) * dist);
-            if (Math.abs(distY) > p5.height / 2 - 100) {
-                this.y += Math.sign(distY) * config.cameraSpeed;
-            }
-        }
     },
 
     update() {
         if (!board.ready) return;
-
-        // const width = p5.width;
-        // const height = p5.height;
 
         const width = 1140;
         const height = 978;
