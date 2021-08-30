@@ -23,7 +23,7 @@ function init() {
                 </p>
 
                 <label for="nickname">Nickname</label>
-                <input type="text" id="nickname" placeholder="Enter a nickname…" required>
+                <input type="text" id="nickname-${room.id}" placeholder="Enter a nickname…" required>
 
                 <button name="play">Play</button>`;
 
@@ -41,7 +41,7 @@ function init() {
 $(document).on('click', 'button[name="play"]', e => {
     e.preventDefault();
     const room = $(e.target).parents('.box').attr('id');
-    const name = $('#nickname').val();
+    const name = $(`#nickname-${room}`).val();
 
     if (!room || !name) return;
 
